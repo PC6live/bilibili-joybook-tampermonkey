@@ -1,7 +1,6 @@
 import { proxy } from 'ajax-hook';
 import { setCookies } from '@/utils/biliCookie';
 import './styles/global.scss';
-import Share from '@/components/share';
 
 const userCookie: Cookie[] = GM_getValue('userCookie');
 const vipCookie: Cookie[] = GM_getValue('vipCookie');
@@ -9,42 +8,42 @@ const isBangumi: boolean = window.location.href.includes('bangumi');
 
 const status = {
 	firstLoad: true,
-}
+};
+
+const biliReload = (): void => {
+	setCookies(vipCookie).then(() => location.reload(false));
+	GM_setValue('lock', true);
+};
 
 const listener = (): void => {
-	window.addEventListener('beforeunload', (e) => {
-		console.log('refresh');
-		setCookies(vipCookie);
-	});
-	// 需要修改ajax-hoook文件将window指向unsafeWindow
+	GM_setValue('lock', false);
+
 	proxy({
 		onRequest: async (config, handler) => {
 			const { url, xhr } = config;
 			const next = (): void => handler.next(config);
 
-			const navLoad = () => {
+			const navLoad = (): void => {
 				setCookies(userCookie);
-				status.firstLoad = !status.firstLoad
-			}
+				status.firstLoad = !status.firstLoad;
+			};
 
-			const mian = (): Promise<void> => {
-				return new Promise(resolve => {
+			const listening = (): Promise<void> => {
+				return new Promise((resolve) => {
 					if (url.includes('playurl?cid') && !status.firstLoad) {
 						xhr.onloadstart = (): void => {
-							setCookies(vipCookie)
-							console.log(xhr.status)
-						}
+							setCookies(vipCookie);
+						};
 						xhr.onloadend = (): void => {
-							setCookies(userCookie)
-							console.log(xhr.status)
-						}
+							setCookies(userCookie);
+						};
 					}
-	
+
 					url.endsWith('nav') && navLoad();
-					return resolve()
-				})
-			}
-			await mian();
+					return resolve();
+				});
+			};
+			await listening();
 			next();
 		},
 		onResponse: (response, handler) => {
@@ -58,7 +57,9 @@ const listener = (): void => {
 
 const Main = (): void => {
 	console.log('run main');
-	isBangumi ? listener() : setCookies(userCookie);
+	const lock = GM_getValue('lock');
+
+	isBangumi ? (lock ? listener() : biliReload()) : setCookies(userCookie)
 };
 
 Main();
