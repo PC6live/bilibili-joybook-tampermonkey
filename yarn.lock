@@ -1053,11 +1053,6 @@ acorn@^7.1.1:
   resolved "https://registry.npm.taobao.org/acorn/download/acorn-7.1.1.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Facorn%2Fdownload%2Facorn-7.1.1.tgz#e35668de0b402f359de515c5482a1ab9f89a69bf"
   integrity sha1-41Zo3gtALzWd5RXFSCoaufiaab8=
 
-ajax-hook@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.npm.taobao.org/ajax-hook/download/ajax-hook-2.0.2.tgz#8d78209bfad6a321e8059be72cf68b6cb370ec4f"
-  integrity sha1-jXggm/rWoyHoBZvnLPaLbLNw7E8=
-
 ajv-errors@^1.0.0:
   version "1.0.1"
   resolved "https://registry.npm.taobao.org/ajv-errors/download/ajv-errors-1.0.1.tgz#f35986aceb91afadec4102fbd85014950cefa64d"

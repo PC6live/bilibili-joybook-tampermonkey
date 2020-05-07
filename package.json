@@ -11,9 +11,7 @@
 		"watch": "webpack -w --config build/webpack.prod.js",
 		"lint": "eslint . --ext .ts,.tsx"
 	},
-	"dependencies": {
-		"ajax-hook": "^2.0.2"
-	},
+	"dependencies": {},
 	"devDependencies": {
 		"@babel/core": "^7.9.0",
 		"@babel/preset-env": "^7.9.5",
