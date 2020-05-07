@@ -1,25 +1,15 @@
 interface Window {
-	__INITIAL_STATE__: __INITIAL_STATE__;
-	__BILI_USER_INFO__: __BILI_USER_INFO__;
+	UserStatus: UserStatus;
 	GM_cookie: GM_cookie;
-	player: any;
 }
 
-interface __INITIAL_STATE__ {
-	epPayMent: {
-		isPay: boolean;
-		isVip: boolean;
-		payPack: number;
-		status: number;
-		vipNeedPay: boolean;
+interface UserStatus {
+	userInfo: {
+		vipStatus: number;
+		vipType: number;
+		isLogin: boolean;
+		face: string;
 	};
-}
-
-interface __BILI_USER_INFO__ {
-	vipStatus: number;
-	vipType: number;
-	isLogin: boolean;
-	face: string;
 }
 
 interface Cookie {

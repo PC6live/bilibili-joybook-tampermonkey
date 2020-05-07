@@ -1,3 +1,6 @@
+const userCookie: Cookie[] = GM_getValue('userCookie');
+const vipCookie: Cookie[] = GM_getValue('vipCookie');
+
 const getCookies = (): Promise<Cookie[]> => {
 	return new Promise((resolve) => {
 		const hostname = window.location.hostname;
@@ -50,4 +53,4 @@ const storeCookies = (name: string): Promise<void> => {
 	});
 };
 
-export { getCookies, removeCookies, storeCookies, setCookies };
+export { getCookies, removeCookies, storeCookies, setCookies, vipCookie, userCookie };
