@@ -16,6 +16,11 @@ const Main = (config: XhrRequestConfig): Promise<void> => {
 					setCookies(userCookie);
 				};
 			}
+			if (url.includes('nav')) {
+				xhr.onloadstart = (): void => {
+					setCookies(userCookie)
+				}
+			}
 		};
 		ready && isVideo && video();
 		return resolve();
