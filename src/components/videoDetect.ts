@@ -1,5 +1,5 @@
 import { userCookie, vipCookie, setCookies } from '@/utils/biliCookie';
-import { XhrRequestConfig } from 'ajax-hook';
+import { XhrRequestConfig } from '@/lib/ajax-hook';
 import { isVideo } from '@/utils/helper';
 
 const Main = (config: XhrRequestConfig): Promise<void> => {
