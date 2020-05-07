@@ -1,7 +1,7 @@
 .cache/
 coverage/
 dist/*
-!dist/index.html
+!dist/joybook.user.js
 node_modules/
 *.log
 

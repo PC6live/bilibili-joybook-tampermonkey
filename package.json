@@ -7,8 +7,9 @@
 	"author": "",
 	"license": "MIT",
 	"scripts": {
-		"build": "webpack --config build/webpack.prod.js",
-		"watch": "webpack -w --config build/webpack.prod.js",
+		"serve": "webpack -w --env --config build/webpack.prod.js",
+		"build": "webpack --env --config build/webpack.prod.js",
+		"build:prod": "webpack --env.prod --config build/webpack.prod.js",
 		"lint": "eslint . --ext .ts,.tsx"
 	},
 	"dependencies": {},
