@@ -1,14 +1,17 @@
-import { proxy, XhrRequestConfig } from 'ajax-hook';
+import { proxy, XhrRequestConfig  } from '@/lib/ajax-hook';
 import videoDetect from './videoDetect';
 import { userCookie, setCookies, storeCookies } from '@/utils/biliCookie';
 import setting from "./setting";
+import { isVideo, biliReload } from '@/utils/helper';
 
 const navLoad = (config: XhrRequestConfig): void => {
 	const { xhr } = config;
-	const result = JSON.parse(xhr.response);
+	const result = JSON.parse(xhr.responseText);
 	setting();
 	GM_setValue('lock', true);
-	!userCookie && result.isLogin && result.vipStatus !== 1 && storeCookies('userCookie');
+	!userCookie && result.data.isLogin && result.vipStatus !== 1 && storeCookies('userCookie').then(() => {
+		isVideo && biliReload()
+	})
 };
 
 const Main = (): void => {

@@ -1,14 +1,14 @@
-import { createElement, isVip, user } from '@/utils/helper';
+import { createElement, user } from '@/utils/helper';
 import { storeCookies, removeCookies } from '@/utils/biliCookie';
 
 const storeVipInfo = (): void => {
 	const handlerClick = (): void => {
-		GM_setValue('face', user().face);
+		GM_setValue('face', user.face());
 		storeCookies('vipCookie')
 			.then(() => removeCookies())
 			.then(() => location.reload(false));
 	};
-	isVip() ? handlerClick() : alert('此账号不是大会员账号');
+	user.isVip() ? handlerClick() : alert('此账号不是大会员账号');
 };
 
 const genVipAvatar = (): void => {
