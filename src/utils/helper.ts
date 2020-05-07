@@ -1,5 +1,3 @@
-import { setCookies, vipCookie } from './biliCookie';
-
 const sleep = (time = 1): Promise<void> => {
 	return new Promise((resolve) => setTimeout(resolve, 1000 * time));
 };
@@ -14,12 +12,12 @@ const isVideo: boolean = /(bangumi\/play\/ss\d+)|(bangumi\/play\/ep\d+)|(video\/
 
 const user = {
 	face: (): string => unsafeWindow.UserStatus.userInfo.face,
-	isVip: (): boolean => unsafeWindow.UserStatus.userInfo.vipStatus === 1
+	isVip: (): boolean => unsafeWindow.UserStatus.userInfo.vipStatus === 1,
 };
 
 const biliReload = (): void => {
 	GM_setValue('lock', false);
-	setCookies(vipCookie).then(() => location.reload(false));
+	location.reload(false)
 };
 
 export { sleep, createElement, isVideo, user, biliReload };

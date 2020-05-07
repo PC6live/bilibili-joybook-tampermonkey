@@ -9,7 +9,7 @@ const navLoad = (config: XhrRequestConfig): void => {
 	const result = JSON.parse(xhr.responseText);
 	setting();
 	GM_setValue('lock', true);
-	!userCookie && result.data.isLogin && result.vipStatus !== 1 && storeCookies('userCookie').then(() => {
+	!userCookie && result.data.isLogin && result.data.vipStatus !== 1 && storeCookies('userCookie').then(() => {
 		isVideo && biliReload()
 	})
 };
