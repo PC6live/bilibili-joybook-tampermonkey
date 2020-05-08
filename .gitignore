@@ -2,8 +2,10 @@
 coverage/
 dist/*
 !dist/joybook.user.js
+src/styles/*.css
 node_modules/
 *.log
+*.map
 
 # OS generated files
 .DS_Store

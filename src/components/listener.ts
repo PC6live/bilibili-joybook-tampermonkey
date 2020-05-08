@@ -1,6 +1,6 @@
 import { proxy, XhrRequestConfig  } from '@/lib/ajax-hook';
 import videoDetect from './videoDetect';
-import { userCookie, setCookies, storeCookies } from '@/utils/biliCookie';
+import { userCookie, setCookies, storeCookies, vipCookie } from '@/utils/biliCookie';
 import setting from "./setting";
 import { isVideo, biliReload } from '@/utils/helper';
 
@@ -16,6 +16,8 @@ const navLoad = (config: XhrRequestConfig): void => {
 
 const Main = (): void => {
 	console.log('listening');
+	const lock = GM_getValue('lock', true);
+	lock && vipCookie && userCookie && isVideo && setCookies(vipCookie).then(() => biliReload());
 	// remenber change ajax-hook window
 	proxy({
 		onRequest: async (config, handler) => {

@@ -9,7 +9,6 @@
 	"scripts": {
 		"serve": "webpack -w --env --config build/webpack.prod.js",
 		"build": "webpack --env --config build/webpack.prod.js",
-		"build:prod": "webpack --env.prod --config build/webpack.prod.js",
 		"lint": "eslint . --ext .ts,.tsx"
 	},
 	"dependencies": {},

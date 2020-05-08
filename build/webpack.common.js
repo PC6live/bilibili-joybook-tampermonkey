@@ -10,7 +10,7 @@ module.exports = (env) => {
 		entry: resolve('../src/index.ts'),
 		output: {
 			path: resolve('../dist'),
-			filename: env.prod ? 'joybook.user.js' : 'bundle.js',
+			filename: 'joybook.user.js',
 		},
 		module: {
 			rules: [
@@ -61,6 +61,6 @@ module.exports = (env) => {
 			},
 			extensions: ['.tsx', '.ts', '.js'],
 		},
-		// plugins: [new CleanWebpackPlugin()],
+		plugins: [new CleanWebpackPlugin()],
 	};
 };

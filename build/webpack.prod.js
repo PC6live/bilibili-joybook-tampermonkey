@@ -14,10 +14,10 @@ const message = `
 // @homepage     https://github.com/PC6live/joybook-tampermonkey
 // @supportURL   https://github.com/PC6live/joybook-tampermonkey/issues
 // @grant        GM_cookie
-// @grant        GM.cookie
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
+// @grant        GM_addStyle
 // @grant        unsafeWindow
 // @run-at       document-start
 // @noframes
@@ -34,7 +34,6 @@ module.exports = (env) => {
 		plugins: [
 			new webpack.BannerPlugin({
 				banner: message,
-				raw: !env.prod,
 				entryOnly: true,
 			}),
 		],
