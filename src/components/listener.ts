@@ -1,39 +1,48 @@
-import { proxy, XhrRequestConfig  } from '@/lib/ajax-hook';
+import { proxy, XhrRequestConfig } from '@/lib/ajax-hook';
 import videoDetect from './videoDetect';
-import { userCookie, setCookies, storeCookies, vipCookie } from '@/utils/biliCookie';
-import setting from "./setting";
-import { isVideo, biliReload } from '@/utils/helper';
+import { userCookie, storeCookies, setCookies, vipCookie } from '@/utils/biliCookie';
+import setting from './setting';
+import { isVideo } from '@/utils/helper';
 
 const navLoad = (config: XhrRequestConfig): void => {
 	const { xhr } = config;
 	const result = JSON.parse(xhr.responseText);
 	setting();
-	GM_setValue('lock', true);
-	!userCookie && result.data.isLogin && result.data.vipStatus !== 1 && storeCookies('userCookie').then(() => {
-		isVideo && biliReload()
-	})
+	!userCookie &&
+		result.data.isLogin &&
+		result.data.vipStatus !== 1 &&
+		storeCookies('userCookie').then(() => {
+			isVideo && location.reload(false);
+		});
 };
 
 const Main = (): void => {
 	console.log('listening');
-	const lock = GM_getValue('lock', true);
-	lock && vipCookie && userCookie && isVideo && setCookies(vipCookie).then(() => biliReload());
-	// remenber change ajax-hook window
-	proxy({
-		onRequest: async (config, handler) => {
-			const { url, xhr } = config;
-			const nav = (): Promise<void> => {
-				return new Promise((resolve) => {
-					xhr.onloadstart = (): void => {
-						userCookie && setCookies(userCookie);
-					};
-					xhr.onload = (): void => navLoad(config)
-					return resolve();
-				});
-			};
 
-			await videoDetect(config);
-			url.endsWith('nav') && (await nav());
+	if (userCookie && vipCookie) {
+		let PGC: __PGC_USERSTATE__;
+		Object.defineProperty(unsafeWindow, '__PGC_USERSTATE__', {
+			set(value: __PGC_USERSTATE__) {
+				value.vip_info = {
+					status: 1,
+					type: 2,
+					due_date: 0,
+				};
+				value.pay = 1;
+				PGC = value;
+			},
+			get() {
+				return PGC;
+			},
+		});
+		setCookies(userCookie);
+	}
+
+	proxy({
+		onRequest: (config, handler) => {
+			const { url, xhr } = config;
+			videoDetect(config);
+			if (url.endsWith('nav')) xhr.onload = (): void => navLoad(config);
 			handler.next(config);
 		},
 		onResponse: (response, handler) => {

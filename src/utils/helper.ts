@@ -15,9 +15,4 @@ const user = {
 	isVip: (): boolean => unsafeWindow.UserStatus.userInfo.vipStatus === 1,
 };
 
-const biliReload = (): void => {
-	GM_setValue('lock', false);
-	location.reload(false)
-};
-
-export { sleep, createElement, isVideo, user, biliReload };
+export { sleep, createElement, isVideo, user };

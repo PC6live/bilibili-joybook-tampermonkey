@@ -1,4 +1,4 @@
-import { userCookie, vipCookie, setCookies } from '@/utils/biliCookie';
+import { userCookie, vipCookie, setCookies, removeCookies } from '@/utils/biliCookie';
 import { XhrRequestConfig } from '@/lib/ajax-hook';
 import { isVideo } from '@/utils/helper';
 
@@ -8,18 +8,24 @@ const Main = (config: XhrRequestConfig): Promise<void> => {
 		const { url, xhr } = config;
 		const video = (): void => {
 			if (url.includes('playurl?cid')) {
-				console.log('video working')
+				console.log('video working');
 				xhr.onloadstart = (): void => {
 					setCookies(vipCookie);
 				};
 				xhr.onloadend = (): void => {
 					setCookies(userCookie);
+					let resp;
+					xhr.responseType === 'json' ? (resp = xhr.response) : (resp = JSON.parse(xhr.responseText));
+					if (resp.code !== 0) {
+						alert('大会员账号失效！请重新登录大会员账号');
+						removeCookies()
+							.then(() => {
+								GM_deleteValue('vipCookie');
+								GM_deleteValue('face');
+							})
+							.then(() => location.reload(false));
+					}
 				};
-			}
-			if (url.includes('nav')) {
-				xhr.onloadstart = (): void => {
-					setCookies(userCookie)
-				}
 			}
 		};
 		ready && isVideo && video();
