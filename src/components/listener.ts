@@ -23,20 +23,23 @@ const Main = (): void => {
 		let PGC: __PGC_USERSTATE__;
 		Object.defineProperty(unsafeWindow, '__PGC_USERSTATE__', {
 			set(value: __PGC_USERSTATE__) {
-				value.vip_info = {
-					status: 1,
-					type: 2,
-					due_date: 0,
+				PGC = {
+					...value,
+					vip_info: {
+						status: 1,
+						type: 2,
+						due_date: 0,
+					},
+					pay: 1,
 				};
-				value.pay = 1;
-				PGC = value;
 			},
 			get() {
 				return PGC;
 			},
 		});
-		setCookies(userCookie);
 	}
+
+	console.log(unsafeWindow.__playinfo__)
 
 	proxy({
 		onRequest: (config, handler) => {

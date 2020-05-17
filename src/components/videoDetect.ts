@@ -6,14 +6,19 @@ const Main = (config: XhrRequestConfig): Promise<void> => {
 	return new Promise((resolve) => {
 		const ready = userCookie && vipCookie;
 		const { url, xhr } = config;
+		const urls = ['playurl?cid', 'data?']
+		const detectUrl = (strs: string[]): void => {
+			strs.forEach((str) => {
+				if (url.includes(str)) {
+					xhr.onloadstart = (): Promise<void> => setCookies(vipCookie);
+					xhr.onloadend = (): Promise<void> => setCookies(userCookie);
+				}
+			});
+		};
 		const video = (): void => {
 			if (url.includes('playurl?cid')) {
 				console.log('video working');
-				xhr.onloadstart = (): void => {
-					setCookies(vipCookie);
-				};
 				xhr.onloadend = (): void => {
-					setCookies(userCookie);
 					let resp;
 					xhr.responseType === 'json' ? (resp = xhr.response) : (resp = JSON.parse(xhr.responseText));
 					if (resp.code !== 0) {
@@ -27,6 +32,7 @@ const Main = (config: XhrRequestConfig): Promise<void> => {
 					}
 				};
 			}
+			detectUrl(urls);
 		};
 		ready && isVideo && video();
 		return resolve();
