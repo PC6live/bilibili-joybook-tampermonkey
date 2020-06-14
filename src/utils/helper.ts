@@ -3,12 +3,14 @@ const sleep = (time = 1): Promise<void> => {
 };
 
 const createElement = (str: string): Element | null => {
-	const el = document.createElement('div');
+	const el = document.createElement("div");
 	el.innerHTML = str;
 	return el.firstElementChild;
 };
 
 const isVideo: boolean = /(bangumi\/play\/ss\d+)|(bangumi\/play\/ep\d+)|(video\/bv\d+)/gi.test(window.location.href);
+
+
 
 const user = {
 	face: (): string => unsafeWindow.UserStatus.userInfo.face,

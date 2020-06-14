@@ -1,11 +1,11 @@
-const merge = require('webpack-merge');
-const common = require('./webpack.common');
-const webpack = require('webpack');
+const merge = require("webpack-merge");
+const common = require("./webpack.common");
+const webpack = require("webpack");
 
 const message = `
 // ==UserScript==
 // @name         bilibili-joybook
-// @version      0.0.2
+// @version      0.0.3
 // @description  共享大会员
 // @author       PC6live
 // @license      MIT
@@ -26,7 +26,7 @@ const message = `
 
 module.exports = (env) => {
 	return merge(common(env), {
-		mode: 'production',
+		mode: "production",
 		// devtool: 'source-map',
 		optimization: {
 			minimize: true,

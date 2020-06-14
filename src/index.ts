@@ -1,9 +1,9 @@
-import listener from './components/listener';
+import listener from "./components/listener";
 // import './styles/global.scss';
-import "./styles/global"
+import "./styles/global";
 
 const Main = (): void => {
-	console.log('run main');
+	console.log("run main");
 	listener();
 };
 

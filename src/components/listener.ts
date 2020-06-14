@@ -1,27 +1,26 @@
-import { proxy, XhrRequestConfig } from '@/lib/ajax-hook';
-import videoDetect from './videoDetect';
-import { userCookie, storeCookies, setCookies, vipCookie } from '@/utils/biliCookie';
-import setting from './setting';
-import { isVideo } from '@/utils/helper';
+import { proxy, XhrRequestConfig } from "@/lib/ajax-hook";
+import videoDetect from "./videoDetect";
+import { storeCookies, setCookies, cookieReady, userCookie } from "@/utils/biliCookie";
+import setting from "./setting";
+import { isVideo } from "@/utils/helper";
 
 const navLoad = (config: XhrRequestConfig): void => {
 	const { xhr } = config;
 	const result = JSON.parse(xhr.responseText);
 	setting();
-	!userCookie &&
-		result.data.isLogin &&
-		result.data.vipStatus !== 1 &&
-		storeCookies('userCookie').then(() => {
+	if (!userCookie && result.data.isLogin && result.data.vipStatus !== 1) {
+		storeCookies("userCookie", ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"]).then(() => {
 			isVideo && location.reload(false);
 		});
+	}
 };
 
 const Main = (): void => {
-	console.log('listening');
+	console.log("listening");
 
-	if (userCookie && vipCookie) {
+	if (cookieReady && isVideo) {
 		let PGC: __PGC_USERSTATE__;
-		Object.defineProperty(unsafeWindow, '__PGC_USERSTATE__', {
+		Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
 			set(value: __PGC_USERSTATE__) {
 				PGC = {
 					...value,
@@ -39,13 +38,18 @@ const Main = (): void => {
 		});
 	}
 
-	console.log(unsafeWindow.__playinfo__)
-
 	proxy({
 		onRequest: (config, handler) => {
 			const { url, xhr } = config;
-			videoDetect(config);
-			if (url.endsWith('nav')) xhr.onload = (): void => navLoad(config);
+			if (url.endsWith("nav")) {
+				if (!cookieReady) {
+					xhr.onload = (): void => navLoad(config);
+				} else {
+					setCookies(userCookie);
+					xhr.onload = (): void => setting();
+				}
+			}
+			if (cookieReady) videoDetect(config);
 			handler.next(config);
 		},
 		onResponse: (response, handler) => {
