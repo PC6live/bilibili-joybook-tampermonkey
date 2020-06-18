@@ -1,22 +1,25 @@
-import { proxy, XhrRequestConfig } from "@/lib/ajax-hook";
+import { proxy } from "@/lib/ajax-hook";
 import videoDetect from "./videoDetect";
 import { storeCookies, setCookies, cookieReady, userCookie } from "@/utils/biliCookie";
 import setting from "./setting";
 import { isVideo } from "@/utils/helper";
 
-const navLoad = (config: XhrRequestConfig): void => {
-	const { xhr } = config;
-	const result = JSON.parse(xhr.responseText);
-	setting();
-	if (!userCookie && result.data.isLogin && result.data.vipStatus !== 1) {
-		storeCookies("userCookie", ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"]).then(() => {
-			isVideo && location.reload(false);
-		});
+const checkUserCookie = (data: {isLogin: boolean, vipStatus: number}): void => {
+	if (!userCookie && data.isLogin && data.vipStatus !== 1) {
+		storeCookies("userCookie", ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"]);
 	}
 };
 
 const Main = (): void => {
 	console.log("listening");
+
+	setting();
+
+	fetch("https://api.bilibili.com/x/web-interface/nav", { credentials: "include"})
+		.then(resp => resp.json())
+		.then(result => {
+			checkUserCookie(result.data);
+		});
 
 	if (cookieReady && isVideo) {
 		let PGC: __PGC_USERSTATE__;
@@ -40,14 +43,9 @@ const Main = (): void => {
 
 	proxy({
 		onRequest: (config, handler) => {
-			const { url, xhr } = config;
+			const { url } = config;
 			if (url.endsWith("nav")) {
-				if (!cookieReady) {
-					xhr.onload = (): void => navLoad(config);
-				} else {
-					setCookies(userCookie);
-					xhr.onload = (): void => setting();
-				}
+				if (cookieReady) setCookies(userCookie);
 			}
 			if (cookieReady) videoDetect(config);
 			handler.next(config);

@@ -11,8 +11,8 @@ const storeVipInfo = (): void => {
 	user.isVip() ? handlerClick() : alert("此账号不是大会员账号");
 };
 
-const genVipAvatar = (): void => {
-	const container = document.querySelector(".mini-avatar")?.parentElement;
+const genVipAvatar = (container: HTMLElement): void => {
+	console.log("gen avatar");
 	const avatar = document.getElementById("bili-avatar");
 	const face = GM_getValue("face", "//static.hdslb.com/images/akari.jpg");
 	const html = `<div id="bili-avatar">
@@ -21,7 +21,6 @@ const genVipAvatar = (): void => {
 	const vipAvatar = createElement(html) as Element;
 
 	if (container && !avatar) {
-		console.log("gen avatar");
 		container.style.display = "flex";
 		container?.appendChild(vipAvatar);
 		if (!vipCookie) vipAvatar.addEventListener("click", storeVipInfo);
@@ -39,8 +38,16 @@ const logout = (): void => {
 };
 
 const Main = (): void => {
-	genVipAvatar();
-	logout();
+	const findElem = (): void => {
+		const container = document.querySelector(".mini-avatar")?.parentElement;
+		if (container) {
+			genVipAvatar(container);
+			logout();
+		} else {
+			window.requestAnimationFrame(findElem);
+		}
+	};
+	window.requestAnimationFrame(findElem);
 };
 
 export default Main;
