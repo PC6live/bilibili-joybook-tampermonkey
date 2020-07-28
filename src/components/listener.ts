@@ -1,26 +1,16 @@
 import { proxy } from "@/lib/ajax-hook";
 import videoDetect from "./videoDetect";
-import { storeCookies, setCookies, cookieReady, userCookie } from "@/utils/biliCookie";
+import { storeCookies, setCookies, cookieReady, userCookie, vipCookie } from "@/utils/biliCookie";
 import setting from "./setting";
 import { isVideo } from "@/utils/helper";
 
-const checkUserCookie = (data: {isLogin: boolean, vipStatus: number}): void => {
+const checkUserCookie = (data: { isLogin: boolean; vipStatus: number }): void => {
 	if (!userCookie && data.isLogin && data.vipStatus !== 1) {
 		storeCookies("userCookie", ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"]);
 	}
 };
 
-const Main = (): void => {
-	console.log("listening");
-
-	setting();
-
-	fetch("https://api.bilibili.com/x/web-interface/nav", { credentials: "include"})
-		.then(resp => resp.json())
-		.then(result => {
-			checkUserCookie(result.data);
-		});
-
+const unlockVideo = (): void => {
 	if (cookieReady && isVideo) {
 		let PGC: __PGC_USERSTATE__;
 		Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
@@ -30,25 +20,48 @@ const Main = (): void => {
 					vip_info: {
 						status: 1,
 						type: 2,
-						due_date: 0,
+						due_date: 1614614400000,
 					},
 					pay: 1,
 				};
+				delete PGC.dialog;
 			},
 			get() {
 				return PGC;
 			},
 		});
+		Object.defineProperty(unsafeWindow, "__playinfo__", {
+			configurable: true,
+			enumerable: true,
+			get() {
+				return {};
+			},
+		});
+	}
+};
+
+const Main = (): void => {
+	console.log("listening");
+
+	unlockVideo();
+	setting();
+
+	fetch("https://api.bilibili.com/x/web-interface/nav", { credentials: "include" })
+		.then((resp) => resp.json())
+		.then((result) => {
+			checkUserCookie(result.data);
+		});
+
+	if (cookieReady) {
+		setCookies(userCookie);
 	}
 
 	proxy({
 		onRequest: (config, handler) => {
-			const { url } = config;
-			if (url.endsWith("nav")) {
-				if (cookieReady) setCookies(userCookie);
-			}
-			if (cookieReady) videoDetect(config);
-			handler.next(config);
+			if (cookieReady)
+				videoDetect(config).then(() => {
+					handler.next(config);
+				});
 		},
 		onResponse: (response, handler) => {
 			handler.next(response);

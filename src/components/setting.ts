@@ -40,9 +40,13 @@ const logout = (): void => {
 const Main = (): void => {
 	const findElem = (): void => {
 		const container = document.querySelector(".mini-avatar")?.parentElement;
+		const logoutElem = document.querySelector(".user-con.logout");
 		if (container) {
 			genVipAvatar(container);
 			logout();
+		} else if (logoutElem) {
+			console.log("logout");
+			return;
 		} else {
 			window.requestAnimationFrame(findElem);
 		}

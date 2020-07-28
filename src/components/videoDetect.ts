@@ -1,4 +1,4 @@
-import { userCookie, vipCookie, setCookies, removeCookies } from "@/utils/biliCookie";
+import { vipCookie, setCookies, removeCookies, userCookie } from "@/utils/biliCookie";
 import { XhrRequestConfig } from "@/lib/ajax-hook";
 import { isVideo } from "@/utils/helper";
 
@@ -7,30 +7,36 @@ const Main = (config: XhrRequestConfig): Promise<void> => {
 		const { url, xhr } = config;
 		const urls = ["playurl?cid", "data?"];
 		const detectUrl = (strs: string[]): void => {
-			strs.forEach((str) => {
-				if (url.includes(str)) {
-					setCookies(vipCookie);
-					xhr.onloadend = (): Promise<void> => setCookies(userCookie);
+			for (let count = 0; count < strs.length; count += 1) {
+				if (url.includes(strs[count])) {
+					xhr.onloadstart = (): void => {
+						setCookies(vipCookie);
+					};
+					xhr.onloadend = (): void => {
+						setCookies(userCookie);
+					};
+					return;
 				}
-			});
+			}
 		};
 		const video = (): void => {
-			if (url.includes("playurl?cid")) {
-				console.log("video working");
-				xhr.onloadend = (): void => {
-					let resp;
-					xhr.responseType === "json" ? (resp = xhr.response) : (resp = JSON.parse(xhr.responseText));
-					if (resp.code !== 0) {
-						alert("大会员账号失效！请重新登录大会员账号");
-						removeCookies()
-							.then(() => {
-								GM_deleteValue("vipCookie");
-								GM_deleteValue("face");
-							})
-							.then(() => location.reload(false));
-					}
-				};
-			}
+			// todo: 重置按钮
+
+			// if (url.includes("playurl?cid")) {
+			// 	console.log("video working");
+			// 	xhr.onloadend = (): void => {
+			// 		let resp;
+			// 		xhr.responseType === "json" ? (resp = xhr.response) : (resp = JSON.parse(xhr.responseText));
+			// 		if (resp.code !== 0) {
+			// 			removeCookies()
+			// 				.then(() => {
+			// 					GM_deleteValue("vipCookie");
+			// 					GM_deleteValue("face");
+			// 				})
+			// 				.then(() => location.reload(false));
+			// 		}
+			// 	};
+			// }
 			detectUrl(urls);
 		};
 		if (isVideo) video();

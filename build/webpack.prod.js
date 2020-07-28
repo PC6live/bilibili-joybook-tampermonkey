@@ -5,7 +5,7 @@ const webpack = require("webpack");
 const message = `
 // ==UserScript==
 // @name         bilibili-joybook
-// @version      0.0.4
+// @version      0.0.5
 // @description  共享大会员
 // @author       PC6live
 // @license      MIT

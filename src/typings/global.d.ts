@@ -9,7 +9,7 @@ interface Window {
 
 interface __PGC_USERSTATE__ {
 	area_limit: number;
-	dialog: {
+	dialog?: {
 		btn_right: { title: string; type: string };
 		desc: string;
 		title: string;
@@ -21,7 +21,7 @@ interface __PGC_USERSTATE__ {
 	pay: number;
 	pay_pack_paid: number;
 	progress: { last_ep_id: number; last_ep_index: string; last_time: number };
-	paster: { aid: number; allow_jump: number; cid: number; duration: number; type: number; url: string };
+	paster?: { aid: number; allow_jump: number; cid: number; duration: number; type: number; url: string };
 	sponsor: number;
 	vip_info: {
 		due_date: number;
