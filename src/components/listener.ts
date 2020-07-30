@@ -30,13 +30,13 @@ const unlockVideo = (): void => {
 				return PGC;
 			},
 		});
-		Object.defineProperty(unsafeWindow, "__playinfo__", {
-			configurable: true,
-			enumerable: true,
-			get() {
-				return {};
-			},
-		});
+		// Object.defineProperty(unsafeWindow, "__playinfo__", {
+		// 	configurable: true,
+		// 	enumerable: true,
+		// 	get() {
+		// 		return {};
+		// 	},
+		// });
 	}
 };
 
