@@ -5,8 +5,7 @@ const resolve = (str) => {
 	return path.resolve(__dirname, str);
 };
 
-
-module.exports = (env) => {
+module.exports = () => {
 	return {
 		entry: resolve("../src/index.ts"),
 		output: {

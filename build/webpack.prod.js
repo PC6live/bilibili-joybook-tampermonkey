@@ -27,9 +27,8 @@ const message = `
 module.exports = (env) => {
 	return merge(common(env), {
 		mode: "production",
-		// devtool: 'source-map',
 		optimization: {
-			minimize: true,
+			minimize: false,
 		},
 		plugins: [
 			new webpack.BannerPlugin({

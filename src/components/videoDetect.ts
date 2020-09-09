@@ -1,9 +1,8 @@
-import { vipCookie, setCookies, removeCookies, userCookie } from "@/utils/biliCookie";
+import { vipCookie, setCookies, userCookie } from "@/utils/biliCookie";
 import { XhrRequestConfig } from "@/lib/ajax-hook";
 import { isVideo } from "@/utils/helper";
 
-const Main = (config: XhrRequestConfig): Promise<void> => {
-	return new Promise((resolve) => {
+const Main = (config: XhrRequestConfig): void => {
 		const { url, xhr } = config;
 		const urls = ["playurl?cid", "data?"];
 		const detectUrl = (strs: string[]): void => {
@@ -40,8 +39,6 @@ const Main = (config: XhrRequestConfig): Promise<void> => {
 			detectUrl(urls);
 		};
 		if (isVideo) video();
-		return resolve();
-	});
 };
 
 export default Main;

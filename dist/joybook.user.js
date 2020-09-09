@@ -20,4 +20,771 @@
  * // @noframes
  * // ==/UserScript==
  * 
- */!function(e){var t={};function n(r){if(t[r])return t[r].exports;var o=t[r]={i:r,l:!1,exports:{}};return e[r].call(o.exports,o,o.exports,n),o.l=!0,o.exports}n.m=e,n.c=t,n.d=function(e,t,r){n.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:r})},n.r=function(e){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},n.t=function(e,t){if(1&t&&(e=n(e)),8&t)return e;if(4&t&&"object"==typeof e&&e&&e.__esModule)return e;var r=Object.create(null);if(n.r(r),Object.defineProperty(r,"default",{enumerable:!0,value:e}),2&t&&"string"!=typeof e)for(var o in e)n.d(r,o,function(t){return e[t]}.bind(null,o));return r},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,"a",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p="",n(n.s=1)}([function(e,t,n){"use strict";GM_addStyle("\n#bili-menu {\n  position: fixed;\n  left: 0;\n  top: 8vh;\n  z-index: 9999;\n}\n\n#bili-avatar {\n  width: 36px;\n  height: 36px;\n  border-radius: 50%;\n  position: relative;\n}\n\n#bili-avatar img {\n  position: absolute;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  border-radius: 50%;\n  -webkit-transition: .2s;\n  transition: .2s;\n}\n")},function(e,t,n){"use strict";function r(e){return(r="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e})(e)}n.r(t);function o(e,t){var n={};for(var r in e)n[r]=e[r];return n.target=n.currentTarget=t,n}var i,a=["load","loadend","timeout","error","readystatechange","abort"],s=a[0],u=a[1],c=a[2],l=a[3],d=a[4],f=a[5];function h(e){return e.watcher||(e.watcher=document.createElement("a"))}function p(e,t){var n=e.getProxy(),r="on"+t+"_",i=o({type:t},n);n[r]&&n[r](i),h(e).dispatchEvent(new Event(t,{bubbles:!1}))}function v(e){this.xhr=e,this.xhrProxy=e.getProxy()}function y(e){function t(e){v.call(this,e)}return t.prototype=Object.create(v.prototype),t.prototype.next=e,t}v.prototype=Object.create({resolve:function(e){var t=this.xhrProxy,n=this.xhr;t.readyState=4,n.resHeader=e.headers,t.response=t.responseText=e.response,t.statusText=e.statusText,t.status=e.status,p(n,d),p(n,s),p(n,u)},reject:function(e){this.xhrProxy.status=0,p(this.xhr,e.type),p(this.xhr,u)}});var m=y((function(e){var t=this.xhr;for(var n in e=e||t.config,t.withCredentials=e.withCredentials,t.open(e.method,e.url,!1!==e.async,e.user,e.password),e.headers)t.setRequestHeader(n,e.headers[n]);t.send(e.body)})),g=y((function(e){this.resolve(e)})),x=y((function(e){this.reject(e)}));function w(e){var t=e.onRequest,n=e.onResponse,i=e.onError;function s(e,t,n){var r=new x(e),o={config:e.config,error:n};i?i(o,r):r.next(o)}function u(){return!0}function v(e,t){return s(e,0,t),!0}function y(e,t){return 4===e.readyState&&0!==e.status?function(e,t){var r=new g(e);if(!n)return r.resolve();var o={response:t.response,status:t.status,statusText:t.statusText,config:e.config,headers:e.resHeader||e.getAllResponseHeaders().split("\r\n").reduce((function(e,t){if(""===t)return e;var n=t.split(":");return e[n.shift()]=function(e){return e.replace(/^\s+|\s+$/g,"")}(n.join(":")),e}),{})};n(o,r)}(e,t):4!==e.readyState&&p(e,d),!0}return function(e){function t(t){return function(){var n=this.hasOwnProperty(t+"_")?this[t+"_"]:this.xhr[t],r=(e[t]||{}).getter;return r&&r(n,this)||n}}function n(t){return function(n){var r=this.xhr,i=this,a=e[t];if("on"===t.substring(0,2))i[t+"_"]=n,r[t]=function(a){a=o(a,i),e[t]&&e[t].call(i,r,a)||n.call(i,a)};else{var s=(a||{}).setter;n=s&&s(n,i)||n,this[t+"_"]=n;try{r[t]=n}catch(e){}}}}function i(t){return function(){var n=[].slice.call(arguments);if(e[t]){var r=e[t].call(this,n,this.xhr);if(r)return r}return this.xhr[t].apply(this.xhr,n)}}return window._rxhr=window._rxhr||XMLHttpRequest,unsafeWindow.XMLHttpRequest=function(){var e=new window._rxhr;for(var o in e){var a="";try{a=r(e[o])}catch(e){}"function"===a?this[o]=i(o):Object.defineProperty(this,o,{get:t(o),set:n(o),enumerable:!0})}var s=this;e.getProxy=function(){return s},this.xhr=e},window._rxhr}({onload:u,onloadend:u,onerror:v,ontimeout:v,onabort:v,onreadystatechange:function(e){return y(e,this)},open:function(e,n){var r=this,i=n.config={headers:{}};i.method=e[0],i.url=e[1],i.async=e[2],i.user=e[3],i.password=e[4],i.xhr=n;var a="on"+d;n[a]||(n[a]=function(){return y(n,r)});var u=function(e){s(n,0,o(e,r))};if([l,c,f].forEach((function(e){var t="on"+e;n[t]||(n[t]=u)})),t)return!0},send:function(e,n){var r=n.config;if(r.withCredentials=n.withCredentials,r.body=e[0],t){var o=function(){t(r,new m(n))};return!1===r.async?o():setTimeout(o),!0}},setRequestHeader:function(e,t){return t.config.headers[e[0].toLowerCase()]=e[1],!0},addEventListener:function(e,t){var n=this;if(-1!==a.indexOf(e[0])){var r=e[1];return h(t).addEventListener(e[0],(function(t){var i=o(t,n);i.type=e[0],i.isTrusted=!0,r.call(n,i)})),!0}},getAllResponseHeaders:function(e,t){var n=t.resHeader;if(n){var r="";for(var o in n)r+=o+": "+n[o]+"\r\n";return r}},getResponseHeader:function(e,t){var n=t.resHeader;if(n)return n[(e[0]||"").toLowerCase()]}})}const b=GM_getValue("userCookie"),_=GM_getValue("vipCookie"),S=GM_getValue("userCookie")&&GM_getValue("vipCookie"),E=()=>new Promise(e=>{const t=window.location.hostname;GM_cookie.list({url:t},t=>e(t))}),M=(e,t)=>new Promise(n=>{E().then(r=>{const o=[];r.forEach(e=>{e.name&&t.includes(e.name)&&o.push({domain:e.domain,storeId:e.storeId,expirationDate:e.expirationDate,httpOnly:e.httpOnly,name:e.name,path:e.path,sameSite:e.sameSite,secure:e.secure,value:e.value})}),GM_setValue(e,o),n()})}),P=e=>new Promise(t=>{e.forEach(e=>{GM_cookie.set(e)}),t()}),j=/(bangumi\/play\/ss\d+)|(bangumi\/play\/ep\d+)|(video\/bv\d+)/gi.test(window.location.href),k=()=>unsafeWindow.UserStatus.userInfo.face,C=()=>1===unsafeWindow.UserStatus.userInfo.vipStatus;var O=e=>new Promise(t=>{const{url:n,xhr:r}=e;return j&&(e=>{for(let t=0;t<e.length;t+=1)if(n.includes(e[t]))return r.onloadstart=()=>{P(_)},void(r.onloadend=()=>{P(b)})})(["playurl?cid","data?"]),t()});const T=()=>{C()?(GM_setValue("face",k()),M("vipCookie",["SESSDATA","DedeUserID","DedeUserID__ckMd5"]).then(()=>new Promise(e=>{const t=window.location.hostname;E().then(e=>{e.forEach(e=>{GM_cookie.delete({name:e.name,url:t})})}).then(e)})).then(()=>location.reload(!1))):alert("此账号不是大会员账号")},G=e=>{console.log("gen avatar");const t=document.getElementById("bili-avatar"),n=(e=>{const t=document.createElement("div");return t.innerHTML=e,t.firstElementChild})(`<div id="bili-avatar">\n\t\t<img src=${GM_getValue("face","//static.hdslb.com/images/akari.jpg")} />\n\t</div>`);e&&!t&&(e.style.display="flex",null==e||e.appendChild(n),_||n.addEventListener("click",T))};var D=()=>{const e=()=>{var t;const n=null===(t=document.querySelector(".mini-avatar"))||void 0===t?void 0:t.parentElement,r=document.querySelector(".user-con.logout");if(n)G(n),(()=>{const e=document.querySelector(".logout");e&&e.addEventListener("click",()=>{console.log("change user"),GM_deleteValue("userCookie")})})();else{if(r)return void console.log("logout");window.requestAnimationFrame(e)}};window.requestAnimationFrame(e)};var H=()=>{console.log("listening"),(()=>{if(S&&j){let e;Object.defineProperty(unsafeWindow,"__PGC_USERSTATE__",{set(t){e={...t,vip_info:{status:1,type:2,due_date:16146144e5},pay:1},delete e.dialog},get:()=>e})}})(),D(),fetch("https://api.bilibili.com/x/web-interface/nav",{credentials:"include"}).then(e=>e.json()).then(e=>{var t;t=e.data,!b&&t.isLogin&&1!==t.vipStatus&&M("userCookie",["SESSDATA","DedeUserID","DedeUserID__ckMd5"])}),S&&P(b),function(e){if(i)throw"Proxy already exists";i=new w(e)}({onRequest:(e,t)=>{S&&O(e).then(()=>{t.next(e)})},onResponse:(e,t)=>{t.next(e)},onError:(e,t)=>{t.next(e)}})};n(0);console.log("run main"),H()}]);
+ */
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+GM_addStyle(`
+#bili-menu {
+  position: fixed;
+  left: 0;
+  top: 8vh;
+  z-index: 9999;
+}
+
+#bili-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  position: relative;
+}
+
+#bili-avatar img {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  -webkit-transition: .2s;
+  transition: .2s;
+}
+`);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+// ESM COMPAT FLAG
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./src/lib/ajax-hook/xhr-hook.js
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+/*
+ * author: wendux
+ * email: 824783146@qq.com
+ * source code: https://github.com/wendux/Ajax-hook
+ */
+// Save original XMLHttpRequest as _rxhr
+
+/* eslint-disable */
+var realXhr = "_rxhr";
+function configEvent(event, xhrProxy) {
+  var e = {};
+
+  for (var attr in event) {
+    e[attr] = event[attr];
+  } // xhrProxy instead
+
+
+  e.target = e.currentTarget = xhrProxy;
+  return e;
+}
+function hook(proxy) {
+  // Avoid double hookAjax
+  window[realXhr] = window[realXhr] || XMLHttpRequest;
+
+  unsafeWindow.XMLHttpRequest = function () {
+    var xhr = new window[realXhr](); // We shouldn't hookAjax XMLHttpRequest.prototype because we can't
+    // guarantee that all attributes are on the prototype。
+    // Instead, hooking XMLHttpRequest instance can avoid this problem.
+
+    for (var attr in xhr) {
+      var type = "";
+
+      try {
+        type = _typeof(xhr[attr]); // May cause exception on some browser
+      } catch (e) {}
+
+      if (type === "function") {
+        // hookAjax methods of xhr, such as `open`、`send` ...
+        this[attr] = hookFunction(attr);
+      } else {
+        Object.defineProperty(this, attr, {
+          get: getterFactory(attr),
+          set: setterFactory(attr),
+          enumerable: true
+        });
+      }
+    }
+
+    var that = this;
+
+    xhr.getProxy = function () {
+      return that;
+    };
+
+    this.xhr = xhr;
+  }; // Generate getter for attributes of xhr
+
+
+  function getterFactory(attr) {
+    return function () {
+      var v = this.hasOwnProperty(attr + "_") ? this[attr + "_"] : this.xhr[attr];
+      var attrGetterHook = (proxy[attr] || {})["getter"];
+      return attrGetterHook && attrGetterHook(v, this) || v;
+    };
+  } // Generate setter for attributes of xhr; by this we have an opportunity
+  // to hookAjax event callbacks （eg: `onload`） of xhr;
+
+
+  function setterFactory(attr) {
+    return function (v) {
+      var xhr = this.xhr;
+      var that = this;
+      var hook = proxy[attr]; // hookAjax  event callbacks such as `onload`、`onreadystatechange`...
+
+      if (attr.substring(0, 2) === 'on') {
+        that[attr + "_"] = v;
+
+        xhr[attr] = function (e) {
+          e = configEvent(e, that);
+          var ret = proxy[attr] && proxy[attr].call(that, xhr, e);
+          ret || v.call(that, e);
+        };
+      } else {
+        //If the attribute isn't writable, generate proxy attribute
+        var attrSetterHook = (hook || {})["setter"];
+        v = attrSetterHook && attrSetterHook(v, that) || v;
+        this[attr + "_"] = v;
+
+        try {
+          // Not all attributes of xhr are writable(setter may undefined).
+          xhr[attr] = v;
+        } catch (e) {}
+      }
+    };
+  } // Hook methods of xhr.
+
+
+  function hookFunction(fun) {
+    return function () {
+      var args = [].slice.call(arguments);
+
+      if (proxy[fun]) {
+        var ret = proxy[fun].call(this, args, this.xhr); // If the proxy return value exists, return it directly,
+        // otherwise call the function of xhr.
+
+        if (ret) return ret;
+      }
+
+      return this.xhr[fun].apply(this.xhr, args);
+    };
+  } // Return the real XMLHttpRequest
+
+
+  return window[realXhr];
+}
+function unHook() {
+  if (window[realXhr]) XMLHttpRequest = window[realXhr];
+  window[realXhr] = undefined;
+}
+// CONCATENATED MODULE: ./src/lib/ajax-hook/xhr-proxy.js
+/*
+ * author: wendux
+ * email: 824783146@qq.com
+ * source code: https://github.com/wendux/Ajax-hook
+ */
+
+/* eslint-disable */
+
+var events = ['load', 'loadend', 'timeout', 'error', 'readystatechange', 'abort'];
+var eventLoad = events[0],
+    eventLoadEnd = events[1],
+    eventTimeout = events[2],
+    eventError = events[3],
+    eventReadyStateChange = events[4],
+    eventAbort = events[5];
+var singleton,
+    xhr_proxy_prototype = 'prototype';
+function xhr_proxy_proxy(proxy) {
+  if (singleton) throw "Proxy already exists";
+  return singleton = new Proxy(proxy);
+}
+function unProxy() {
+  singleton = null;
+  unHook();
+}
+
+function trim(str) {
+  return str.replace(/^\s+|\s+$/g, '');
+}
+
+function getEventTarget(xhr) {
+  return xhr.watcher || (xhr.watcher = document.createElement('a'));
+}
+
+function triggerListener(xhr, name) {
+  var xhrProxy = xhr.getProxy();
+  var callback = 'on' + name + '_';
+  var event = configEvent({
+    type: name
+  }, xhrProxy);
+  xhrProxy[callback] && xhrProxy[callback](event);
+  getEventTarget(xhr).dispatchEvent(new Event(name, {
+    bubbles: false
+  }));
+}
+
+function Handler(xhr) {
+  this.xhr = xhr;
+  this.xhrProxy = xhr.getProxy();
+}
+
+Handler[xhr_proxy_prototype] = Object.create({
+  resolve: function resolve(response) {
+    var xhrProxy = this.xhrProxy;
+    var xhr = this.xhr;
+    xhrProxy.readyState = 4;
+    xhr.resHeader = response.headers;
+    xhrProxy.response = xhrProxy.responseText = response.response;
+    xhrProxy.statusText = response.statusText;
+    xhrProxy.status = response.status;
+    triggerListener(xhr, eventReadyStateChange);
+    triggerListener(xhr, eventLoad);
+    triggerListener(xhr, eventLoadEnd);
+  },
+  reject: function reject(error) {
+    this.xhrProxy.status = 0;
+    triggerListener(this.xhr, error.type);
+    triggerListener(this.xhr, eventLoadEnd);
+  }
+});
+
+function makeHandler(next) {
+  function sub(xhr) {
+    Handler.call(this, xhr);
+  }
+
+  sub[xhr_proxy_prototype] = Object.create(Handler[xhr_proxy_prototype]);
+  sub[xhr_proxy_prototype].next = next;
+  return sub;
+}
+
+var RequestHandler = makeHandler(function (rq) {
+  var xhr = this.xhr;
+  rq = rq || xhr.config;
+  xhr.withCredentials = rq.withCredentials;
+  xhr.open(rq.method, rq.url, rq.async !== false, rq.user, rq.password);
+
+  for (var key in rq.headers) {
+    xhr.setRequestHeader(key, rq.headers[key]);
+  }
+
+  xhr.send(rq.body);
+});
+var ResponseHandler = makeHandler(function (response) {
+  this.resolve(response);
+});
+var ErrorHandler = makeHandler(function (error) {
+  this.reject(error);
+});
+
+function Proxy(proxy) {
+  var onRequest = proxy.onRequest,
+      onResponse = proxy.onResponse,
+      onError = proxy.onError;
+
+  function handleResponse(xhr, xhrProxy) {
+    var handler = new ResponseHandler(xhr);
+    if (!onResponse) return handler.resolve();
+    var ret = {
+      response: xhrProxy.response,
+      status: xhrProxy.status,
+      statusText: xhrProxy.statusText,
+      config: xhr.config,
+      headers: xhr.resHeader || xhr.getAllResponseHeaders().split('\r\n').reduce(function (ob, str) {
+        if (str === "") return ob;
+        var m = str.split(":");
+        ob[m.shift()] = trim(m.join(':'));
+        return ob;
+      }, {})
+    };
+    onResponse(ret, handler);
+  }
+
+  function onerror(xhr, xhrProxy, e) {
+    var handler = new ErrorHandler(xhr);
+    var error = {
+      config: xhr.config,
+      error: e
+    };
+
+    if (onError) {
+      onError(error, handler);
+    } else {
+      handler.next(error);
+    }
+  }
+
+  function preventXhrProxyCallback() {
+    return true;
+  }
+
+  function errorCallback(xhr, e) {
+    onerror(xhr, this, e);
+    return true;
+  }
+
+  function stateChangeCallback(xhr, xhrProxy) {
+    if (xhr.readyState === 4 && xhr.status !== 0) {
+      handleResponse(xhr, xhrProxy);
+    } else if (xhr.readyState !== 4) {
+      triggerListener(xhr, eventReadyStateChange);
+    }
+
+    return true;
+  }
+
+  return hook({
+    onload: preventXhrProxyCallback,
+    onloadend: preventXhrProxyCallback,
+    onerror: errorCallback,
+    ontimeout: errorCallback,
+    onabort: errorCallback,
+    onreadystatechange: function onreadystatechange(xhr) {
+      return stateChangeCallback(xhr, this);
+    },
+    open: function open(args, xhr) {
+      var _this = this;
+
+      var config = xhr.config = {
+        headers: {}
+      };
+      config.method = args[0];
+      config.url = args[1];
+      config.async = args[2];
+      config.user = args[3];
+      config.password = args[4];
+      config.xhr = xhr;
+      var evName = 'on' + eventReadyStateChange;
+
+      if (!xhr[evName]) {
+        xhr[evName] = function () {
+          return stateChangeCallback(xhr, _this);
+        };
+      }
+
+      var defaultErrorHandler = function defaultErrorHandler(e) {
+        onerror(xhr, _this, configEvent(e, _this));
+      };
+
+      [eventError, eventTimeout, eventAbort].forEach(function (e) {
+        var event = 'on' + e;
+        if (!xhr[event]) xhr[event] = defaultErrorHandler;
+      }); // 如果有请求拦截器，则在调用onRequest后再打开链接。因为onRequest最佳调用时机是在send前，
+      // 所以我们在send拦截函数中再手动调用open，因此返回true阻止xhr.open调用。
+      //
+      // 如果没有请求拦截器，则不用阻断xhr.open调用
+
+      if (onRequest) return true;
+    },
+    send: function send(args, xhr) {
+      var config = xhr.config;
+      config.withCredentials = xhr.withCredentials;
+      config.body = args[0];
+
+      if (onRequest) {
+        // In 'onRequest', we may call XHR's event handler, such as `xhr.onload`.
+        // However, XHR's event handler may not be set until xhr.send is called in
+        // the user's code, so we use `setTimeout` to avoid this situation
+        var req = function req() {
+          onRequest(config, new RequestHandler(xhr));
+        };
+
+        config.async === false ? req() : setTimeout(req);
+        return true;
+      }
+    },
+    setRequestHeader: function setRequestHeader(args, xhr) {
+      // Collect request headers
+      xhr.config.headers[args[0].toLowerCase()] = args[1];
+      return true;
+    },
+    addEventListener: function addEventListener(args, xhr) {
+      var _this = this;
+
+      if (events.indexOf(args[0]) !== -1) {
+        var handler = args[1];
+        getEventTarget(xhr).addEventListener(args[0], function (e) {
+          var event = configEvent(e, _this);
+          event.type = args[0];
+          event.isTrusted = true;
+          handler.call(_this, event);
+        });
+        return true;
+      }
+    },
+    getAllResponseHeaders: function getAllResponseHeaders(_, xhr) {
+      var headers = xhr.resHeader;
+
+      if (headers) {
+        var header = "";
+
+        for (var key in headers) {
+          header += key + ': ' + headers[key] + '\r\n';
+        }
+
+        return header;
+      }
+    },
+    getResponseHeader: function getResponseHeader(args, xhr) {
+      var headers = xhr.resHeader;
+
+      if (headers) {
+        return headers[(args[0] || '').toLowerCase()];
+      }
+    }
+  });
+}
+// CONCATENATED MODULE: ./src/lib/ajax-hook/index.js
+
+
+// CONCATENATED MODULE: ./src/utils/biliCookie.ts
+const userCookie = GM_getValue("userCookie");
+const vipCookie = GM_getValue("vipCookie");
+const checkCookieReady = () => {
+    if (userCookie && vipCookie) {
+        return true;
+    }
+    return false;
+};
+const getCookies = () => {
+    return new Promise((resolve) => {
+        const hostname = window.location.hostname;
+        GM_cookie.list({ url: hostname }, (cookies) => resolve(cookies));
+    });
+};
+const removeCookies = () => {
+    return new Promise((resolve) => {
+        const hostname = window.location.hostname;
+        getCookies()
+            .then((cookies) => {
+            cookies.forEach((cookie) => {
+                GM_cookie.delete({ name: cookie.name, url: hostname });
+            });
+        })
+            .then(resolve);
+    });
+};
+const storeCookies = (name, queryName) => {
+    return new Promise((resolve) => {
+        getCookies().then((result) => {
+            const cookies = [];
+            result.forEach((cookie) => {
+                if (cookie.name && queryName.includes(cookie.name)) {
+                    cookies.push({
+                        domain: cookie.domain,
+                        storeId: cookie.storeId,
+                        expirationDate: cookie.expirationDate,
+                        httpOnly: cookie.httpOnly,
+                        name: cookie.name,
+                        path: cookie.path,
+                        sameSite: cookie.sameSite,
+                        secure: cookie.secure,
+                        value: cookie.value,
+                    });
+                }
+            });
+            GM_setValue(name, cookies);
+            resolve();
+        });
+    });
+};
+const setCookies = (cookies) => {
+    return new Promise((resolve) => {
+        cookies.forEach((cookie) => {
+            GM_cookie.set(cookie);
+        });
+        resolve();
+    });
+};
+
+
+// CONCATENATED MODULE: ./src/utils/helper.ts
+const sleep = (time = 1) => {
+    return new Promise((resolve) => setTimeout(resolve, 1000 * time));
+};
+const createElement = (str) => {
+    const el = document.createElement("div");
+    el.innerHTML = str;
+    return el.firstElementChild;
+};
+const isVideo = /(bangumi\/play\/ss\d+)|(bangumi\/play\/ep\d+)|(video\/bv\d+)/gi.test(window.location.href);
+const user = {
+    face: () => unsafeWindow.UserStatus.userInfo.face,
+    isVip: () => unsafeWindow.UserStatus.userInfo.vipStatus === 1,
+};
+
+
+// CONCATENATED MODULE: ./src/components/videoDetect.ts
+
+
+const Main = (config) => {
+    const { url, xhr } = config;
+    const urls = ["playurl?cid", "data?"];
+    const detectUrl = (strs) => {
+        for (let count = 0; count < strs.length; count += 1) {
+            if (url.includes(strs[count])) {
+                xhr.onloadstart = () => {
+                    setCookies(vipCookie);
+                };
+                xhr.onloadend = () => {
+                    setCookies(userCookie);
+                };
+                return;
+            }
+        }
+    };
+    const video = () => {
+        // todo: 重置按钮
+        // if (url.includes("playurl?cid")) {
+        // 	console.log("video working");
+        // 	xhr.onloadend = (): void => {
+        // 		let resp;
+        // 		xhr.responseType === "json" ? (resp = xhr.response) : (resp = JSON.parse(xhr.responseText));
+        // 		if (resp.code !== 0) {
+        // 			removeCookies()
+        // 				.then(() => {
+        // 					GM_deleteValue("vipCookie");
+        // 					GM_deleteValue("face");
+        // 				})
+        // 				.then(() => location.reload(false));
+        // 		}
+        // 	};
+        // }
+        detectUrl(urls);
+    };
+    if (isVideo)
+        video();
+};
+/* harmony default export */ var videoDetect = (Main);
+
+// CONCATENATED MODULE: ./src/components/listener.ts
+
+
+
+
+const checkUserCookie = (data) => {
+    if (data.isLogin && data.vipStatus === 0) {
+        storeCookies("userCookie", ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"]);
+    }
+};
+const unlockVideo = () => {
+    if (checkCookieReady() && isVideo) {
+        let PGC;
+        Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
+            set(value) {
+                PGC = {
+                    ...value,
+                    vip_info: {
+                        status: 1,
+                        type: 2,
+                        due_date: 1614614400000,
+                    },
+                    pay: 1,
+                };
+                delete PGC.dialog;
+            },
+            get() {
+                return PGC;
+            },
+        });
+    }
+};
+const listener_Main = () => {
+    console.log("listening");
+    const cookieReady = checkCookieReady();
+    unlockVideo();
+    xhr_proxy_proxy({
+        onRequest: (config, handler) => {
+            const { url, xhr } = config;
+            xhr.onloadend = () => {
+                if (url.includes("nav") && !userCookie) {
+                    const result = JSON.parse(xhr.response);
+                    checkUserCookie(result.data);
+                }
+            };
+            if (cookieReady) {
+                xhr.onloadstart = () => {
+                    setCookies(userCookie);
+                };
+                videoDetect(config);
+            }
+            handler.next(config);
+        },
+        onResponse: (response, handler) => {
+            handler.next(response);
+        },
+        onError: (err, handler) => {
+            handler.next(err);
+        },
+    });
+};
+/* harmony default export */ var listener = (listener_Main);
+
+// CONCATENATED MODULE: ./src/components/avator.ts
+
+
+const storeVipInfo = () => {
+    const handlerClick = () => {
+        GM_setValue("face", user.face());
+        storeCookies("vipCookie", ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"])
+            .then(() => removeCookies())
+            .then(() => location.reload(false));
+    };
+    user.isVip() ? handlerClick() : alert("此账号不是大会员账号");
+};
+const genVipAvatar = (container) => {
+    console.log("gen avatar");
+    const avatar = document.getElementById("bili-avatar");
+    const face = GM_getValue("face", "//static.hdslb.com/images/akari.jpg");
+    const html = `<div id="bili-avatar">
+		<img src=${face} />
+	</div>`;
+    const vipAvatar = createElement(html);
+    if (container && !avatar) {
+        container.style.display = "flex";
+        container === null || container === void 0 ? void 0 : container.appendChild(vipAvatar);
+        if (!vipCookie)
+            vipAvatar.addEventListener("click", storeVipInfo);
+    }
+};
+const logout = () => {
+    const btn = document.querySelector(".logout");
+    if (btn) {
+        btn.addEventListener("click", () => {
+            console.log("change user");
+            GM_deleteValue("userCookie");
+        });
+    }
+};
+const avator_Main = () => {
+    const findElem = () => {
+        var _a;
+        const container = (_a = document.querySelector(".mini-avatar")) === null || _a === void 0 ? void 0 : _a.parentElement;
+        const logoutElem = document.querySelector(".user-con.logout");
+        if (container) {
+            genVipAvatar(container);
+            logout();
+        }
+        else if (logoutElem) {
+            console.log("logout");
+            return;
+        }
+        else {
+            window.requestAnimationFrame(findElem);
+        }
+    };
+    window.requestAnimationFrame(findElem);
+};
+/* harmony default export */ var avator = (avator_Main);
+
+// EXTERNAL MODULE: ./src/styles/global.ts
+var global = __webpack_require__(0);
+
+// CONCATENATED MODULE: ./src/index.ts
+
+
+
+const src_Main = () => {
+    console.log("run main");
+    avator();
+    listener();
+};
+src_Main();
+
+
+/***/ })
+/******/ ]);

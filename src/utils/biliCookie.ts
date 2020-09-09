@@ -1,6 +1,11 @@
 const userCookie: Cookie[] = GM_getValue("userCookie");
 const vipCookie: Cookie[] = GM_getValue("vipCookie");
-const cookieReady: boolean = GM_getValue("userCookie") && GM_getValue("vipCookie");
+const checkCookieReady = (): boolean => {
+	if (userCookie && vipCookie) {
+		return true;
+	}
+	return false;
+};
 
 const getCookies = (): Promise<Cookie[]> => {
 	return new Promise((resolve) => {
@@ -63,5 +68,5 @@ export {
 	setCookies,
 	userCookie,
 	vipCookie,
-	cookieReady,
+	checkCookieReady,
 };

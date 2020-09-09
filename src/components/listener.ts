@@ -1,17 +1,16 @@
 import { proxy } from "@/lib/ajax-hook";
 import videoDetect from "./videoDetect";
-import { storeCookies, setCookies, cookieReady, userCookie, vipCookie } from "@/utils/biliCookie";
-import setting from "./setting";
+import { storeCookies, setCookies, checkCookieReady, userCookie } from "@/utils/biliCookie";
 import { isVideo } from "@/utils/helper";
 
 const checkUserCookie = (data: { isLogin: boolean; vipStatus: number }): void => {
-	if (!userCookie && data.isLogin && data.vipStatus !== 1) {
+	if (data.isLogin && data.vipStatus === 0) {
 		storeCookies("userCookie", ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"]);
 	}
 };
 
 const unlockVideo = (): void => {
-	if (cookieReady && isVideo) {
+	if (checkCookieReady() && isVideo) {
 		let PGC: __PGC_USERSTATE__;
 		Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
 			set(value: __PGC_USERSTATE__) {
@@ -30,38 +29,35 @@ const unlockVideo = (): void => {
 				return PGC;
 			},
 		});
-		// Object.defineProperty(unsafeWindow, "__playinfo__", {
-		// 	configurable: true,
-		// 	enumerable: true,
-		// 	get() {
-		// 		return {};
-		// 	},
-		// });
 	}
 };
 
 const Main = (): void => {
 	console.log("listening");
 
+	const cookieReady = checkCookieReady();
+
 	unlockVideo();
-	setting();
-
-	fetch("https://api.bilibili.com/x/web-interface/nav", { credentials: "include" })
-		.then((resp) => resp.json())
-		.then((result) => {
-			checkUserCookie(result.data);
-		});
-
-	if (cookieReady) {
-		setCookies(userCookie);
-	}
 
 	proxy({
 		onRequest: (config, handler) => {
-			if (cookieReady)
-				videoDetect(config).then(() => {
-					handler.next(config);
-				});
+			const { url, xhr } = config;
+
+			xhr.onloadend = (): void => {
+				if (url.includes("nav") && !userCookie) {
+					const result = JSON.parse(xhr.response);
+					checkUserCookie(result.data);
+				}
+			};
+
+			if (cookieReady) {
+				xhr.onloadstart = (): void => {
+					setCookies(userCookie);
+				};
+				videoDetect(config);
+			}
+
+			handler.next(config);
 		},
 		onResponse: (response, handler) => {
 			handler.next(response);
