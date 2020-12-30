@@ -1,6 +1,4 @@
-const sleep = (time = 1): Promise<void> => {
-	return new Promise((resolve) => setTimeout(resolve, 1000 * time));
-};
+const sleep = (time = 1): Promise<void> => new Promise((resolve) => setTimeout(resolve, 1000 * time));
 
 const createElement = (str: string): Element | null => {
 	const el = document.createElement("div");
@@ -8,9 +6,7 @@ const createElement = (str: string): Element | null => {
 	return el.firstElementChild;
 };
 
-const isVideo: boolean = /(bangumi\/play\/ss\d+)|(bangumi\/play\/ep\d+)|(video\/bv\d+)/gi.test(window.location.href);
-
-
+const isVideo = (): boolean => /(bangumi\/play\/*)|(video\/*)/gi.test(window.location.href);
 
 const user = {
 	face: (): string => unsafeWindow.UserStatus.userInfo.face,

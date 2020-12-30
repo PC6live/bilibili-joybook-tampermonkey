@@ -4,9 +4,9 @@ import { storeCookies, removeCookies, vipCookie } from "@/utils/biliCookie";
 const storeVipInfo = (): void => {
 	const handlerClick = (): void => {
 		GM_setValue("face", user.face());
-		storeCookies("vipCookie", ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"])
+		storeCookies("vipCookie", ["SESSDATA"])
 			.then(() => removeCookies())
-			.then(() => location.reload(false));
+			.then(() => location.reload());
 	};
 	user.isVip() ? handlerClick() : alert("此账号不是大会员账号");
 };

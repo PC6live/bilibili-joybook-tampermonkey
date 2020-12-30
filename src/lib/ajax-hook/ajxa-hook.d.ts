@@ -1,4 +1,4 @@
-declare module '@/lib/ajax-hook' {
+declare module "@/lib/ajax-hook" {
 	interface XMLHttpRequestProxy extends XMLHttpRequest {
 		responseText: string;
 		readyState: number;
@@ -39,7 +39,7 @@ declare module '@/lib/ajax-hook' {
 		statusText?: string;
 	}
 
-	type XhrErrorType = 'error' | 'timeout' | 'abort';
+	type XhrErrorType = "error" | "timeout" | "abort";
 
 	interface XhrError {
 		config: XhrRequestConfig;

@@ -22,8 +22,8 @@ const removeCookies = (): Promise<void> => {
 				cookies.forEach((cookie) => {
 					GM_cookie.delete({ name: cookie.name, url: hostname });
 				});
-			})
-			.then(resolve);
+				return resolve();
+			});
 	});
 };
 
@@ -47,7 +47,7 @@ const storeCookies = (name: string, queryName: string[]): Promise<void> => {
 				}
 			});
 			GM_setValue(name, cookies);
-			resolve();
+			return resolve();
 		});
 	});
 };
@@ -57,7 +57,7 @@ const setCookies = (cookies: Cookie[]): Promise<void> => {
 		cookies.forEach((cookie) => {
 			GM_cookie.set(cookie);
 		});
-		resolve();
+		return resolve();
 	});
 };
 

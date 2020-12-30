@@ -1,10 +1,18 @@
 interface Window {
 	UserStatus: UserStatus;
 	GM_cookie: GM_cookie;
+	TabObj: TabObj
 	__PGC_USERSTATE__: __PGC_USERSTATE__;
 	__INITIAL_STATE__: __INITIAL_STATE__;
 	__BILI_USER_INFO__: any;
-	__playinfo__: any;
+	__playinfo__: __playinfo__;
+}
+
+interface TabObj {
+	lock?: boolean;
+	PGC?: __PGC_USERSTATE__;
+	playinfo?: __playinfo__;
+	[key: string]: unknown;
 }
 
 interface __PGC_USERSTATE__ {
@@ -28,6 +36,18 @@ interface __PGC_USERSTATE__ {
 		status: number;
 		type: number;
 	};
+}
+
+interface __playinfo__ {
+	code: number,
+	ttl: number,
+	message: string,
+	data: {
+		accept_format: string,
+		
+	} | null ,
+	result: null | {},
+	session: string,
 }
 
 interface __INITIAL_STATE__ {

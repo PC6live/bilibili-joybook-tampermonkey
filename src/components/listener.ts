@@ -1,6 +1,6 @@
-import { proxy } from "@/lib/ajax-hook";
-import videoDetect from "./videoDetect";
-import { storeCookies, setCookies, checkCookieReady, userCookie } from "@/utils/biliCookie";
+import { proxy, Proxy } from "@/lib/ajax-hook";
+import urlHandle from "./urlHandle";
+import { storeCookies, setCookies, checkCookieReady, userCookie, vipCookie } from "@/utils/biliCookie";
 import { isVideo } from "@/utils/helper";
 
 const checkUserCookie = (data: { isLogin: boolean; vipStatus: number }): void => {
@@ -10,36 +10,35 @@ const checkUserCookie = (data: { isLogin: boolean; vipStatus: number }): void =>
 };
 
 const unlockVideo = (): void => {
-	if (checkCookieReady() && isVideo) {
-		let PGC: __PGC_USERSTATE__;
-		Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
-			set(value: __PGC_USERSTATE__) {
-				PGC = {
-					...value,
-					vip_info: {
-						status: 1,
-						type: 2,
-						due_date: 1614614400000,
-					},
-					pay: 1,
-				};
-				delete PGC.dialog;
-			},
-			get() {
-				return PGC;
-			},
-		});
-	}
+	let PGC: __PGC_USERSTATE__;
+	Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
+		set(value: __PGC_USERSTATE__) {
+			console.log(value);
+			PGC = {
+				...value,
+				vip_info: {
+					status: 1,
+					type: 2,
+					due_date: 1614614400000,
+				},
+				pay: 1,
+			};
+			delete PGC.dialog;
+		},
+		get() {
+			return PGC;
+		},
+	});
 };
 
 const Main = (): void => {
 	console.log("listening");
 
-	const cookieReady = checkCookieReady();
+	if (!checkCookieReady()) return;
 
 	unlockVideo();
 
-	proxy({
+	const proxyConfig: Proxy = {
 		onRequest: (config, handler) => {
 			const { url, xhr } = config;
 
@@ -50,12 +49,10 @@ const Main = (): void => {
 				}
 			};
 
-			if (cookieReady) {
-				xhr.onloadstart = (): void => {
-					setCookies(userCookie);
-				};
-				videoDetect(config);
-			}
+			xhr.onloadstart = (): void => {
+				setCookies(userCookie);
+			};
+			urlHandle(config);
 
 			handler.next(config);
 		},
@@ -65,7 +62,9 @@ const Main = (): void => {
 		onError: (err, handler) => {
 			handler.next(err);
 		},
-	});
+	};
+
+	proxy(proxyConfig);
 };
 
 export default Main;
