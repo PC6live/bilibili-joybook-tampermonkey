@@ -10,8 +10,8 @@ const headers: WebpackUserscript.HeaderObject = {
 	version: "0.0.5",
 	description: "共享大会员",
 	author: "PC6live",
-	include: "*://*.bilibili.com/",
-	exclude: "*://passport.bilibili.com",
+	include: "*://*.bilibili.com/*",
+	exclude: "*://passport.bilibili.com/*",
 	homepage: "https://github.com/PC6live/joybook-tampermonkey",
 	supportURL: "https://github.com/PC6live/joybook-tampermonkey/issue",
 	grant: [
@@ -25,8 +25,8 @@ const headers: WebpackUserscript.HeaderObject = {
 		"GM_saveTab",
 		"unsafeWindow",
 	],
-	noframes: true,
 	"run-at": "document-start",
+	noframes: true,
 };
 
 const config: Configuration = {

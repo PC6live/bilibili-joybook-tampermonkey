@@ -1,21 +1,32 @@
-#bili-menu {
-	position: fixed;
-	left: 0;
-	top: 8vh;
-	z-index: 9999;
-}
 #bili-avatar {
-	width: 36px;
-	height: 36px;
+	width: 32px;
+	height: 32px;
 	border-radius: 50%;
-	position: relative;
+	display: inline-block;
+	margin-right: 5px;
+	border: 2px solid #fb7299;
+}
 
-	img {
-		position: absolute;
-		top: 0;
+#vip-btn {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	font-size: 14px;
+	color: #eee;
+	padding: 7px 0;
+	
+	& > * {
+		background: #fb7299;
+		padding: 8px 23px;
+		transition: 0.3s ease;
 		width: 100%;
-		height: 100%;
-		border-radius: 50%;
-		transition: .2s;
+		display: flex;
+		align-items: center;
+	}
+	&:hover {
+		& > * {
+			background: #f75582;
+		}
 	}
 }

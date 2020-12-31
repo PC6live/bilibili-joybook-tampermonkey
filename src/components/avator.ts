@@ -1,57 +1,89 @@
-import { createElement, user } from "@/utils/helper";
-import { storeCookies, removeCookies, vipCookie } from "@/utils/biliCookie";
+import { getVipCookie, removeCookies } from "@/utils/biliCookie";
+import { createElement, getUserType } from "@/utils/helper";
 
-const storeVipInfo = (): void => {
-	const handlerClick = (): void => {
-		GM_setValue("face", user.face());
-		storeCookies("vipCookie", ["SESSDATA"])
-			.then(() => removeCookies())
-			.then(() => location.reload());
-	};
-	user.isVip() ? handlerClick() : alert("此账号不是大会员账号");
+const state = {
+	logoutBtn: false,
+	vipAvator: false,
 };
 
-const genVipAvatar = (container: HTMLElement): void => {
-	console.log("gen avatar");
-	const avatar = document.getElementById("bili-avatar");
-	const face = GM_getValue("face", "//static.hdslb.com/images/akari.jpg");
-	const html = `<div id="bili-avatar">
-		<img src=${face} />
-	</div>`;
-	const vipAvatar = createElement(html) as Element;
+const tick = async () => {
+	addReloadEvent();
+	genAvator();
 
-	if (container && !avatar) {
-		container.style.display = "flex";
-		container?.appendChild(vipAvatar);
-		if (!vipCookie) vipAvatar.addEventListener("click", storeVipInfo);
+	requestAnimationFrame(tick);
+};
+
+const genAvator = (): void => {
+	if (state.vipAvator) return;
+	const avator = document.querySelector(".mini-avatar");
+	const logoutAvator = document.querySelector(".mini-login") as HTMLElement;
+	if (avator) {
+		state.vipAvator = true;
+		getUserType().then(resp => {
+			if (resp.isLogin && resp.vipStatus === 0) {
+				const vipCookie = getVipCookie();
+				if (!vipCookie) return;
+				const cloneAvator = avator.cloneNode(true) as HTMLDivElement;
+				const img = cloneAvator.querySelector("img");
+				if (img) {
+					img.src = GM_getValue("face");
+				}
+				if (avator.parentElement) {
+					avator.parentElement.style.display = "flex";
+				}
+				avator.parentNode?.appendChild(cloneAvator);
+			}
+		});
+	} else if (logoutAvator) {
+		state.vipAvator = true;
+		const vipCookie = getVipCookie();
+		if (!vipCookie) return;
+		const lougoutImg = logoutAvator.querySelector("img");
+		const cloneAvator =lougoutImg?.cloneNode(true) as HTMLImageElement;
+		if (cloneAvator) {
+			cloneAvator.id = "bili-avatar";
+			cloneAvator.src = GM_getValue("face");
+			if (logoutAvator.parentElement) {
+				logoutAvator.parentElement.style.display = "flex";
+				logoutAvator.parentElement.insertBefore(cloneAvator, logoutAvator);
+			}
+		}
 	}
 };
 
-const logout = (): void => {
+const addReloadEvent = (): void => {
+	if (state.logoutBtn) return;
+
 	const btn = document.querySelector(".logout");
 	if (btn) {
-		btn.addEventListener("click", () => {
-			console.log("change user");
-			GM_deleteValue("userCookie");
+		console.log("gen avator");
+		state.logoutBtn = true;
+		getUserType().then((resp) => {
+			if (resp.isLogin && resp.vipStatus !== 0) {
+				const html = `
+						<div id="vip-btn">
+							<span>共享大会员</span>
+						</div>
+					`;
+				const vipBtn = createElement(html);
+				if (vipBtn) {
+					vipBtn.addEventListener("click", () => {
+						console.log("reload");
+						GM_deleteValue("userCookie");
+						removeCookies().then(() => {
+							window.location.reload();
+						});
+					});
+					// remove all event
+					btn.parentNode?.appendChild(vipBtn);
+				}
+			}
 		});
 	}
 };
 
 const Main = (): void => {
-	const findElem = (): void => {
-		const container = document.querySelector(".mini-avatar")?.parentElement;
-		const logoutElem = document.querySelector(".user-con.logout");
-		if (container) {
-			genVipAvatar(container);
-			logout();
-		} else if (logoutElem) {
-			console.log("logout");
-			return;
-		} else {
-			window.requestAnimationFrame(findElem);
-		}
-	};
-	window.requestAnimationFrame(findElem);
+	requestAnimationFrame(tick);
 };
 
 export default Main;

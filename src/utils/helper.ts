@@ -8,9 +8,10 @@ const createElement = (str: string): Element | null => {
 
 const isVideo = (): boolean => /(bangumi\/play\/*)|(video\/*)/gi.test(window.location.href);
 
-const user = {
-	face: (): string => unsafeWindow.UserStatus.userInfo.face,
-	isVip: (): boolean => unsafeWindow.UserStatus.userInfo.vipStatus === 1,
+const getUserType = (): Promise<NavData> => {
+	return fetch("https://api.bilibili.com/x/web-interface/nav", { method: "Get", credentials: "include" })
+		.then((resp) => resp.json())
+		.then((result) => result.data);
 };
 
-export { sleep, createElement, isVideo, user };
+export { sleep, createElement, isVideo, getUserType };

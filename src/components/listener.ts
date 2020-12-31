@@ -1,11 +1,15 @@
 import { proxy, Proxy } from "@/lib/ajax-hook";
 import urlHandle from "./urlHandle";
-import { storeCookies, setCookies, checkCookieReady, userCookie, vipCookie } from "@/utils/biliCookie";
-import { isVideo } from "@/utils/helper";
+import { storeCookies, setCookies, getUserCookie, getVipCookie } from "@/utils/biliCookie";
+import { getUserType } from "@/utils/helper";
 
-const checkUserCookie = (data: { isLogin: boolean; vipStatus: number }): void => {
-	if (data.isLogin && data.vipStatus === 0) {
-		storeCookies("userCookie", ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"]);
+const checkUserCookie = ({ face, isLogin, vipStatus }: NavData): void => {
+	if (!isLogin) return;
+	if (vipStatus === 0) {
+		storeCookies("userCookie", ["SESSDATA"]);
+	} else {
+		GM_setValue("face", face);
+		storeCookies("vipCookie", ["SESSDATA"]);
 	}
 };
 
@@ -13,7 +17,6 @@ const unlockVideo = (): void => {
 	let PGC: __PGC_USERSTATE__;
 	Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
 		set(value: __PGC_USERSTATE__) {
-			console.log(value);
 			PGC = {
 				...value,
 				vip_info: {
@@ -31,28 +34,28 @@ const unlockVideo = (): void => {
 	});
 };
 
-const Main = (): void => {
+const Main = async (): Promise<void> => {
+	// TODO 添加失效登陆识别
 	console.log("listening");
+	const userCookie = getUserCookie();
+	const vipCookie = getVipCookie();
 
-	if (!checkCookieReady()) return;
+	if (!userCookie || !vipCookie) {
+		await getUserType().then((resp) => checkUserCookie(resp));
+
+		return;
+	}
 
 	unlockVideo();
 
 	const proxyConfig: Proxy = {
-		onRequest: (config, handler) => {
-			const { url, xhr } = config;
-
-			xhr.onloadend = (): void => {
-				if (url.includes("nav") && !userCookie) {
-					const result = JSON.parse(xhr.response);
-					checkUserCookie(result.data);
-				}
-			};
+		onRequest: async (config, handler) => {
+			const { xhr } = config;
 
 			xhr.onloadstart = (): void => {
 				setCookies(userCookie);
 			};
-			urlHandle(config);
+			await urlHandle(config);
 
 			handler.next(config);
 		},

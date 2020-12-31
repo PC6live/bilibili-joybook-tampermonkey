@@ -1,29 +1,24 @@
-const userCookie: Cookie[] = GM_getValue("userCookie");
-const vipCookie: Cookie[] = GM_getValue("vipCookie");
-const checkCookieReady = (): boolean => {
-	if (userCookie && vipCookie) {
-		return true;
-	}
-	return false;
-};
+const getUserCookie = (): Cookie[] | null => GM_getValue("userCookie");
+const getVipCookie = (): Cookie[] | null => GM_getValue("vipCookie");
 
 const getCookies = (): Promise<Cookie[]> => {
 	return new Promise((resolve) => {
-		const hostname = window.location.hostname;
-		GM_cookie.list({ url: hostname }, (cookies) => resolve(cookies));
+		const { hostname, protocol } = window.location;
+		const url = `${protocol}//${hostname}/`;
+		GM_cookie.list({ url }, (cookies) => resolve(cookies));
 	});
 };
 
 const removeCookies = (): Promise<void> => {
 	return new Promise((resolve) => {
-		const hostname = window.location.hostname;
-		getCookies()
-			.then((cookies) => {
-				cookies.forEach((cookie) => {
-					GM_cookie.delete({ name: cookie.name, url: hostname });
-				});
-				return resolve();
+		const { hostname, protocol } = window.location;
+		const url = `${protocol}//${hostname}/`;
+		getCookies().then((cookies) => {
+			cookies.forEach((cookie) => {
+				GM_cookie.delete({ name: cookie.name, url });
 			});
+			return resolve();
+		});
 	});
 };
 
@@ -61,12 +56,4 @@ const setCookies = (cookies: Cookie[]): Promise<void> => {
 	});
 };
 
-export {
-	getCookies,
-	removeCookies,
-	storeCookies,
-	setCookies,
-	userCookie,
-	vipCookie,
-	checkCookieReady,
-};
+export { getCookies, removeCookies, storeCookies, setCookies, getUserCookie, getVipCookie };

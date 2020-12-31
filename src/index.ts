@@ -1,11 +1,9 @@
 import listener from "@/components/listener";
-import avator from "@/components/avator";
-import "./styles/global";
+import avatar from "@/components/avator";
+import "./styles/global.scss";
 
-const Main = (): void => {
+(() => {
 	console.log("run main");
-	avator();
+	avatar();
 	listener();
-};
-
-Main();
+})();
