@@ -20,6 +20,9 @@ const getUserType = async (): Promise<void> => {
 const initState = async (): Promise<void> => {
 	await getUserType();
 
+	// dynamic add style
+	import("@/styles/global.scss");
+
 	const { isLogin, vipStatus, face } = state;
 	if (!isLogin) return;
 	const { vipCookie, userCookie } = getStoreCookies();
