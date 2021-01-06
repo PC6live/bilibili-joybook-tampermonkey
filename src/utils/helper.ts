@@ -8,10 +8,6 @@ const createElement = (str: string): Element | null => {
 
 const isVideo = (): boolean => /(bangumi\/play\/*)|(video\/*)/gi.test(window.location.href);
 
-const getUserType = (): Promise<NavData> => {
-	return fetch("https://api.bilibili.com/x/web-interface/nav", { method: "Get", credentials: "include" })
-		.then((resp) => resp.json())
-		.then((result) => result.data);
-};
+const deleteAllValue = (): void => GM_listValues().forEach(v => GM_deleteValue(v));
 
-export { sleep, createElement, isVideo, getUserType };
+export { sleep, createElement, isVideo, deleteAllValue };

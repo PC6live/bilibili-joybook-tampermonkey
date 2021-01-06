@@ -7,7 +7,7 @@ const resolve = (str: string): string => path.resolve(__dirname, str);
 
 const headers: WebpackUserscript.HeaderObject = {
 	name: "bilibili-joybook",
-	version: "0.0.5",
+	version: "0.0.6",
 	description: "共享大会员",
 	author: "PC6live",
 	include: "*://*.bilibili.com/*",
@@ -22,6 +22,7 @@ const headers: WebpackUserscript.HeaderObject = {
 		"GM_deleteValue",
 		"GM_getTab",
 		"GM_getTabs",
+		"GM_listValues",
 		"GM_saveTab",
 		"unsafeWindow",
 	],

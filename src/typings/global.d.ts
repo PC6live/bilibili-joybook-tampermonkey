@@ -1,7 +1,7 @@
 interface Window {
 	UserStatus: UserStatus;
 	GM_cookie: GM_cookie;
-	TabObj: TabObj
+	TabObj: TabObj;
 	__PGC_USERSTATE__: __PGC_USERSTATE__;
 	__INITIAL_STATE__: __INITIAL_STATE__;
 	__BILI_USER_INFO__: any;
@@ -39,15 +39,14 @@ interface __PGC_USERSTATE__ {
 }
 
 interface __playinfo__ {
-	code: number,
-	ttl: number,
-	message: string,
+	code: number;
+	ttl: number;
+	message: string;
 	data: {
-		accept_format: string,
-		
-	} | null ,
-	result: null | {},
-	session: string,
+		accept_format: string;
+	} | null;
+	result: null | {};
+	session: string;
 }
 
 interface __INITIAL_STATE__ {
@@ -61,6 +60,7 @@ interface __INITIAL_STATE__ {
 	vipDueDate: number;
 	vipStatus: number;
 	vipType: number;
+	videoData: any;
 }
 
 interface UserStatus {

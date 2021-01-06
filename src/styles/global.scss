@@ -30,3 +30,26 @@
 		}
 	}
 }
+#clear-btn {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	font-size: 14px;
+	color: #eee;
+	padding: 7px 0;
+	
+	& > * {
+		background: #ff4646;
+		padding: 8px 23px;
+		transition: 0.3s ease;
+		width: 100%;
+		display: flex;
+		align-items: center;
+	}
+	&:hover {
+		& > * {
+			background: #f82b2b;
+		}
+	}
+}
