@@ -1,4 +1,4 @@
-import { getVipCookie, removeCookies } from "@/utils/biliCookie";
+import { getStoreCookies, removeCookies } from "@/utils/biliCookie";
 import { createElement, deleteAllValue } from "@/utils/helper";
 import state from "./state";
 
@@ -10,6 +10,7 @@ const tick = async () => {
 };
 
 const genAvator = (): void => {
+	const { vipCookie } = getStoreCookies();
 	const { isLogin, vipStatus, vipAvator } = state;
 	if (vipAvator) return;
 	const avator = document.querySelector(".mini-avatar");
@@ -19,7 +20,6 @@ const genAvator = (): void => {
 		state.vipAvator = true;
 		if (avator) {
 			if (isLogin && vipStatus === 0) {
-				const vipCookie = getVipCookie();
 				if (!vipCookie) return;
 				const cloneAvator = avator.cloneNode(true) as HTMLDivElement;
 				const img = cloneAvator.querySelector("img");
@@ -32,7 +32,6 @@ const genAvator = (): void => {
 				avator.parentNode?.appendChild(cloneAvator);
 			}
 		} else if (logoutAvator) {
-			const vipCookie = getVipCookie();
 			if (!vipCookie) return;
 			const lougoutImg = logoutAvator.querySelector("img");
 			const cloneAvator = lougoutImg?.cloneNode(true) as HTMLImageElement;

@@ -1,5 +1,11 @@
-const getUserCookie = (): Cookie[] | null => GM_getValue("userCookie");
-const getVipCookie = (): Cookie[] | null => GM_getValue("vipCookie");
+const getStoreCookies = (): { vipCookie: Cookie[] | null; userCookie: Cookie[] | null } => {
+	const userCookie: Cookie[] = GM_getValue("userCookie");
+	const vipCookie: Cookie[] = GM_getValue("vipCookie");
+	return {
+		userCookie,
+		vipCookie,
+	};
+};
 
 const getCookies = (): Promise<Cookie[]> => {
 	return new Promise((resolve) => {
@@ -56,4 +62,4 @@ const setCookies = (cookies: Cookie[]): Promise<void> => {
 	});
 };
 
-export { getCookies, removeCookies, storeCookies, setCookies, getUserCookie, getVipCookie };
+export { getCookies, removeCookies, storeCookies, setCookies, getStoreCookies };

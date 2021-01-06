@@ -9,7 +9,7 @@
 	"author": "",
 	"license": "MIT",
 	"scripts": {
-		"dev": "webpack -w --config build/webpack.prod.ts",
+		"dev": "webpack -w --config build/webpack.dev.ts",
 		"build": "webpack --config build/webpack.prod.ts",
 		"lint": "eslint . --ext .ts,.tsx"
 	},

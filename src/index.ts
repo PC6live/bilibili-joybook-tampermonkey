@@ -8,6 +8,7 @@ import "./styles/global.scss";
 	console.log("run main");
 	unlockVideo();
 	listener();
+
 	await initState();
 	avatar();
 })();

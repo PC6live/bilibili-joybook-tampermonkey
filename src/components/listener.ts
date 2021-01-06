@@ -1,30 +1,13 @@
 import { proxy, Proxy } from "@/lib/ajax-hook";
 import urlHandle from "./urlHandle";
-import { storeCookies, setCookies, getUserCookie, getVipCookie } from "@/utils/biliCookie";
-import state from "./state";
-
-const checkUserCookie = (): void => {
-	const { isLogin, vipStatus, face } = state;
-	if (!isLogin) return;
-	if (vipStatus === 0) {
-		storeCookies("userCookie", ["SESSDATA"]);
-	} else {
-		GM_setValue("face", face);
-		storeCookies("vipCookie", ["SESSDATA"]);
-	}
-};
+import { getStoreCookies, setCookies } from "@/utils/biliCookie";
 
 const main = async (): Promise<void> => {
 	// TODO 添加失效登陆识别
 	console.log("listening");
-	const userCookie = getUserCookie();
-	const vipCookie = getVipCookie();
+	const { vipCookie, userCookie } = getStoreCookies();
 
-	if (!userCookie || !vipCookie) {
-		checkUserCookie();
-
-		return;
-	}
+	if (!userCookie || !vipCookie) return;
 
 	const proxyConfig: Proxy = {
 		onRequest: async (config, handler) => {

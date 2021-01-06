@@ -1,4 +1,4 @@
-import { getUserCookie, getVipCookie, setCookies } from "@/utils/biliCookie";
+import { getStoreCookies, setCookies } from "@/utils/biliCookie";
 import { XhrRequestConfig } from "@/lib/ajax-hook";
 import { isVideo } from "@/utils/helper";
 
@@ -8,12 +8,11 @@ const main = async (config: XhrRequestConfig): Promise<void> => {
 	const detectUrl = async(strs: string[]): Promise<void> => {
 		for (let count = 0; count < strs.length; count += 1) {
 			if (url.includes(strs[count])) {
+				const { vipCookie, userCookie } = getStoreCookies();
 				xhr.onloadstart = (): void => {
-					const vipCookie = getVipCookie();
 					if (vipCookie) setCookies(vipCookie);
 				};
 				xhr.onload = () => {
-					const userCookie = getUserCookie();
 					if (userCookie) setCookies(userCookie);
 				};
 				return Promise.resolve();

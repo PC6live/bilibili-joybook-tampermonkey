@@ -1,8 +1,11 @@
+import { getStoreCookies } from "@/utils/biliCookie";
+
 const main = (): void => {
+	const { userCookie, vipCookie } = getStoreCookies();
+	if (!userCookie || !vipCookie) return;
 	let PGC: __PGC_USERSTATE__;
 	Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
 		set(value: __PGC_USERSTATE__) {
-			console.log(value);
 			PGC = {
 				...value,
 				area_limit: 0,

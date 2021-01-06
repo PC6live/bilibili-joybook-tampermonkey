@@ -1,4 +1,4 @@
-import { setCookies } from "@/utils/biliCookie";
+import { getStoreCookies, storeCookies } from "@/utils/biliCookie";
 
 const state = {
 	isLogin: false,
@@ -19,6 +19,18 @@ const getUserType = async (): Promise<void> => {
 
 const initState = async (): Promise<void> => {
 	await getUserType();
+
+	const { isLogin, vipStatus, face } = state;
+	if (!isLogin) return;
+	const { vipCookie, userCookie } = getStoreCookies();
+	if (vipCookie && userCookie) return;
+	if (vipStatus === 0) {
+		storeCookies("userCookie", ["SESSDATA"]);
+		if (vipCookie) window.location.reload();
+	} else if (vipStatus !== 0) {
+		GM_setValue("face", face);
+		storeCookies("vipCookie", ["SESSDATA"]);
+	}
 };
 
 export { initState };
