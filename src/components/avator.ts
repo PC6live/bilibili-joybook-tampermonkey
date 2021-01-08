@@ -56,6 +56,10 @@ const addReloadBtn = (): void => {
 		console.log("gen button");
 		state.logoutBtn = true;
 		if (isLogin) {
+			btn.addEventListener("click", () => {
+				removeCookies();
+				GM_deleteValue("userCookie");
+			});
 			const clearBtnHtml = `
 				<div id="clear-btn">
 				<span>清除脚本数据</span>
