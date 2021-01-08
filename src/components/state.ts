@@ -26,13 +26,13 @@ const initState = async (): Promise<void> => {
 	const { isLogin, vipStatus, face } = state;
 	if (!isLogin) return;
 	const { vipCookie, userCookie } = getStoreCookies();
-	if (vipCookie && userCookie) return;
-	if (vipStatus === 0) {
-		storeCookies("userCookie", ["SESSDATA"]);
-		if (vipCookie) window.location.reload();
-	} else if (vipStatus !== 0) {
+	if (vipStatus !== 0) {
 		GM_setValue("face", face);
 		storeCookies("vipCookie", ["SESSDATA"]);
+	}
+	if (vipStatus === 0 && !userCookie) {
+		storeCookies("userCookie", ["SESSDATA"]);
+		if (vipCookie) window.location.reload();
 	}
 };
 
