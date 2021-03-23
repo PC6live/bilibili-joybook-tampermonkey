@@ -1,9 +1,12 @@
-import { getStoreCookies } from "@/utils/biliCookie";
+import { getStoreCookies } from "@/utils/cookie";
+import { printMessage } from "@/utils/helper";
 
 const main = (): void => {
+	printMessage("unlockVideo-start");
 	const { userCookie, vipCookie } = getStoreCookies();
 	if (!userCookie || !vipCookie) return;
 	let PGC: __PGC_USERSTATE__;
+
 	Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
 		set(value: __PGC_USERSTATE__) {
 			PGC = {
@@ -22,12 +25,13 @@ const main = (): void => {
 					type: 2,
 				},
 			};
-			delete PGC.dialog;
 		},
 		get() {
 			return PGC;
 		},
 	});
+
+	printMessage("unlockVideo-end");
 };
 
 export default main;

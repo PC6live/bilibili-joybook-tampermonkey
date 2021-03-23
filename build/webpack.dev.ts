@@ -1,9 +1,9 @@
 import { merge } from "webpack-merge";
-import common, { headers, resolve } from "./webpack.common";
+import common, { headers, resolve, TENV } from "./webpack.common";
 import { Configuration } from "webpack";
 import WebpackUserscript from "webpack-userscript";
 
-const config = merge<Configuration>(common, {
+const config = (env: TENV) => merge<Configuration>(common(env), {
 	mode: "development",
 	plugins: [
 		new WebpackUserscript({
@@ -14,7 +14,7 @@ const config = merge<Configuration>(common, {
 				name: "bilibili-joybook-dev",
 			},
 			proxyScript: {
-				baseUrl: resolve("../dist"),
+				baseUrl: `file:${resolve("../dist")}`,
 				enable: true,
 			},
 		}),

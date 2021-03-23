@@ -3,6 +3,11 @@ import path from "path";
 import { CleanWebpackPlugin } from "clean-webpack-plugin";
 import WebpackUserscript from "webpack-userscript";
 
+export type TENV = {
+	WEBPACK_BUNDLE: boolean;
+	NODE_ENV: "development" | "production";
+};
+
 const resolve = (str: string): string => path.resolve(__dirname, str);
 
 const headers: WebpackUserscript.HeaderObject = {
@@ -30,62 +35,66 @@ const headers: WebpackUserscript.HeaderObject = {
 	noframes: true,
 };
 
-const config: Configuration = {
-	entry: resolve("../src/index.ts"),
-	output: {
-		path: resolve("../dist"),
-		filename: "joybook.user.js",
-	},
-	module: {
-		rules: [
-			{
-				test: /\.js$/,
-				use: "babel-loader",
-				exclude: /node_modules/,
-			},
-			{
-				test: /\.ts(x)?$/,
-				loader: "ts-loader",
-				exclude: /node_modules/,
-			},
-			{
-				test: /\.css$/,
-				use: ["style-loader", "css-loader"],
-				exclude: /\.module\.css$/,
-			},
-			{
-				test: /\.css$/,
-				use: [
-					"style-loader",
-					{
-						loader: "css-loader",
-						options: {
-							importLoaders: 1,
-							modules: true,
-						},
-					},
-				],
-				include: /\.module\.css$/,
-			},
-			{
-				test: /\.s(a|c)ss$/,
-				use: ["style-loader", "css-loader", "sass-loader"],
-				exclude: /\.module\.s(a|c)ss$/,
-			},
-			{
-				test: /\.s(a|c)ss$/,
-				use: ["style-loader", "css-loader", "sass-loader"],
-				include: /\.module\.s(a|c)ss$/,
-			},
-		],
-	},
-	resolve: {
-		alias: {
-			"@": resolve("../src"),
+const config = (env: TENV): Configuration => {
+	const localIdentName = env.NODE_ENV === "development" ? "[path][name]__[local]" : "[hash:base64]";
+	return {
+		entry: resolve("../src/index.ts"),
+		output: {
+			path: resolve("../dist"),
+			filename: "joybook.user.js",
 		},
-		extensions: [".tsx", ".ts", ".js"],
-	},
-	plugins: [new CleanWebpackPlugin()],
+		module: {
+			rules: [
+				{
+					test: /\.js$/,
+					use: "babel-loader",
+					exclude: /node_modules/,
+				},
+				{
+					test: /\.ts(x)?$/,
+					loader: "ts-loader",
+					exclude: /node_modules/,
+				},
+				{
+					test: /\.s(a|c)ss$/,
+					use: ["style-loader", "css-loader", "sass-loader"],
+					exclude: /\.module\.s(a|c)ss$/,
+				},
+				{
+					test: /\.s(a|c)ss$/,
+					use: [
+						"style-loader",
+						{
+							loader: "css-loader",
+							options: {
+								importLoaders: 1,
+								modules: {
+									localIdentName,
+								},
+							},
+						},
+						"sass-loader",
+					],
+					include: /\.module\.s(a|c)ss$/,
+				},
+				{
+					test: /\.svg$/,
+					use: [
+						{
+							loader: "@svgr/webpack",
+						},
+					],
+				},
+			],
+		},
+		resolve: {
+			alias: {
+				"@": resolve("../src"),
+			},
+			extensions: [".tsx", ".ts", ".js"],
+		},
+		plugins: [new CleanWebpackPlugin()],
+	};
 };
 
 export { resolve, headers };

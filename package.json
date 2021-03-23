@@ -6,19 +6,17 @@
 	"keywords": [
 		"bilibili"
 	],
-	"author": "",
+	"author": "PClive",
 	"license": "MIT",
 	"scripts": {
-		"dev": "webpack -w --config build/webpack.dev.ts",
-		"build": "webpack --config build/webpack.prod.ts",
+		"dev": "webpack -w --env NODE_ENV=development --config build/webpack.dev.ts",
+		"build": "webpack --env NODE_ENV=production --config build/webpack.prod.ts",
 		"lint": "eslint . --ext .ts,.tsx"
 	},
-	"dependencies": {},
 	"devDependencies": {
 		"@babel/core": "^7.9.0",
 		"@babel/preset-env": "^7.9.5",
 		"@types/css": "^0.0.31",
-		"@types/tampermonkey": "^4.0.0",
 		"@types/webpack": "^4.41.25",
 		"@types/webpack-env": "^1.15.1",
 		"@typescript-eslint/eslint-plugin": "^4.11.1",

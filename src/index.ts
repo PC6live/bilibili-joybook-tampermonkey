@@ -1,13 +1,17 @@
 import listener from "@/components/listener";
-import avatar from "@/components/avator";
 import unlockVideo from "@/components/unlockVideo";
-import { initState } from "./components/state";
+import { initState } from "@/components/state";
+import settings from "@/components/settings";
+import { isVideo } from "@/utils/helper";
 
-(async () => {
-	console.log("run main");
+if (isVideo()) {
 	unlockVideo();
 	listener();
+}
 
-	await initState();
-	avatar();
-})();
+initState();
+
+window.addEventListener("load", () => {
+	import("@/styles/global.scss");
+	settings();
+});

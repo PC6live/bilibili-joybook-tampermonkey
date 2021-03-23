@@ -1,35 +1,30 @@
-import { proxy, Proxy } from "@/lib/ajax-hook";
-import urlHandle from "./urlHandle";
-import { getStoreCookies, setCookies } from "@/utils/biliCookie";
+import { getStoreCookies, setCookies } from "@/utils/cookie";
+import { printMessage } from "@/utils/helper";
+import urlHandle from "@/components/urlHandle";
+import ajaxProxy, { ProxyMap } from "@/lib/proxy";
 
 const main = async (): Promise<void> => {
-	// TODO 添加失效登陆识别
-	console.log("listening");
-	const { vipCookie, userCookie } = getStoreCookies();
+	printMessage("listening-start");
+	const proxySettings: ProxyMap = {
+		open(args) {
+			const { vipCookie, userCookie } = getStoreCookies();
+			const url = args[1];
 
-	if (!userCookie || !vipCookie) return;
+			if (!userCookie || !vipCookie) return;
 
-	const proxyConfig: Proxy = {
-		onRequest: async (config, handler) => {
-			const { xhr } = config;
+			// 默认操作
+			setCookies(userCookie);
 
-			xhr.onloadstart = (): void => {
-				setCookies(userCookie);
-			};
+			// 处理视频
+			urlHandle(url);
 
-			await urlHandle(config);
-
-			handler.next(config);
-		},
-		onResponse: (response, handler) => {
-			handler.next(response);
-		},
-		onError: (err, handler) => {
-			handler.next(err);
+			return false;
 		},
 	};
 
-	proxy(proxyConfig);
+	ajaxProxy.proxyAjax(proxySettings);
+
+	printMessage("listening-end");
 };
 
 export default main;

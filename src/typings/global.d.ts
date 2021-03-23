@@ -71,17 +71,16 @@ interface UserStatus {
 		face: string;
 	};
 }
-
 interface Cookie {
 	name?: string;
 	value?: string;
 	domain?: string;
 	path?: string;
 	secure?: boolean;
+	hostOnly?: boolean;
 	httpOnly?: boolean;
 	sameSite?: string;
 	expirationDate?: number;
-	storeId: string;
 }
 
 interface GM_cookie {
