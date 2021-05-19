@@ -1,3 +1,4 @@
+import { store } from "@/store";
 import { getStoreCookies, removeCookies, storeCookies } from "@/utils/cookie";
 import { printMessage } from "@/utils/helper";
 
@@ -5,15 +6,12 @@ const state = {
 	isLogin: false,
 	vipStatus: 0,
 	face: "",
+	initQuality: false,
 };
-
-
-// @ts-ignore
-unsafeWindow.joybookState = state;
-type joybookState = typeof state;
 
 const getUserType = async (): Promise<void> => {
 	const resp = await fetch("https://api.bilibili.com/x/web-interface/nav", { method: "Get", credentials: "include" });
+	if (!resp) return;
 	const result = await resp.json();
 	const data = result.data;
 	state.isLogin = data.isLogin;
@@ -54,7 +52,7 @@ const initState = async (): Promise<void> => {
 	listenLogout();
 
 	if (!vipCookie && vipStatus) {
-		GM_setValue("face", face);
+		store.set("face", face);
 		storeCookies("vipCookie", storeKey).then(() => {
 			removeCookies().then(() => {
 				window.location.reload();
@@ -72,6 +70,6 @@ const initState = async (): Promise<void> => {
 	printMessage("initState-end");
 };
 
-export { initState, joybookState };
+export { initState };
 
 export default state;

@@ -1,10 +1,11 @@
+import { store } from "@/store";
 import { removeCookies } from "@/utils/cookie";
 import { createElement, deleteAllValue, printMessage } from "@/utils/helper";
 
 const container: HTMLDivElement = document.createElement("div");
 
 function avatar() {
-	const face = GM_getValue<string>("face");
+	const face = store.get("face");
 	const html = createElement(`<div id="joybook-avatar">
 	<img src=${face}></img>
 	</div>`);

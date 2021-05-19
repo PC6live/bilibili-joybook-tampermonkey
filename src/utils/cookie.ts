@@ -1,6 +1,8 @@
+import { store, TStoreCookies } from "@/store";
+
 const getStoreCookies = (): { vipCookie: Cookie[] | null; userCookie: Cookie[] | null } => {
-	const userCookie: Cookie[] = GM_getValue("userCookie");
-	const vipCookie: Cookie[] = GM_getValue("vipCookie");
+	const userCookie: Cookie[] = store.get("userCookie");
+	const vipCookie: Cookie[] = store.get("vipCookie");
 	return {
 		userCookie,
 		vipCookie,
@@ -24,11 +26,11 @@ const removeCookies = async (): Promise<void> => {
 	});
 };
 
-const storeCookies = async (name: string, queryName: string[]): Promise<void> => {
-	const cookies = await (await getCookies()).filter((cookie) => {
+const storeCookies = async (name: keyof TStoreCookies, queryName: string[]): Promise<void> => {
+	const cookies = (await getCookies()).filter((cookie) => {
 		return cookie.name && queryName.includes(cookie.name);
 	});
-	GM_setValue(name, cookies);
+	store.set(name, cookies);
 };
 
 const setCookies = (cookies: Cookie[]) => {
