@@ -38,15 +38,51 @@ interface __PGC_USERSTATE__ {
 	};
 }
 
+interface support_quality {
+	display_desc: string;
+	superscript: string;
+	need_login: boolean;
+	format: string;
+	description: string;
+	need_vip: boolean;
+	quality: number;
+	new_description: string;
+}
+
+interface playinfoData {
+	accept_format: string;
+	code: number;
+	seek_param: string;
+	is_preview: number;
+	fnval: number;
+	video_project: boolean;
+	fnver: number;
+	type: string;
+	bp: number;
+	result: string;
+	seek_type: string;
+	vip_type: number;
+	from: string;
+	video_codecid: number;
+	no_rexcode: number;
+	format: string;
+	support_formats: support_quality[];
+	message: string;
+	accept_quality: number[];
+	quality: number;
+	timelength: number;
+	has_paid: boolean;
+	vip_status: number;
+	accept_description: string[];
+	status: number;
+}
 interface __playinfo__ {
 	code: number;
-	ttl: number;
 	message: string;
-	data: {
-		accept_format: string;
-	} | null;
-	result: null | {};
+	data?: playinfoData;
+	result?: playinfoData;
 	session: string;
+	ttl: number
 }
 
 interface __INITIAL_STATE__ {

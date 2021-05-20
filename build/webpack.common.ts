@@ -12,7 +12,7 @@ const resolve = (str: string): string => path.resolve(__dirname, str);
 
 const headers: WebpackUserscript.HeaderObject = {
 	name: "bilibili-joybook",
-	version: "0.0.6",
+	version: "0.0.7",
 	description: "共享大会员",
 	author: "PC6live",
 	include: "*://*.bilibili.com/*",

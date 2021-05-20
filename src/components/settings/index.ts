@@ -1,3 +1,4 @@
+import ajaxProxy from "@/lib/ajax-proxy";
 import { store } from "@/store";
 import { removeCookies } from "@/utils/cookie";
 import { createElement, deleteAllValue, printMessage } from "@/utils/helper";
@@ -6,6 +7,7 @@ const container: HTMLDivElement = document.createElement("div");
 
 function avatar() {
 	const face = store.get("face");
+	if (!face) return;
 	const html = createElement(`<div id="joybook-avatar">
 	<img src=${face}></img>
 	</div>`);
@@ -29,6 +31,7 @@ function handleEvent() {
 		const result = window.confirm("确定要删除脚本数据吗？");
 		if (!result) return;
 
+		ajaxProxy.unProxyAjax();
 		deleteAllValue();
 		await removeCookies();
 

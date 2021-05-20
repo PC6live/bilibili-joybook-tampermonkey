@@ -2,11 +2,10 @@ import { store } from "@/store";
 import { getStoreCookies, removeCookies, storeCookies } from "@/utils/cookie";
 import { printMessage } from "@/utils/helper";
 
-const state = {
+export const state = {
 	isLogin: false,
 	vipStatus: 0,
 	face: "",
-	initQuality: false,
 };
 
 const getUserType = async (): Promise<void> => {
@@ -25,7 +24,7 @@ function listenLogout() {
 	if (logout) {
 		const clone = logout.cloneNode(true);
 		clone.addEventListener("click", () => {
-			GM_deleteValue("userCookie");
+			store.remove("userCookie");
 			removeCookies().then(() => {
 				window.location.reload();
 			});
@@ -38,7 +37,7 @@ function listenLogout() {
 	}
 }
 
-const initState = async (): Promise<void> => {
+export const initState = async (): Promise<void> => {
 	printMessage("initState-start");
 
 	await getUserType();
@@ -70,6 +69,3 @@ const initState = async (): Promise<void> => {
 	printMessage("initState-end");
 };
 
-export { initState };
-
-export default state;

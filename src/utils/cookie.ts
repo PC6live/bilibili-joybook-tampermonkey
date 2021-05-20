@@ -11,18 +11,14 @@ const getStoreCookies = (): { vipCookie: Cookie[] | null; userCookie: Cookie[] |
 
 const getCookies = (): Promise<Cookie[]> => {
 	return new Promise((resolve) => {
-		const { hostname, protocol } = window.location;
-		const url = `${protocol}//${hostname}/`;
-		GM_cookie.list({ url }, (cookies) => resolve(cookies));
+		GM_cookie.list({}, (cookies) => resolve(cookies));
 	});
 };
 
 const removeCookies = async (): Promise<void> => {
-	const { hostname, protocol } = window.location;
-	const url = `${protocol}//${hostname}/`;
 	const cookies = await getCookies();
 	cookies.forEach((cookie) => {
-		GM_cookie.delete({ name: cookie.name, url });
+		GM_cookie.delete({ name: cookie.name });
 	});
 };
 
