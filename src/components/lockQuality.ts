@@ -1,9 +1,8 @@
-export const lockQuality = (quality: string | number) => {
-	const qualityFormat: string = typeof quality === "number" ? quality.toString() : quality;
+export const lockQuality = (quality: string) => {
 	const bilibiliPlayerSettings = localStorage.getItem("bilibili_player_settings");
 	if (bilibiliPlayerSettings) {
 		const bilibiliPlayerSettingsParse = JSON.parse(bilibiliPlayerSettings);
-		bilibiliPlayerSettingsParse.setting_config.defquality = qualityFormat;
+		bilibiliPlayerSettingsParse.setting_config.defquality = quality;
 		localStorage.setItem("bilibili_player_settings", JSON.stringify(bilibiliPlayerSettingsParse));
 	}
 };

@@ -6,6 +6,7 @@ export const state = {
 	isLogin: false,
 	vipStatus: 0,
 	face: "",
+	highQuality: "",
 };
 
 const getUserType = async (): Promise<void> => {

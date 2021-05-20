@@ -1,5 +1,6 @@
 import { printMessage } from "@/utils/helper";
 import { lockQuality } from "@/components/lockQuality";
+import { state } from "./state";
 
 const main = (): void => {
 	printMessage("unlockVideo-start");
@@ -35,10 +36,12 @@ const main = (): void => {
 		set(value: __playinfo__) {
 			const { result, data } = value;
 			if (result) {
-				const highQuality = result.accept_quality[0];
+				const highQuality = result.accept_quality[0].toString();
+				state.highQuality = highQuality;
 				lockQuality(highQuality);
 			} else if (data) {
-				const highQuality = data.accept_quality[0];
+				const highQuality = data.accept_quality[0].toString();
+				state.highQuality = highQuality;
 				lockQuality(highQuality);
 			}
 		},
