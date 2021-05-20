@@ -2,7 +2,7 @@ import { listener } from "@/components/listener";
 import unlockVideo from "@/components/unlockVideo";
 import { initState } from "@/components/state";
 import settings from "@/components/settings";
-import {  isVideo } from "@/utils/helper";
+import { isVideo } from "@/utils/helper";
 import { getStoreCookies, setCookies } from "./utils/cookie";
 
 // FIXME: 修复csrf错误
@@ -10,6 +10,7 @@ import { getStoreCookies, setCookies } from "./utils/cookie";
 const { userCookie, vipCookie } = getStoreCookies();
 
 // 解锁会员
+// if (vipCookie) setCookies(vipCookie);
 unlockVideo();
 
 // 判断是否是视频
