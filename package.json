@@ -9,7 +9,7 @@
 	"author": "PClive",
 	"license": "MIT",
 	"scripts": {
-		"dev": "webpack -w --env NODE_ENV=development --config build/webpack.dev.ts",
+		"start": "webpack -w --env NODE_ENV=development --config build/webpack.dev.ts",
 		"build": "webpack --env NODE_ENV=production --config build/webpack.prod.ts",
 		"lint": "eslint . --ext .ts,.tsx"
 	},

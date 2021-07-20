@@ -22,19 +22,23 @@ const getUserType = async (): Promise<void> => {
 function listenLogout() {
 	const logout = document.querySelector(".logout");
 
-	if (logout) {
+	if (logout && document.body.contains(logout) && logout.getAttribute("flag") !== "true") {
 		const clone = logout.cloneNode(true);
-		clone.addEventListener("click", () => {
-			store.remove("userCookie");
-			removeCookies().then(() => {
-				window.location.reload();
+		if (clone instanceof HTMLElement) {
+			clone.setAttribute("flag", "true");
+			clone.addEventListener("click", () => {
+				store.remove("userCookie");
+				removeCookies().then(() => {
+					window.location.reload();
+				});
 			});
-		});
-		logout.parentNode?.replaceChild(clone, logout);
+			logout.parentNode?.replaceChild(clone, logout);
+		}
 	} else {
 		setTimeout(() => {
 			listenLogout();
-		}, 100);
+
+		}, 1000);
 	}
 }
 
@@ -51,6 +55,7 @@ export const initState = async (): Promise<void> => {
 
 	listenLogout();
 
+	// 登录为vip用户且未储存vipCookie
 	if (!vipCookie && vipStatus) {
 		store.set("face", face);
 		storeCookies("vipCookie", storeKey).then(() => {
@@ -60,13 +65,20 @@ export const initState = async (): Promise<void> => {
 		});
 	}
 
-	if (!userCookie && !vipStatus) {
-		storeCookies("userCookie", storeKey);
-		if (vipCookie) {
-			window.location.reload();
+	// 登录为普通用户且未储存vipCookie&userCookie
+	if (!vipStatus) {
+		if (!vipCookie) {
+			storeCookies("userCookie", storeKey).then(() => {
+				removeCookies().then(() => {
+					window.location.reload();
+				});
+			});
+		} else if (!userCookie) {
+			storeCookies("userCookie", storeKey).then(() => {
+				window.location.reload();
+			});
 		}
 	}
 
 	printMessage("initState-end");
 };
-
