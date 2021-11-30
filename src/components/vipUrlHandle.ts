@@ -1,9 +1,7 @@
+import { TStoreCookiesItem } from "@/store";
 import { setCookies } from "@/utils/cookie";
 
-export const vipUrlHandle = async (
-	args: any[],
-	vipCookie: Cookie[]
-): Promise<void> => {
+export const vipUrlHandle = async (args: any[], vipCookie: TStoreCookiesItem): Promise<void> => {
 	const url = args[1];
 	const videoUrls = ["/player/"];
 

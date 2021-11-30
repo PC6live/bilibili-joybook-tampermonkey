@@ -1,8 +1,8 @@
-import { store, TStoreCookies } from "@/store";
+import { store, TStoreCookies, TStoreCookiesItem } from "@/store";
 
-const getStoreCookies = (): { vipCookie: Cookie[] | null; userCookie: Cookie[] | null } => {
-	const userCookie: Cookie[] = store.get("userCookie");
-	const vipCookie: Cookie[] = store.get("vipCookie");
+const getStoreCookies = (): TStoreCookies => {
+	const userCookie = store.get("userCookie");
+	const vipCookie = store.get("vipCookie");
 	return {
 		userCookie,
 		vipCookie,
@@ -29,20 +29,39 @@ const storeCookies = async (name: keyof TStoreCookies, queryName: string[]): Pro
 	store.set(name, cookies);
 };
 
-const setCookies = (cookies: Cookie[]) => {
-	const formatCookies = cookies.map((cookie) => {
-		return {
-			domain: cookie.domain,
-			expirationDate: cookie.expirationDate,
-			hostOnly: cookie.hostOnly,
-			httpOnly: cookie.httpOnly,
-			name: cookie.name,
-			path: cookie.path,
-			sameSite: cookie.sameSite,
-			secure: cookie.secure,
-			value: cookie.value,
-		};
-	});
+const setCookies = (cookies: TStoreCookiesItem) => {
+	let formatCookies: TStoreCookiesItem;
+	if (cookies instanceof Array) {
+		formatCookies = cookies.map((cookie) => {
+			return {
+				domain: cookie.domain,
+				expirationDate: cookie.expirationDate,
+				hostOnly: cookie.hostOnly,
+				httpOnly: cookie.httpOnly,
+				name: cookie.name,
+				path: cookie.path,
+				sameSite: cookie.sameSite,
+				secure: cookie.secure,
+				value: cookie.value,
+			};
+		});
+	} else {
+		formatCookies = Object.keys(cookies).map((v) => {
+			const value = cookies[v];
+			return {
+				domain: value.domain,
+				expirationDate: value.expirationDate,
+				hostOnly: value.hostOnly,
+				httpOnly: value.httpOnly,
+				name: value.name,
+				path: value.path,
+				sameSite: value.sameSite,
+				secure: value.secure,
+				value: value.value,
+			};
+		});
+	}
+
 	formatCookies.forEach((cookie) => {
 		GM_cookie.set(cookie);
 	});

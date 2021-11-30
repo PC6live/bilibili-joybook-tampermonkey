@@ -7,18 +7,19 @@ import { getStoreCookies, setCookies } from "./utils/cookie";
 
 const { userCookie, vipCookie } = getStoreCookies();
 
+// 解锁会员限制
 unlockVideo();
 
 // 判断是否是视频
 if (userCookie && vipCookie) {
 	if (isVideo()) {
-		listener(userCookie, vipCookie);
+		listener({ userCookie, vipCookie });
 	} else {
 		setCookies(userCookie);
 	}
 }
 
-// 初始化用户数据
+// 初始化用户数据&储存cookies
 initState();
 
 window.addEventListener("load", () => {

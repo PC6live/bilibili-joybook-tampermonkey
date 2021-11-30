@@ -1,11 +1,13 @@
+export type TStoreCookiesItem = Cookie[] | Record<string, Cookie>;
+
 export type TStoreCookies = {
-	vipCookie: Cookie[];
-	userCookie: Cookie[];
-}
+	vipCookie: TStoreCookiesItem;
+	userCookie: TStoreCookiesItem;
+};
 
 export interface IStore extends TStoreCookies {
 	face: string;
-};
+}
 
 const set = <K extends keyof IStore>(key: K, value: IStore[K]) => {
 	GM_setValue(key, value);

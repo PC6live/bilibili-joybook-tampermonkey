@@ -4,10 +4,12 @@ import { vipUrlHandle } from "@/components/vipUrlHandle";
 import ajaxProxy, { ProxyMap } from "@/lib/ajax-proxy";
 import { lockQuality } from "./lockQuality";
 import { state } from "./state";
+import { TStoreCookies } from "@/store";
 
-export const listener = async (userCookie: Cookie[], vipCookie: Cookie[]): Promise<void> => {
-	printMessage("listening-start");
+export const listener = async (props: TStoreCookies): Promise<void> => {
+  printMessage("listening-start");
 
+  const { userCookie, vipCookie } = props;
 	const proxySettings: ProxyMap = {
 		open(args) {
 			// 默认操作
