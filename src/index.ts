@@ -3,7 +3,7 @@ import unlockVideo from "@/components/unlockVideo";
 import { initState } from "@/components/state";
 import settings from "@/components/settings";
 import { isVideo } from "@/utils/helper";
-import { getStoreCookies, setCookies } from "./utils/cookie";
+import { getStoreCookies, setCookies } from "@/utils/cookie";
 
 const { userCookie, vipCookie } = getStoreCookies();
 

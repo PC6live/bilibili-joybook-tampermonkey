@@ -1,5 +1,5 @@
 import { store } from "@/store";
-import { getCookies, getStoreCookies, removeCookies, storeCookies } from "@/utils/cookie";
+import { getStoreCookies, removeCookies, storeCookies } from "@/utils/cookie";
 import { printMessage } from "@/utils/helper";
 
 export const state = {
