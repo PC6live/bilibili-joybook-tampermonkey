@@ -1,24 +1,498 @@
 // ==UserScript==
-// @name        bilibili-joybook
-// @version     0.0.7
-// @author      PC6live
-// @description 共享大会员
-// @homepage    https://github.com/PC6live/joybook-tampermonkey
-// @supportURL  https://github.com/PC6live/joybook-tampermonkey/issue
-// @include     *://*.bilibili.com/*
-// @exclude     *://passport.bilibili.com/*
-// @grant       GM_cookie
-// @grant       GM_setValue
-// @grant       GM_getValue
-// @grant       GM_addStyle
-// @grant       GM_deleteValue
-// @grant       GM_getTab
-// @grant       GM_getTabs
-// @grant       GM_listValues
-// @grant       GM_saveTab
-// @grant       unsafeWindow
-// @run-at      document-start
-// @noframes    
+// @name          bilibili-joybook
+// @version       0.0.7
+// @description   共享大会员
+// @author        PC6live
+// @match         *://*.bilibili.com/*
+// @exclude       *://passport.bilibili.com/*
+// @homepage      https://github.com/PC6live/bilibili-joybook-tampermonkey
+// @supportURL    https://github.com/PC6live/bilibili-joybook-tampermonkey/issues
+// @grant         GM_cookie
+// @grant         GM_setValue
+// @grant         GM_getValue
+// @grant         GM_addStyle
+// @grant         GM_deleteValue
+// @grant         GM_getTab
+// @grant         GM_getTabs
+// @grant         GM_listValues
+// @grant         GM_saveTab
+// @grant         unsafeWindow
+// @run-at        document-start
+// @noframes      true
 // ==/UserScript==
+(function () {
+    'use strict';
 
-(()=>{"use strict";var e={452:(e,t,o)=>{o.d(t,{Z:()=>s});var n=o(81),i=o.n(n),r=o(645),a=o.n(r)()(i());a.push([e.id,".d-none{display:none}.button{display:flex;min-width:32px;min-height:32px;border-radius:50%;overflow:hidden;border:2px solid #8a8a8a;cursor:pointer}#joybook-container{position:fixed;bottom:30px;left:-30px;transition:.3s ease-in-out}#joybook-settings{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center}#joybook-avatar{position:relative;cursor:pointer;overflow:hidden;border-radius:50%;background-color:#888;border:4px solid #fb7299;opacity:1}#joybook-avatar>img{width:48px;height:48px}#settings-options-container{position:relative}#settings-options-container>*{margin:6px 0}",""]);const s=a},645:e=>{e.exports=function(e){var t=[];return t.toString=function(){return this.map((function(t){var o="",n=void 0!==t[5];return t[4]&&(o+="@supports (".concat(t[4],") {")),t[2]&&(o+="@media ".concat(t[2]," {")),n&&(o+="@layer".concat(t[5].length>0?" ".concat(t[5]):""," {")),o+=e(t),n&&(o+="}"),t[2]&&(o+="}"),t[4]&&(o+="}"),o})).join("")},t.i=function(e,o,n,i,r){"string"==typeof e&&(e=[[null,e,void 0]]);var a={};if(n)for(var s=0;s<this.length;s++){var c=this[s][0];null!=c&&(a[c]=!0)}for(var l=0;l<e.length;l++){var u=[].concat(e[l]);n&&a[u[0]]||(void 0!==r&&(void 0===u[5]||(u[1]="@layer".concat(u[5].length>0?" ".concat(u[5]):""," {").concat(u[1],"}")),u[5]=r),o&&(u[2]?(u[1]="@media ".concat(u[2]," {").concat(u[1],"}"),u[2]=o):u[2]=o),i&&(u[4]?(u[1]="@supports (".concat(u[4],") {").concat(u[1],"}"),u[4]=i):u[4]="".concat(i)),t.push(u))}},t}},81:e=>{e.exports=function(e){return e[1]}},468:(e,t,o)=>{o.r(t),o.d(t,{default:()=>m});var n=o(379),i=o.n(n),r=o(795),a=o.n(r),s=o(569),c=o.n(s),l=o(565),u=o.n(l),d=o(216),f=o.n(d),p=o(589),v=o.n(p),h=o(452),y={};y.styleTagTransform=v(),y.setAttributes=u(),y.insert=c().bind(null,"head"),y.domAPI=a(),y.insertStyleElement=f(),i()(h.Z,y);const m=h.Z&&h.Z.locals?h.Z.locals:void 0},379:e=>{var t=[];function o(e){for(var o=-1,n=0;n<t.length;n++)if(t[n].identifier===e){o=n;break}return o}function n(e,n){for(var r={},a=[],s=0;s<e.length;s++){var c=e[s],l=n.base?c[0]+n.base:c[0],u=r[l]||0,d="".concat(l," ").concat(u);r[l]=u+1;var f=o(d),p={css:c[1],media:c[2],sourceMap:c[3],supports:c[4],layer:c[5]};if(-1!==f)t[f].references++,t[f].updater(p);else{var v=i(p,n);n.byIndex=s,t.splice(s,0,{identifier:d,updater:v,references:1})}a.push(d)}return a}function i(e,t){var o=t.domAPI(t);return o.update(e),function(t){if(t){if(t.css===e.css&&t.media===e.media&&t.sourceMap===e.sourceMap&&t.supports===e.supports&&t.layer===e.layer)return;o.update(e=t)}else o.remove()}}e.exports=function(e,i){var r=n(e=e||[],i=i||{});return function(e){e=e||[];for(var a=0;a<r.length;a++){var s=o(r[a]);t[s].references--}for(var c=n(e,i),l=0;l<r.length;l++){var u=o(r[l]);0===t[u].references&&(t[u].updater(),t.splice(u,1))}r=c}}},569:e=>{var t={};e.exports=function(e,o){var n=function(e){if(void 0===t[e]){var o=document.querySelector(e);if(window.HTMLIFrameElement&&o instanceof window.HTMLIFrameElement)try{o=o.contentDocument.head}catch(e){o=null}t[e]=o}return t[e]}(e);if(!n)throw new Error("Couldn't find a style target. This probably means that the value for the 'insert' parameter is invalid.");n.appendChild(o)}},216:e=>{e.exports=function(e){var t=document.createElement("style");return e.setAttributes(t,e.attributes),e.insert(t,e.options),t}},565:(e,t,o)=>{e.exports=function(e){var t=o.nc;t&&e.setAttribute("nonce",t)}},795:e=>{e.exports=function(e){var t=e.insertStyleElement(e);return{update:function(o){!function(e,t,o){var n="";o.supports&&(n+="@supports (".concat(o.supports,") {")),o.media&&(n+="@media ".concat(o.media," {"));var i=void 0!==o.layer;i&&(n+="@layer".concat(o.layer.length>0?" ".concat(o.layer):""," {")),n+=o.css,i&&(n+="}"),o.media&&(n+="}"),o.supports&&(n+="}");var r=o.sourceMap;r&&"undefined"!=typeof btoa&&(n+="\n/*# sourceMappingURL=data:application/json;base64,".concat(btoa(unescape(encodeURIComponent(JSON.stringify(r))))," */")),t.styleTagTransform(n,e,t.options)}(t,e,o)},remove:function(){!function(e){if(null===e.parentNode)return!1;e.parentNode.removeChild(e)}(t)}}}},589:e=>{e.exports=function(e,t){if(t.styleSheet)t.styleSheet.cssText=e;else{for(;t.firstChild;)t.removeChild(t.firstChild);t.appendChild(document.createTextNode(e))}}},879:function(e,t,o){var n=this&&this.__awaiter||function(e,t,o,n){return new(o||(o=Promise))((function(i,r){function a(e){try{c(n.next(e))}catch(e){r(e)}}function s(e){try{c(n.throw(e))}catch(e){r(e)}}function c(e){var t;e.done?i(e.value):(t=e.value,t instanceof o?t:new o((function(e){e(t)}))).then(a,s)}c((n=n.apply(e,t||[])).next())}))},i=this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}};Object.defineProperty(t,"__esModule",{value:!0}),t.listener=void 0;const r=o(603),a=o(33),s=o(606),c=i(o(180)),l=o(145),u=o(382);t.listener=e=>n(void 0,void 0,void 0,(function*(){(0,a.printMessage)("listening-start");const{userCookie:t,vipCookie:o}=e,n={open:e=>(u.state.highQuality&&(0,l.lockQuality)(u.state.highQuality),(0,r.setCookies)(t),(0,s.vipUrlHandle)(e,o),!1)};c.default.proxyAjax(n),(0,a.printMessage)("listening-end")}))},145:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.lockQuality=void 0,t.lockQuality=e=>{const t=localStorage.getItem("bilibili_player_settings");if(t){const o=JSON.parse(t);o.setting_config.defquality=e,localStorage.setItem("bilibili_player_settings",JSON.stringify(o))}}},683:function(e,t,o){var n=this&&this.__awaiter||function(e,t,o,n){return new(o||(o=Promise))((function(i,r){function a(e){try{c(n.next(e))}catch(e){r(e)}}function s(e){try{c(n.throw(e))}catch(e){r(e)}}function c(e){var t;e.done?i(e.value):(t=e.value,t instanceof o?t:new o((function(e){e(t)}))).then(a,s)}c((n=n.apply(e,t||[])).next())}))},i=this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}};Object.defineProperty(t,"__esModule",{value:!0});const r=i(o(180)),a=o(923),s=o(603),c=o(33),l=document.createElement("div");t.default=()=>{(0,c.printMessage)("settings-start"),l.id="joybook-container",document.body.appendChild(l),function(){const e=a.store.get("face");if(!e)return;const t=(0,c.createElement)(`<div id="joybook-avatar">\n\t<img src=${e}></img>\n\t</div>`);t&&l.appendChild(t)}(),function(){let e;l.addEventListener("mouseenter",(()=>{e&&window.clearTimeout(e),l.style.transform="translateX(50px)"})),l.addEventListener("mouseleave",(()=>{e=window.setTimeout((()=>{l.style.transform="translateX(0px)"}),1500)})),l.addEventListener("click",(()=>n(this,void 0,void 0,(function*(){window.confirm("确定要删除脚本数据吗？")&&(r.default.unProxyAjax(),(0,c.deleteAllValue)(),yield(0,s.removeCookies)(),window.location.reload())}))))}(),(0,c.printMessage)("settings-end")}},382:function(e,t,o){var n=this&&this.__awaiter||function(e,t,o,n){return new(o||(o=Promise))((function(i,r){function a(e){try{c(n.next(e))}catch(e){r(e)}}function s(e){try{c(n.throw(e))}catch(e){r(e)}}function c(e){var t;e.done?i(e.value):(t=e.value,t instanceof o?t:new o((function(e){e(t)}))).then(a,s)}c((n=n.apply(e,t||[])).next())}))};Object.defineProperty(t,"__esModule",{value:!0}),t.initState=t.state=void 0;const i=o(923),r=o(603),a=o(33);function s(){var e;const t=document.querySelector(".logout");if(t&&document.body.contains(t)&&"true"!==t.getAttribute("flag")){const o=t.cloneNode(!0);o instanceof HTMLElement&&(o.setAttribute("flag","true"),o.addEventListener("click",(()=>{i.store.remove("userCookie"),(0,r.removeCookies)().then((()=>{window.location.reload()}))})),null===(e=t.parentNode)||void 0===e||e.replaceChild(o,t))}else setTimeout((()=>{s()}),1e3)}t.state={isLogin:!1,vipStatus:0,face:"",highQuality:""},t.initState=()=>n(void 0,void 0,void 0,(function*(){(0,a.printMessage)("initState-start"),yield n(void 0,void 0,void 0,(function*(){const e=yield fetch("https://api.bilibili.com/x/web-interface/nav",{method:"Get",credentials:"include"});if(!e)return;const o=(yield e.json()).data;t.state.isLogin=o.isLogin,t.state.vipStatus=o.vipStatus,t.state.face=o.face}));const e=["SESSDATA","DedeUserID","DedeUserID__ckMd5"],{isLogin:o,vipStatus:c,face:l}=t.state,{vipCookie:u,userCookie:d}=(0,r.getStoreCookies)();o&&(s(),!u&&c&&(i.store.set("face",l),(0,r.storeCookies)("vipCookie",e).then((()=>{(0,r.removeCookies)().then((()=>{window.location.reload()}))}))),c||(u?d||(0,r.storeCookies)("userCookie",e).then((()=>{window.location.reload()})):(0,r.storeCookies)("userCookie",e).then((()=>{(0,r.removeCookies)().then((()=>{window.location.reload()}))}))),(0,a.printMessage)("initState-end"))}))},529:(e,t,o)=>{Object.defineProperty(t,"__esModule",{value:!0});const n=o(33),i=o(145),r=o(382);t.default=()=>{let e;(0,n.printMessage)("unlockVideo-start"),Object.defineProperty(unsafeWindow,"__PGC_USERSTATE__",{set(t){e=Object.assign(Object.assign({},t),{area_limit:0,ban_area_show:1,follow:1,follow_status:2,login:1,pay:1,pay_pack_paid:0,sponsor:0,vip_info:{due_date:0,status:1,type:2}}),delete e.dialog},get:()=>e}),Object.defineProperty(unsafeWindow,"__playinfo__",{configurable:!0,set(e){const{result:t,data:o}=e;if(t){const e=t.accept_quality[0].toString();r.state.highQuality=e,(0,i.lockQuality)(e)}else if(o){const e=o.accept_quality[0].toString();r.state.highQuality=e,(0,i.lockQuality)(e)}},get:()=>({})}),(0,n.printMessage)("unlockVideo-end")}},606:function(e,t,o){var n=this&&this.__awaiter||function(e,t,o,n){return new(o||(o=Promise))((function(i,r){function a(e){try{c(n.next(e))}catch(e){r(e)}}function s(e){try{c(n.throw(e))}catch(e){r(e)}}function c(e){var t;e.done?i(e.value):(t=e.value,t instanceof o?t:new o((function(e){e(t)}))).then(a,s)}c((n=n.apply(e,t||[])).next())}))};Object.defineProperty(t,"__esModule",{value:!0}),t.vipUrlHandle=void 0;const i=o(603);t.vipUrlHandle=(e,t)=>n(void 0,void 0,void 0,(function*(){const o=e[1],n=["/player/"];for(let e=0;e<n.length;e+=1)if(o.includes(n[e]))return void(t&&(0,i.setCookies)(t))}))},607:function(e,t,o){var n=this&&this.__createBinding||(Object.create?function(e,t,o,n){void 0===n&&(n=o),Object.defineProperty(e,n,{enumerable:!0,get:function(){return t[o]}})}:function(e,t,o,n){void 0===n&&(n=o),e[n]=t[o]}),i=this&&this.__setModuleDefault||(Object.create?function(e,t){Object.defineProperty(e,"default",{enumerable:!0,value:t})}:function(e,t){e.default=t}),r=this&&this.__importStar||function(e){if(e&&e.__esModule)return e;var t={};if(null!=e)for(var o in e)"default"!==o&&Object.prototype.hasOwnProperty.call(e,o)&&n(t,e,o);return i(t,e),t},a=this&&this.__importDefault||function(e){return e&&e.__esModule?e:{default:e}};Object.defineProperty(t,"__esModule",{value:!0});const s=o(879),c=a(o(529)),l=o(382),u=a(o(683)),d=o(33),f=o(603),{userCookie:p,vipCookie:v}=(0,f.getStoreCookies)();(0,c.default)(),p&&v&&((0,d.isVideo)()?(0,s.listener)({userCookie:p,vipCookie:v}):(0,f.setCookies)(p)),(0,l.initState)(),window.addEventListener("load",(()=>{Promise.resolve().then((()=>r(o(468)))),(0,u.default)()}))},180:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0});const o=new class{constructor(){this.proxyAjax=e=>{if(null==e)throw new TypeError("proxyMap can not be undefined or null");this.RealXMLHttpRequest=this.RealXMLHttpRequest||unsafeWindow.XMLHttpRequest,this.realXMLHttpRequest=this.realXMLHttpRequest||new unsafeWindow.XMLHttpRequest;const t=this,o=new Proxy(this.RealXMLHttpRequest,{construct(o){const n=new o;return new Proxy(n,{get(o,n,i){let r="";try{r=typeof t.realXMLHttpRequest[n]}catch(e){return console.error(e),o[n]}if("function"!==r){const r=t.hasOwnProperty(`_${n.toString()}`)?t[`_${n.toString()}`]:o[n],a=(e[n]||{}).getter;return"function"==typeof a&&a.call(o,r,i)||r}return(...t)=>{let r=t;if(e[n]){const a=e[n].call(o,t,i);if(!0===a)return;a&&(r="function"==typeof a?a.call(o,...t):a)}return o[n].call(o,...r)}},set(o,n,i,r){let a="";try{a=typeof t.realXMLHttpRequest[n]}catch(e){console.error(e)}if("function"===a)return!0;if("function"==typeof e[n])o[n]=()=>{e[n].call(o,r)||i.call(r)};else{const a=(e[n]||{}).setter;try{o[n]="function"==typeof a&&a.call(o,i,r)||("function"==typeof i?i.bind(r):i)}catch(e){if(!0!==a)throw e;t[`_${n.toString()}`]=i}}return!0}})}});return unsafeWindow.XMLHttpRequest=o,this.RealXMLHttpRequest},this.unProxyAjax=()=>{this.RealXMLHttpRequest&&(unsafeWindow.XMLHttpRequest=this.RealXMLHttpRequest),this.RealXMLHttpRequest=void 0}}};t.default=o},923:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.store=void 0,t.store={set:(e,t)=>{GM_setValue(e,t)},get:(e,t)=>GM_getValue(e,t),remove:e=>{GM_deleteValue(e)}}},603:function(e,t,o){var n=this&&this.__awaiter||function(e,t,o,n){return new(o||(o=Promise))((function(i,r){function a(e){try{c(n.next(e))}catch(e){r(e)}}function s(e){try{c(n.throw(e))}catch(e){r(e)}}function c(e){var t;e.done?i(e.value):(t=e.value,t instanceof o?t:new o((function(e){e(t)}))).then(a,s)}c((n=n.apply(e,t||[])).next())}))};Object.defineProperty(t,"__esModule",{value:!0}),t.getStoreCookies=t.setCookies=t.storeCookies=t.removeCookies=t.getCookies=void 0;const i=o(923);t.getStoreCookies=()=>({userCookie:i.store.get("userCookie"),vipCookie:i.store.get("vipCookie")});const r=()=>new Promise((e=>{GM_cookie.list({},(t=>e(t)))}));t.getCookies=r,t.removeCookies=()=>n(void 0,void 0,void 0,(function*(){(yield r()).forEach((e=>{GM_cookie.delete({name:e.name})}))})),t.storeCookies=(e,t)=>n(void 0,void 0,void 0,(function*(){const o=(yield r()).filter((e=>e.name&&t.includes(e.name)));i.store.set(e,o)})),t.setCookies=e=>{let t;t=e instanceof Array?e.map((e=>({domain:e.domain,expirationDate:e.expirationDate,hostOnly:e.hostOnly,httpOnly:e.httpOnly,name:e.name,path:e.path,sameSite:e.sameSite,secure:e.secure,value:e.value}))):Object.keys(e).map((t=>{const o=e[t];return{domain:o.domain,expirationDate:o.expirationDate,hostOnly:o.hostOnly,httpOnly:o.httpOnly,name:o.name,path:o.path,sameSite:o.sameSite,secure:o.secure,value:o.value}})),t.forEach((e=>{GM_cookie.set(e)}))}},33:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.printMessage=t.deleteAllValue=t.isVideo=t.createElement=t.sleep=void 0,t.sleep=(e=1)=>new Promise((t=>setTimeout(t,1e3*e))),t.createElement=e=>{const t=document.createElement("div");return t.innerHTML=e,t.firstElementChild},t.isVideo=()=>/(bangumi\/play\/*)|(video\/*)/gi.test(window.location.pathname),t.deleteAllValue=()=>GM_listValues().forEach((e=>GM_deleteValue(e))),t.printMessage=e=>{}}},t={};function o(n){var i=t[n];if(void 0!==i)return i.exports;var r=t[n]={id:n,exports:{}};return e[n].call(r.exports,r,r.exports,o),r.exports}o.n=e=>{var t=e&&e.__esModule?()=>e.default:()=>e;return o.d(t,{a:t}),t},o.d=(e,t)=>{for(var n in t)o.o(t,n)&&!o.o(e,n)&&Object.defineProperty(e,n,{enumerable:!0,get:t[n]})},o.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),o.r=e=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},o(607)})();
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+
+    function __awaiter(thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    }
+
+    const obj = {
+        face: "",
+        cookiesReady: false,
+        init: false,
+    };
+    const set = (key, value) => {
+        GM_setValue(key, value);
+    };
+    const get = (key, defaultValue) => {
+        return GM_getValue(key, defaultValue);
+    };
+    const remove = (key) => {
+        GM_deleteValue(key);
+    };
+    const initStore = () => {
+        if (get("init"))
+            return;
+        Object.keys(obj).forEach(v => {
+            const key = v;
+            set(key, obj[key]);
+        });
+        set("init", true);
+    };
+    const getAll = () => {
+        const result = {};
+        Object.keys(obj).forEach(v => {
+            const key = v;
+            result[key] = get(key);
+        });
+        return result;
+    };
+    const store = { set, get, remove, initStore, getAll };
+
+    const getStoreCookies = () => {
+        const userCookie = store.get("userCookie");
+        const vipCookie = store.get("vipCookie");
+        return {
+            userCookie,
+            vipCookie,
+        };
+    };
+    const getCookies = () => {
+        return new Promise((resolve) => {
+            GM_cookie.list({}, (cookies) => resolve(cookies));
+        });
+    };
+    const removeCookies = () => __awaiter(void 0, void 0, void 0, function* () {
+        const cookies = yield getCookies();
+        cookies.forEach((cookie) => {
+            GM_cookie.delete({ name: cookie.name });
+        });
+    });
+    const storeCookies = (name, queryName) => __awaiter(void 0, void 0, void 0, function* () {
+        const cookies = (yield getCookies()).filter((cookie) => {
+            return cookie.name && queryName.includes(cookie.name);
+        });
+        store.set(name, cookies);
+    });
+    const setCookies = (cookies) => {
+        const formatCookies = cookies.map((cookie) => {
+            return {
+                domain: cookie.domain,
+                expirationDate: cookie.expirationDate,
+                hostOnly: cookie.hostOnly,
+                httpOnly: cookie.httpOnly,
+                name: cookie.name,
+                path: cookie.path,
+                sameSite: cookie.sameSite,
+                secure: cookie.secure,
+                value: cookie.value,
+            };
+        });
+        formatCookies.forEach((cookie) => {
+            GM_cookie.set(cookie);
+        });
+    };
+
+    const getUserType = () => __awaiter(void 0, void 0, void 0, function* () {
+        const resp = yield fetch("//api.bilibili.com/x/web-interface/nav", { method: "Get", credentials: "include" });
+        const result = yield resp.json();
+        return result.data;
+    });
+    const cookiesReady = () => {
+        const { userCookie, vipCookie } = getStoreCookies();
+        return !!userCookie && !!vipCookie;
+    };
+    const initialize = () => __awaiter(void 0, void 0, void 0, function* () {
+        // 初始化tampermonkey store & 状态
+        store.initStore();
+        // 获取登录状态
+        const { face, isLogin, vipStatus } = yield getUserType();
+        if (!isLogin)
+            return;
+        const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"];
+        const { vipCookie, userCookie } = getStoreCookies();
+        store.set("cookiesReady", cookiesReady());
+        if (store.get("cookiesReady"))
+            return setCookies(userCookie);
+        console.log(store.get("cookiesReady"));
+        const reload = () => window.location.reload();
+        if (vipStatus) {
+            // vip用户
+            store.set("face", face);
+            if (userCookie) {
+                // 登录为vip用户并且储存了userCookie
+                storeCookies("vipCookie", storeKey).then(() => {
+                    reload();
+                });
+            }
+            else {
+                // 登录为vip用户且未储存userCookie
+                storeCookies("vipCookie", storeKey).then(() => {
+                    removeCookies().then(() => {
+                        reload();
+                    });
+                });
+            }
+        }
+        else {
+            // 普通用户
+            if (vipCookie) {
+                // 登录为普通用户并且储存了vipCookie
+                storeCookies("userCookie", storeKey).then(() => {
+                    reload();
+                });
+            }
+            else {
+                // 登录为普通用户且未储存vipCookie
+                storeCookies("userCookie", storeKey).then(() => {
+                    removeCookies().then(() => {
+                        reload();
+                    });
+                });
+            }
+        }
+    });
+
+    const sleep = (time = 1) => new Promise((resolve) => setTimeout(resolve, 1000 * time));
+    const createElement = (str) => {
+        const el = document.createElement("div");
+        el.innerHTML = str;
+        return el.firstElementChild;
+    };
+    const deleteAllValue = () => GM_listValues().forEach((v) => GM_deleteValue(v));
+
+    const XHR = unsafeWindow.XMLHttpRequest;
+    const xhrInstance = new unsafeWindow.XMLHttpRequest();
+    const proxyAjax = (proxyMap) => {
+        // 参数校验
+        if (proxyMap == null) {
+            throw new TypeError("proxyMap can not be undefined or null");
+        }
+        const xhrCache = {};
+        // 代理 XMLHttpRequest 对象
+        const proxy = new Proxy(unsafeWindow.XMLHttpRequest, {
+            // 代理 new 操作符
+            construct(Target) {
+                const xhr = new Target();
+                // 代理 XMLHttpRequest 对象实例
+                const xhrProxy = new Proxy(xhr, {
+                    // 代理 读取属性 操作
+                    get(target, p, receiver) {
+                        let type = "";
+                        try {
+                            type = typeof xhrInstance[p]; // 在某些浏览器可能会抛出错误
+                        }
+                        catch (error) {
+                            console.error(error);
+                            return target[p];
+                        }
+                        const value = target[p];
+                        const proxyValue = proxyMap[p];
+                        // 代理一些属性诸如 response, responseText...
+                        if (type !== "function") {
+                            // 通过缓存属性值进 _xxx，代理一些 只读属性
+                            const v = xhrCache.hasOwnProperty(`_${p.toString()}`)
+                                ? xhrCache[`_${p.toString()}`]
+                                : target[p];
+                            const attrGetterProxy = (proxyValue || {})["getter"];
+                            if (typeof attrGetterProxy === "function") {
+                                return attrGetterProxy.call(target, v, receiver);
+                            }
+                            else {
+                                return v;
+                            }
+                        }
+                        // 代理一些属性诸如 open, send...
+                        return (...args) => {
+                            var _a;
+                            const next = () => value.call(target, ...args);
+                            if (p === "open") {
+                                receiver.method = args[0];
+                                receiver.url = args[1];
+                            }
+                            if (proxyValue) {
+                                if (p === "send") {
+                                    return (_a = proxyValue) === null || _a === void 0 ? void 0 : _a.call(target, args, receiver, next);
+                                }
+                                else {
+                                    proxyValue.call(target, args, receiver);
+                                }
+                            }
+                            return next();
+                        };
+                    },
+                    // 代理 设置属性值 操作
+                    set(target, p, value, receiver) {
+                        const type = typeof xhrInstance[p];
+                        const proxyValue = proxyMap[p];
+                        // 禁止修改一些原生方法如 open,send...
+                        if (type === "function")
+                            return true;
+                        // 代理一些事件属性诸如 onreadystatechange,onload...
+                        if (typeof proxyValue === "function") {
+                            target[p] = () => {
+                                proxyValue.call(target, receiver) || value.call(receiver);
+                            };
+                        }
+                        else {
+                            // 代理一些属性如 response, responseText
+                            const attrSetterProxy = (proxyValue || {})["setter"];
+                            try {
+                                target[p] =
+                                    (typeof attrSetterProxy === "function" &&
+                                        attrSetterProxy.call(target, value, receiver)) ||
+                                        (typeof value === "function" ? value.bind(receiver) : value);
+                            }
+                            catch (error) {
+                                // 代理只读属性是会抛出错误
+                                if (attrSetterProxy === true) {
+                                    // 如果该 只读属性 的 代理setter 为 true
+                                    // 将 value 缓存进 _xxx
+                                    xhrCache[`_${p.toString()}`] = value;
+                                }
+                                else {
+                                    throw error;
+                                }
+                            }
+                        }
+                        return true;
+                    },
+                });
+                return xhrProxy;
+            },
+        });
+        unsafeWindow["XMLHttpRequest"] = proxy;
+    };
+    /**
+     * @description 取消代理 Ajax 的方法，调用这个方法取消代理原生 XMLHttpRequest 对象
+     * @author Lazy Duke
+     * @date 2019-10-27
+     * @returns
+     */
+    const unProxyAjax = () => {
+        unsafeWindow["XMLHttpRequest"] = XHR;
+    };
+
+    // 监听登录&reload
+    const reloadByLogin = (url) => {
+        if (url.includes("/passport-login/web/")) {
+            console.log("login reload");
+            sleep(1).then(() => window.location.reload());
+        }
+    };
+    // 监听登出&reload
+    const listenLogout = (url) => {
+        if (url.includes("/login/exit/")) {
+            store.remove("userCookie");
+            removeCookies().then(() => window.location.reload());
+        }
+    };
+    // 判断主要链接
+    const handleUrl = (url) => {
+        const includes = [
+            // bangumi
+            "api.bilibili.com/pgc/player/web/playurl",
+            // video
+            "api.bilibili.com/x/player/playurl",
+            "api.bilibili.com/x/player/v2",
+        ];
+        const excludes = ["data.bilibili.com"];
+        for (let i = 0; i < excludes.length; ++i) {
+            if (url.includes(excludes[i]))
+                return false;
+        }
+        for (let i = 0; i < includes.length; ++i) {
+            if (url.includes(includes[i]))
+                return true;
+        }
+        return false;
+    };
+    const listenerAjax = () => __awaiter(void 0, void 0, void 0, function* () {
+        const { vipCookie, userCookie } = getStoreCookies();
+        const proxySettings = {
+            open: (_args, xhr) => {
+                reloadByLogin(xhr.url);
+                listenLogout(xhr.url);
+            },
+            send: (_args, xhr, next) => {
+                if (handleUrl(xhr.url) && store.get("cookiesReady"))
+                    setCookies(vipCookie);
+                next();
+            },
+            onloadend: () => {
+                if (store.get("cookiesReady"))
+                    setCookies(userCookie);
+            }
+        };
+        proxyAjax(proxySettings);
+    });
+
+    const lockQuality = (quality) => {
+        const bilibiliPlayerSettings = localStorage.getItem("bilibili_player_settings");
+        if (bilibiliPlayerSettings) {
+            const bilibiliPlayerSettingsParse = JSON.parse(bilibiliPlayerSettings);
+            bilibiliPlayerSettingsParse.setting_config.defquality = Number(quality);
+            localStorage.setItem("bilibili_player_settings", JSON.stringify(bilibiliPlayerSettingsParse));
+        }
+    };
+
+    const unlockVideo = () => {
+        let PGC;
+        Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
+            set(value) {
+                PGC = Object.assign(Object.assign({}, value), { area_limit: 0, ban_area_show: 1, follow: 1, follow_status: 2, login: 1, pay: 1, pay_pack_paid: 0, sponsor: 0, vip_info: {
+                        due_date: 0,
+                        status: 1,
+                        type: 2,
+                    } });
+                delete PGC.dialog;
+            },
+            get() {
+                return PGC;
+            },
+        });
+        Object.defineProperty(unsafeWindow, "__playinfo__", {
+            configurable: true,
+            set(value) {
+                var _a;
+                const highQuality = (_a = (value.result || value.data)) === null || _a === void 0 ? void 0 : _a.accept_quality[0].toString();
+                if (highQuality) {
+                    lockQuality(highQuality);
+                }
+            },
+            get() {
+                return {};
+            },
+        });
+    };
+
+    const container = document.createElement("div");
+    function avatar() {
+        const face = store.get("face");
+        if (!face)
+            return;
+        const html = createElement(`<div id="joybook-avatar">
+	<img src=${face}></img>
+	</div>`);
+        if (html)
+            container.appendChild(html);
+    }
+    function handleEvent() {
+        const delay = 1500;
+        let timeout;
+        const onMouseEnter = () => {
+            if (timeout)
+                window.clearTimeout(timeout);
+            container.style.transform = "translateX(50px)";
+        };
+        const onMouseLeave = () => {
+            timeout = window.setTimeout(() => {
+                container.style.transform = "translateX(0px)";
+            }, delay);
+        };
+        const onDeleteClick = () => __awaiter(this, void 0, void 0, function* () {
+            const result = window.confirm("确定要删除脚本数据吗？");
+            if (!result)
+                return;
+            unProxyAjax();
+            deleteAllValue();
+            yield removeCookies();
+            window.location.reload();
+        });
+        container.addEventListener("mouseenter", onMouseEnter);
+        container.addEventListener("mouseleave", onMouseLeave);
+        container.addEventListener("click", onDeleteClick);
+    }
+    function createContainer() {
+        container.id = "joybook-container";
+        document.body.appendChild(container);
+        avatar();
+        handleEvent();
+    }
+    const settings = () => {
+        createContainer();
+    };
+
+    // 解锁会员限制
+    unlockVideo();
+    // 初始化用户数据&储存cookies
+    initialize();
+    // 监听XHR
+    listenerAjax();
+    window.addEventListener("load", () => {
+        Promise.resolve().then(function () { return global; });
+        // 渲染设定
+        settings();
+    });
+
+    function styleInject(css, ref) {
+      if ( ref === void 0 ) ref = {};
+      var insertAt = ref.insertAt;
+
+      if (!css || typeof document === 'undefined') { return; }
+
+      var head = document.head || document.getElementsByTagName('head')[0];
+      var style = document.createElement('style');
+      style.type = 'text/css';
+
+      if (insertAt === 'top') {
+        if (head.firstChild) {
+          head.insertBefore(style, head.firstChild);
+        } else {
+          head.appendChild(style);
+        }
+      } else {
+        head.appendChild(style);
+      }
+
+      if (style.styleSheet) {
+        style.styleSheet.cssText = css;
+      } else {
+        style.appendChild(document.createTextNode(css));
+      }
+    }
+
+    var css_248z = ".d-none {\n  display: none;\n}\n\n.button {\n  display: flex;\n  min-width: 32px;\n  min-height: 32px;\n  border-radius: 50%;\n  overflow: hidden;\n  border: 2px solid #8a8a8a;\n  cursor: pointer;\n}\n\n#joybook-container {\n  z-index: 99;\n  width: 48px;\n  height: 48px;\n  position: fixed;\n  bottom: 30px;\n  left: -30px;\n  transition: 0.3s ease-in-out;\n}\n\n#joybook-settings {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n}\n\n#joybook-avatar {\n  position: relative;\n  cursor: pointer;\n  overflow: hidden;\n  border-radius: 50%;\n  background-color: #888888;\n  border: 4px solid #fb7299;\n  opacity: 1;\n  width: 100%;\n  height: 100%;\n}\n#joybook-avatar > img {\n  width: 100%;\n  height: 100%;\n}\n\n#settings-options-container {\n  position: relative;\n}\n#settings-options-container > * {\n  margin: 6px 0;\n}";
+    var stylesheet=".d-none {\n  display: none;\n}\n\n.button {\n  display: flex;\n  min-width: 32px;\n  min-height: 32px;\n  border-radius: 50%;\n  overflow: hidden;\n  border: 2px solid #8a8a8a;\n  cursor: pointer;\n}\n\n#joybook-container {\n  z-index: 99;\n  width: 48px;\n  height: 48px;\n  position: fixed;\n  bottom: 30px;\n  left: -30px;\n  transition: 0.3s ease-in-out;\n}\n\n#joybook-settings {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n}\n\n#joybook-avatar {\n  position: relative;\n  cursor: pointer;\n  overflow: hidden;\n  border-radius: 50%;\n  background-color: #888888;\n  border: 4px solid #fb7299;\n  opacity: 1;\n  width: 100%;\n  height: 100%;\n}\n#joybook-avatar > img {\n  width: 100%;\n  height: 100%;\n}\n\n#settings-options-container {\n  position: relative;\n}\n#settings-options-container > * {\n  margin: 6px 0;\n}";
+    styleInject(css_248z);
+
+    var global = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        'default': css_248z,
+        stylesheet: stylesheet
+    });
+
+})();
+//# sourceMappingURL=joybook.user.js.map

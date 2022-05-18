@@ -1,145 +1,121 @@
-/**
- * @description Ajax hook refactor by es6 proxy.
- * @author Lazy Duke
- * @email weiguocai.fzu@gmail.com
- * @class AjaxProxy
- */
-/* eslint-disable */
-// @ts-nocheck
-class AjaxProxy {
-	// 缓存原生的 XMLHttpRequest 对象
-	private RealXMLHttpRequest: typeof XMLHttpRequest;
-	// 缓存原生的 XMLHttpRequest 对象实例 用来后续的 setter 里的 type 检查
-	private realXMLHttpRequest: XMLHttpRequest;
+const XHR = unsafeWindow.XMLHttpRequest;
+const xhrInstance = new unsafeWindow.XMLHttpRequest();
 
-	/**
-	 * @description 代理 Ajax 的方法，调用这个方法开始代理原生 XMLHttpRequest 对象
-	 * @author Lazy Duke
-	 * @date 2019-10-27
-	 * @param {ProxyMap} proxyMap
-	 * @returns
-	 */
-	public proxyAjax = (proxyMap: ProxyMap) => {
-		// 参数校验
-		if (proxyMap == null) {
-			throw new TypeError("proxyMap can not be undefined or null");
-		}
+export const proxyAjax = (proxyMap: ProxyMap): void => {
+	// 参数校验
+	if (proxyMap == null) {
+		throw new TypeError("proxyMap can not be undefined or null");
+	}
 
-		// 缓存操作，并防止多重代理
-		this.RealXMLHttpRequest = this.RealXMLHttpRequest || unsafeWindow["XMLHttpRequest"];
-		this.realXMLHttpRequest = this.realXMLHttpRequest || new unsafeWindow["XMLHttpRequest"]();
+	const xhrCache = {} as Record<string, any>;
 
-		const that = this;
+	// 代理 XMLHttpRequest 对象
+	const proxy = new Proxy(unsafeWindow.XMLHttpRequest, {
+		// 代理 new 操作符
+		construct(Target) {
+			const xhr = new Target();
+			// 代理 XMLHttpRequest 对象实例
+			const xhrProxy = new Proxy(xhr, {
+				// 代理 读取属性 操作
+				get(target, p: keyof XMLHttpRequest, receiver) {
+					let type = "";
+					try {
+						type = typeof xhrInstance[p]; // 在某些浏览器可能会抛出错误
+					} catch (error) {
+						console.error(error);
+						return target[p];
+					}
+					const value = target[p];
+					const proxyValue = proxyMap[p as keyof ProxyMap] as any;
 
-		// 代理 XMLHttpRequest 对象
-		const proxy = new Proxy(this.RealXMLHttpRequest, {
-			// 代理 new 操作符
-			construct(Target) {
-				const xhr = new Target();
-				// 代理 XMLHttpRequest 对象实例
-				const xhrProxy = new Proxy(xhr, {
-					// 代理 读取属性 操作
-					get(target, p, receiver) {
-						let type = "";
-						try {
-							type = typeof that.realXMLHttpRequest[p]; // 在某些浏览器可能会抛出错误
-						} catch (error) {
-							console.error(error);
-							return target[p];
-						}
+					// 代理一些属性诸如 response, responseText...
+					if (type !== "function") {
+						// 通过缓存属性值进 _xxx，代理一些 只读属性
+						const v = xhrCache.hasOwnProperty(`_${p.toString()}`)
+							? xhrCache[`_${p.toString()}`]
+							: target[p];
 
-						// 代理一些属性诸如 response, responseText...
-						if (type !== "function") {
-							// 通过缓存属性值进 _xxx，代理一些 只读属性
-							const v = that.hasOwnProperty(`_${p.toString()}`) ? that[`_${p.toString()}`] : target[p];
-							const attrGetterProxy = (proxyMap[p] || {})["getter"];
-							return (
-								(typeof attrGetterProxy === "function" && attrGetterProxy.call(target, v, receiver)) ||
-								v
-							);
-						}
+						const attrGetterProxy = (proxyValue || {})["getter"];
 
-						// 代理一些属性诸如 open, send...
-						return (...args) => {
-							let newArgs = args;
-							if (proxyMap[p]) {
-								const result = proxyMap[p].call(target, args, receiver);
-								// 返回值为 true，终止方法
-								if (result === true) {
-									return;
-								}
-								// 返回其他 truthy 值，当做新参数传入
-								if (result) {
-									newArgs = typeof result === "function" ? result.call(target, ...args) : result;
-								}
-							}
-							return target[p].call(target, ...newArgs);
-						};
-					},
-					// 代理 设置属性值 操作
-					set(target, p, value, receiver) {
-						let type = "";
-						try {
-							type = typeof that.realXMLHttpRequest[p]; // 在某些浏览器可能会抛出错误
-						} catch (error) {
-							console.error(error);
-						}
-
-						// 禁止修改一些原生方法如 open,send...
-						if (type === "function") return true;
-
-						// 代理一些事件属性诸如 onreadystatechange,onload...
-						if (typeof proxyMap[p] === "function") {
-							target[p] = () => {
-								proxyMap[p].call(target, receiver) || value.call(receiver);
-							};
+						if (typeof attrGetterProxy === "function") {
+							return attrGetterProxy.call(target, v, receiver);
 						} else {
-							// 代理一些属性如 response, responseText
-							const attrSetterProxy = (proxyMap[p] || {})["setter"];
-							try {
-								target[p] =
-									(typeof attrSetterProxy === "function" &&
-										attrSetterProxy.call(target, value, receiver)) ||
-									(typeof value === "function" ? value.bind(receiver) : value);
-							} catch (error) {
-								// 代理只读属性是会抛出错误
-								if (attrSetterProxy === true) {
-									// 如果该 只读属性 的 代理setter 为 true
-									// 将 value 缓存进 _xxx
-									that[`_${p.toString()}`] = value;
-								} else {
-									throw error;
-								}
+							return v;
+						}
+					}
+
+					// 代理一些属性诸如 open, send...
+					return (...args: any[]) => {
+						const next = () => value.call(target, ...args);
+
+						if (p === "open") {
+							receiver.method = args[0];
+							receiver.url = args[1];
+						}
+
+            if (proxyValue) {
+              if (p === "send") {
+                return (proxyValue as ProxyMap["send"])?.call(target, args, receiver, next);
+              } else {
+                proxyValue.call(target, args, receiver);
+              }
+            }
+
+						return next();
+					};
+				},
+				// 代理 设置属性值 操作
+				set(target, p: keyof XMLHttpRequest, value, receiver) {
+					const type = typeof xhrInstance[p];
+
+					const proxyValue = proxyMap[p as keyof ProxyMap] as any;
+
+					// 禁止修改一些原生方法如 open,send...
+					if (type === "function") return true;
+
+					// 代理一些事件属性诸如 onreadystatechange,onload...
+					if (typeof proxyValue === "function") {
+						(target[p] as any) = () => {
+							proxyValue.call(target, receiver) || value.call(receiver);
+						};
+					} else {
+						// 代理一些属性如 response, responseText
+						const attrSetterProxy = (proxyValue || {})["setter"];
+						try {
+							(target[p] as any) =
+								(typeof attrSetterProxy === "function" &&
+									attrSetterProxy.call(target, value, receiver)) ||
+								(typeof value === "function" ? value.bind(receiver) : value);
+						} catch (error) {
+							// 代理只读属性是会抛出错误
+							if (attrSetterProxy === true) {
+								// 如果该 只读属性 的 代理setter 为 true
+								// 将 value 缓存进 _xxx
+								xhrCache[`_${p.toString()}`] = value;
+							} else {
+								throw error;
 							}
 						}
-						return true;
-					},
-				});
-				return xhrProxy;
-			},
-		});
+					}
+					return true;
+				},
+			});
+			return xhrProxy;
+		},
+	});
 
-		unsafeWindow["XMLHttpRequest"] = proxy;
-		return this.RealXMLHttpRequest;
-	};
+	unsafeWindow["XMLHttpRequest"] = proxy;
+};
 
-	/**
-	 * @description 取消代理 Ajax 的方法，调用这个方法取消代理原生 XMLHttpRequest 对象
-	 * @author Lazy Duke
-	 * @date 2019-10-27
-	 * @returns
-	 */
-	public unProxyAjax = () => {
-		if (this.RealXMLHttpRequest) {
-			unsafeWindow["XMLHttpRequest"] = this.RealXMLHttpRequest;
-		}
-		this.RealXMLHttpRequest = undefined;
-	};
-}
-
-const ajaxProxy = new AjaxProxy();
-
-export default ajaxProxy;
+/**
+ * @description 取消代理 Ajax 的方法，调用这个方法取消代理原生 XMLHttpRequest 对象
+ * @author Lazy Duke
+ * @date 2019-10-27
+ * @returns
+ */
+export const unProxyAjax = () => {
+	unsafeWindow["XMLHttpRequest"] = XHR;
+};
 
 export interface ProxyMap {
 	readyState?: AttrProxy<number>;
@@ -168,15 +144,15 @@ export interface ProxyMap {
 	onprogress?: (xhr: FullWritableXMLHTTPRequest) => void;
 	ontimeout?: (xhr: FullWritableXMLHTTPRequest) => void;
 
-	open?: (args: any[], xhr: FullWritableXMLHTTPRequest) => boolean | void | any;
-	abort?: (args: any[], xhr: FullWritableXMLHTTPRequest) => boolean | void | any;
-	getAllResponseHeaders?: (args: any[], xhr: FullWritableXMLHTTPRequest) => boolean | void | any;
-	getResponseHeader?: (args: any[], xhr: FullWritableXMLHTTPRequest) => boolean | void | any;
-	overrideMimeType?: (args: any[], xhr: FullWritableXMLHTTPRequest) => boolean | void | any;
-	send?: (args: any[], xhr: FullWritableXMLHTTPRequest) => boolean | void | any;
-	setRequestHeader?: (args: any[], xhr: FullWritableXMLHTTPRequest) => boolean | void | any;
-	addEventListener?: (args: any[], xhr: FullWritableXMLHTTPRequest) => boolean | void | any;
-	removeEventListener?: (args: any[], xhr: FullWritableXMLHTTPRequest) => boolean | void | any;
+	open?: (args: any[], xhr: FullWritableXMLHTTPRequest) => void;
+	abort?: (args: any[], xhr: FullWritableXMLHTTPRequest) => void;
+	getAllResponseHeaders?: (args: any[], xhr: FullWritableXMLHTTPRequest) => void;
+	getResponseHeader?: (args: any[], xhr: FullWritableXMLHTTPRequest) => void;
+	overrideMimeType?: (args: any[], xhr: FullWritableXMLHTTPRequest) => void;
+	send?: (args: any[], xhr: FullWritableXMLHTTPRequest, next: () => void) => void;
+	setRequestHeader?: (args: any[], xhr: FullWritableXMLHTTPRequest) => void;
+	addEventListener?: (args: any[], xhr: FullWritableXMLHTTPRequest) => void;
+	removeEventListener?: (args: any[], xhr: FullWritableXMLHTTPRequest) => void;
 }
 
 export interface AttrProxy<T> {
@@ -185,11 +161,14 @@ export interface AttrProxy<T> {
 }
 
 export interface SetGetFn<T> {
-	(this: XMLHttpRequest, value: T, xhr: XMLHttpRequest): T;
+	(this: FullWritableXMLHTTPRequest, value: T, xhr: FullWritableXMLHTTPRequest): T;
 }
 
 export type FullWritableXMLHTTPRequest = XMLHttpRequestUpload & WtritableAttrs;
 export interface WtritableAttrs {
+	method: "GET" | "HEAD" | "POST";
+	url: string;
+	cache: any;
 	readyState: number;
 	response: any;
 	responseText: string;

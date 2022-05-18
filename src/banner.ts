@@ -1,9 +1,9 @@
 import path from "path";
 import pkg from "../package.json";
 
-type TField = string | string[] | boolean | undefined;
+type Field = string | string[] | boolean | undefined;
 
-interface IHeaderObject {
+interface HeaderObject {
 	name?: string;
 
 	namespace?: string;
@@ -57,18 +57,18 @@ interface IHeaderObject {
 
 	nocompat?: boolean | string;
 
-	[field: string]: TField; // For any other field not listed above.;
+	[field: string]: Field; // For any other field not listed above.;
 }
 
-const config: IHeaderObject = {
+const config: HeaderObject = {
 	name: "bilibili-joybook",
 	version: "0.0.7",
 	description: "共享大会员",
 	author: "PC6live",
-	include: "*://*.bilibili.com/*",
+	match: "*://*.bilibili.com/*",
 	exclude: "*://passport.bilibili.com/*",
-	homepage: "https://github.com/PC6live/joybook-tampermonkey",
-	supportURL: "https://github.com/PC6live/joybook-tampermonkey/issue",
+	homepage: "https://github.com/PC6live/bilibili-joybook-tampermonkey",
+	supportURL: "https://github.com/PC6live/bilibili-joybook-tampermonkey/issues",
 	grant: [
 		"GM_cookie",
 		"GM_setValue",
@@ -85,11 +85,11 @@ const config: IHeaderObject = {
 	noframes: true,
 };
 
-const convertToComment = (header: IHeaderObject): string => {
+const convertToComment = (header: HeaderObject): string => {
 	// 开始
 	let comment = "// ==UserScript==\n";
 
-	const append = (key: string, value: TField): string => {
+	const append = (key: string, value: Field): string => {
 		let text = "";
 		text += `// @${key}`;
 		text = text.padEnd(18);
@@ -112,7 +112,7 @@ const convertToComment = (header: IHeaderObject): string => {
   // dev测试文件路径
   if (process.env.NODE_ENV === "development") {
     const filePath = path.resolve(__dirname, pkg.main)
-    comment += append("require", filePath);
+    comment += append("require", `file:${filePath}`);
   }
 
 	// 结束

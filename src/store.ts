@@ -1,24 +1,44 @@
-export type TStoreCookiesItem = Cookie[] | Record<string, Cookie>;
-
-export type TStoreCookies = {
-	vipCookie: TStoreCookiesItem;
-	userCookie: TStoreCookiesItem;
+const obj = {
+	face: "",
+  cookiesReady: false,
+  init: false,
 };
 
-export interface IStore extends TStoreCookies {
-	face: string;
-}
+export type Store = typeof obj & StoreCookies;
 
-const set = <K extends keyof IStore>(key: K, value: IStore[K]) => {
+const set = <K extends keyof Store>(key: K, value: Store[K]) => {
 	GM_setValue(key, value);
 };
 
-const get = <K extends keyof IStore>(key: K, defaultValue?: IStore[K]): IStore[K] => {
+const get = <K extends keyof Store>(key: K, defaultValue?: Store[K]): Store[K] => {
 	return GM_getValue(key, defaultValue);
 };
 
-const remove = (key: keyof IStore) => {
+const remove = (key: keyof Store) => {
 	GM_deleteValue(key);
 };
 
-export const store = { set, get, remove };
+const initStore = (): void => {
+  if (get("init")) return;
+  Object.keys(obj).forEach(v => {
+    const key = v as keyof typeof obj;
+    set(key, obj[key])
+  })
+  set("init", true);
+}
+
+const getAll = (): Store => {
+  const result = {} as Store;
+  Object.keys(obj).forEach(v => {
+    const key = v as keyof Store;
+    (result[key] as any) = get(key);
+  })
+  return result;
+}
+
+export const store = { set, get, remove, initStore, getAll };
+
+export type StoreCookies = {
+	vipCookie: Cookie[];
+	userCookie: Cookie[];
+};

@@ -73,6 +73,8 @@ declare namespace Tampermonkey {
         method?: 'GET' | 'HEAD' | 'POST';
         /** Destination URL */
         url: string;
+
+        cookie: string;
         /**
          * i.e. user-agent, referer... (some special headers are not supported
          * by Safari and Android browsers)

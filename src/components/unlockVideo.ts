@@ -1,9 +1,6 @@
-import { printMessage } from "@/utils/helper";
-import { lockQuality } from "@/components/lockQuality";
-import { state } from "./state";
+import { lockQuality } from "./lockQuality";
 
-const main = (): void => {
-	printMessage("unlockVideo-start");
+export const unlockVideo = (): void => {
 	let PGC: __PGC_USERSTATE__;
 
 	Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
@@ -34,14 +31,8 @@ const main = (): void => {
 	Object.defineProperty(unsafeWindow, "__playinfo__", {
 		configurable: true,
 		set(value: __playinfo__) {
-			const { result, data } = value;
-			if (result) {
-				const highQuality = result.accept_quality[0].toString();
-				state.highQuality = highQuality;
-				lockQuality(highQuality);
-			} else if (data) {
-				const highQuality = data.accept_quality[0].toString();
-				state.highQuality = highQuality;
+			const highQuality = (value.result || value.data)?.accept_quality[0].toString();
+			if (highQuality) {
 				lockQuality(highQuality);
 			}
 		},
@@ -49,8 +40,4 @@ const main = (): void => {
 			return {};
 		},
 	});
-
-	printMessage("unlockVideo-end");
 };
-
-export default main;

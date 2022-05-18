@@ -1,7 +1,7 @@
-import ajaxProxy from "@/lib/ajax-proxy";
-import { store } from "@/store";
-import { removeCookies } from "@/utils/cookie";
-import { createElement, deleteAllValue, printMessage } from "@/utils/helper";
+import { unProxyAjax } from "src/lib/ajax-proxy";
+import { store } from "src/store";
+import { removeCookies } from "src/utils/cookie";
+import { createElement, deleteAllValue } from "src/utils/helper";
 
 const container: HTMLDivElement = document.createElement("div");
 
@@ -31,7 +31,7 @@ function handleEvent() {
 		const result = window.confirm("确定要删除脚本数据吗？");
 		if (!result) return;
 
-		ajaxProxy.unProxyAjax();
+		unProxyAjax();
 		deleteAllValue();
 		await removeCookies();
 
@@ -44,19 +44,13 @@ function handleEvent() {
 }
 
 function createContainer(): void {
-	printMessage("settings-start");
-
 	container.id = "joybook-container";
 	document.body.appendChild(container);
 
 	avatar();
 	handleEvent();
-
-	printMessage("settings-end");
 }
 
-const Main = (): void => {
+export const settings = (): void => {
 	createContainer();
 };
-
-export default Main;
