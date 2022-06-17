@@ -79,6 +79,7 @@ const config: HeaderObject = {
 		"GM_getTabs",
 		"GM_listValues",
 		"GM_saveTab",
+    "GM_xmlhttpRequest",
 		"unsafeWindow",
 	],
 	"run-at": "document-start",

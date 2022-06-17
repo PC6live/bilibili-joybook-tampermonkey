@@ -1,12 +1,14 @@
 import { store } from "src/store";
 import { getStoreCookies, removeCookies, setCookies, storeCookies } from "src/utils/cookie";
 
+/** 获取用户数据 */
+const userInfoURL = "//api.bilibili.com/x/web-interface/nav";
+
 const getUserType = async (): Promise<{
 	isLogin: boolean;
 	vipStatus: number;
-	face: string;
 }> => {
-	const resp = await fetch("//api.bilibili.com/x/web-interface/nav", { method: "Get", credentials: "include" });
+	const resp = await fetch(userInfoURL, { method: "get", credentials: "include" });
 	const result = await resp.json();
 
 	return result.data;
@@ -22,7 +24,7 @@ export const initialize = async (): Promise<void> => {
 	store.initStore();
 
 	// 获取登录状态
-	const { face, isLogin, vipStatus } = await getUserType();
+	const { isLogin, vipStatus } = await getUserType();
 	if (!isLogin) return;
 
 	const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"];
@@ -30,13 +32,12 @@ export const initialize = async (): Promise<void> => {
 
 	store.set("cookiesReady", cookiesReady());
 	if (store.get("cookiesReady")) return setCookies(userCookie);
-  console.log(store.get("cookiesReady"))
+	console.log(store.get("cookiesReady"));
 
 	const reload = () => window.location.reload();
 
 	if (vipStatus) {
 		// vip用户
-		store.set("face", face);
 		if (userCookie) {
 			// 登录为vip用户并且储存了userCookie
 			storeCookies("vipCookie", storeKey).then(() => {

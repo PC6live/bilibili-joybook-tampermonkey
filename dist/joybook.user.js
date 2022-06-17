@@ -16,9 +16,11 @@
 // @grant         GM_getTabs
 // @grant         GM_listValues
 // @grant         GM_saveTab
+// @grant         GM_xmlhttpRequest
 // @grant         unsafeWindow
 // @run-at        document-start
 // @noframes      true
+// @require       file:E:\Code\Tampermonkey\bilibili-joybook-tampermonkey\dist\joybook.user.js
 // ==/UserScript==
 (function () {
     'use strict';
@@ -49,7 +51,6 @@
     }
 
     const obj = {
-        face: "",
         cookiesReady: false,
         init: false,
     };
@@ -125,8 +126,10 @@
         });
     };
 
+    /** 获取用户数据 */
+    const userInfoURL$1 = "//api.bilibili.com/x/web-interface/nav";
     const getUserType = () => __awaiter(void 0, void 0, void 0, function* () {
-        const resp = yield fetch("//api.bilibili.com/x/web-interface/nav", { method: "Get", credentials: "include" });
+        const resp = yield fetch(userInfoURL$1, { method: "get", credentials: "include" });
         const result = yield resp.json();
         return result.data;
     });
@@ -138,7 +141,7 @@
         // 初始化tampermonkey store & 状态
         store.initStore();
         // 获取登录状态
-        const { face, isLogin, vipStatus } = yield getUserType();
+        const { isLogin, vipStatus } = yield getUserType();
         if (!isLogin)
             return;
         const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"];
@@ -150,7 +153,6 @@
         const reload = () => window.location.reload();
         if (vipStatus) {
             // vip用户
-            store.set("face", face);
             if (userCookie) {
                 // 登录为vip用户并且储存了userCookie
                 storeCookies("vipCookie", storeKey).then(() => {
@@ -192,6 +194,9 @@
         return el.firstElementChild;
     };
     const deleteAllValue = () => GM_listValues().forEach((v) => GM_deleteValue(v));
+    const printMessage = (message) => {
+        console.log(`Tampermonkey: ${message}`);
+    };
 
     const XHR = unsafeWindow.XMLHttpRequest;
     const xhrInstance = new unsafeWindow.XMLHttpRequest();
@@ -340,6 +345,7 @@
         return false;
     };
     const listenerAjax = () => __awaiter(void 0, void 0, void 0, function* () {
+        printMessage("白嫖");
         const { vipCookie, userCookie } = getStoreCookies();
         const proxySettings = {
             open: (_args, xhr) => {
@@ -398,16 +404,39 @@
         });
     };
 
+    /** 头像容器 */
     const container = document.createElement("div");
+    /** 获取用户数据 */
+    const userInfoURL = "//api.bilibili.com/x/web-interface/nav";
     function avatar() {
-        const face = store.get("face");
-        if (!face)
+        const { userCookie, vipCookie } = getStoreCookies();
+        const cookie = vipCookie || userCookie;
+        if (!cookie)
             return;
-        const html = createElement(`<div id="joybook-avatar">
-	<img src=${face}></img>
-	</div>`);
-        if (html)
-            container.appendChild(html);
+        let vipStatus;
+        (function (vipStatus) {
+            /** 普通用户 */
+            vipStatus[vipStatus["user"] = 0] = "user";
+            /** 大会员用户 */
+            vipStatus[vipStatus["vip"] = 1] = "vip";
+        })(vipStatus || (vipStatus = {}));
+        const SESSDATA = cookie.find((v) => v.name === "SESSDATA");
+        if (SESSDATA) {
+            GM_xmlhttpRequest({
+                url: userInfoURL,
+                cookie: `${SESSDATA.name}=${SESSDATA.value}`,
+                onload(resp) {
+                    const result = JSON.parse(resp.response);
+                    const { face, vipStatus } = result.data;
+                    const avatarClass = vipStatus ? "joybook-avatar" : "joybook-avatar user";
+                    const html = createElement(`<div class="${avatarClass}">
+        <img src=${face}></img>
+        </div>`);
+                    if (html)
+                        container.appendChild(html);
+                },
+            });
+        }
     }
     function handleEvent() {
         const delay = 1500;
@@ -445,6 +474,7 @@
         createContainer();
     };
 
+    printMessage("脚本启动");
     // 解锁会员限制
     unlockVideo();
     // 初始化用户数据&储存cookies
@@ -484,8 +514,8 @@
       }
     }
 
-    var css_248z = ".d-none {\n  display: none;\n}\n\n.button {\n  display: flex;\n  min-width: 32px;\n  min-height: 32px;\n  border-radius: 50%;\n  overflow: hidden;\n  border: 2px solid #8a8a8a;\n  cursor: pointer;\n}\n\n#joybook-container {\n  z-index: 99;\n  width: 48px;\n  height: 48px;\n  position: fixed;\n  bottom: 30px;\n  left: -30px;\n  transition: 0.3s ease-in-out;\n}\n\n#joybook-settings {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n}\n\n#joybook-avatar {\n  position: relative;\n  cursor: pointer;\n  overflow: hidden;\n  border-radius: 50%;\n  background-color: #888888;\n  border: 4px solid #fb7299;\n  opacity: 1;\n  width: 100%;\n  height: 100%;\n}\n#joybook-avatar > img {\n  width: 100%;\n  height: 100%;\n}\n\n#settings-options-container {\n  position: relative;\n}\n#settings-options-container > * {\n  margin: 6px 0;\n}";
-    var stylesheet=".d-none {\n  display: none;\n}\n\n.button {\n  display: flex;\n  min-width: 32px;\n  min-height: 32px;\n  border-radius: 50%;\n  overflow: hidden;\n  border: 2px solid #8a8a8a;\n  cursor: pointer;\n}\n\n#joybook-container {\n  z-index: 99;\n  width: 48px;\n  height: 48px;\n  position: fixed;\n  bottom: 30px;\n  left: -30px;\n  transition: 0.3s ease-in-out;\n}\n\n#joybook-settings {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n}\n\n#joybook-avatar {\n  position: relative;\n  cursor: pointer;\n  overflow: hidden;\n  border-radius: 50%;\n  background-color: #888888;\n  border: 4px solid #fb7299;\n  opacity: 1;\n  width: 100%;\n  height: 100%;\n}\n#joybook-avatar > img {\n  width: 100%;\n  height: 100%;\n}\n\n#settings-options-container {\n  position: relative;\n}\n#settings-options-container > * {\n  margin: 6px 0;\n}";
+    var css_248z = ".d-none {\n  display: none;\n}\n\n.button {\n  display: flex;\n  min-width: 32px;\n  min-height: 32px;\n  border-radius: 50%;\n  overflow: hidden;\n  border: 2px solid #8a8a8a;\n  cursor: pointer;\n}\n\n#joybook-container {\n  z-index: 99;\n  width: 48px;\n  height: 48px;\n  position: fixed;\n  bottom: 30px;\n  left: -30px;\n  transition: 0.3s ease-in-out;\n}\n\n#joybook-settings {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n}\n\n.joybook-avatar {\n  box-sizing: border-box;\n  position: relative;\n  cursor: pointer;\n  overflow: hidden;\n  border-radius: 50%;\n  background-color: #888888;\n  border: 4px solid #fb7299;\n  opacity: 1;\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar > img {\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar.user {\n  border: 4px solid #47b5ff;\n}\n\n#settings-options-container {\n  position: relative;\n}\n#settings-options-container > * {\n  margin: 6px 0;\n}";
+    var stylesheet=".d-none {\n  display: none;\n}\n\n.button {\n  display: flex;\n  min-width: 32px;\n  min-height: 32px;\n  border-radius: 50%;\n  overflow: hidden;\n  border: 2px solid #8a8a8a;\n  cursor: pointer;\n}\n\n#joybook-container {\n  z-index: 99;\n  width: 48px;\n  height: 48px;\n  position: fixed;\n  bottom: 30px;\n  left: -30px;\n  transition: 0.3s ease-in-out;\n}\n\n#joybook-settings {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n}\n\n.joybook-avatar {\n  box-sizing: border-box;\n  position: relative;\n  cursor: pointer;\n  overflow: hidden;\n  border-radius: 50%;\n  background-color: #888888;\n  border: 4px solid #fb7299;\n  opacity: 1;\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar > img {\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar.user {\n  border: 4px solid #47b5ff;\n}\n\n#settings-options-container {\n  position: relative;\n}\n#settings-options-container > * {\n  margin: 6px 0;\n}";
     styleInject(css_248z);
 
     var global = /*#__PURE__*/Object.freeze({

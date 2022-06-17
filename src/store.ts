@@ -1,5 +1,4 @@
 const obj = {
-	face: "",
   cookiesReady: false,
   init: false,
 };

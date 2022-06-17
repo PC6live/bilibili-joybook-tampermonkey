@@ -82,7 +82,7 @@ interface __playinfo__ {
 	data?: playinfoData;
 	result?: playinfoData;
 	session: string;
-	ttl: number
+	ttl: number;
 }
 
 interface __INITIAL_STATE__ {
@@ -104,7 +104,6 @@ interface UserStatus {
 		vipStatus: number;
 		vipType: number;
 		isLogin: boolean;
-		face: string;
 	};
 }
 interface Cookie {

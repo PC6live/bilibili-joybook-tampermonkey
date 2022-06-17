@@ -15,9 +15,9 @@ $primaryColor: #fb7299;
 }
 
 #joybook-container {
-  z-index: 99;
-  width: 48px;
-  height: 48px;
+	z-index: 99;
+	width: 48px;
+	height: 48px;
 	position: fixed;
 	bottom: 30px;
 	left: -30px;
@@ -32,7 +32,8 @@ $primaryColor: #fb7299;
 	align-items: center;
 }
 
-#joybook-avatar {
+.joybook-avatar {
+  box-sizing: border-box;
 	position: relative;
 	cursor: pointer;
 	overflow: hidden;
@@ -40,11 +41,14 @@ $primaryColor: #fb7299;
 	background-color: rgb(136, 136, 136);
 	border: 4px solid $primaryColor;
 	opacity: 1;
-  width: 100%;
-  height: 100%;
+	width: 100%;
+	height: 100%;
 	& > img {
-    width: 100%;
-    height: 100%;
+		width: 100%;
+		height: 100%;
+	}
+	&.user {
+		border: 4px solid #47b5ff;
 	}
 }
 

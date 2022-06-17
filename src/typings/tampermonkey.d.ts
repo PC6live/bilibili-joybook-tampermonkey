@@ -74,7 +74,7 @@ declare namespace Tampermonkey {
         /** Destination URL */
         url: string;
 
-        cookie: string;
+        cookie?: string;
         /**
          * i.e. user-agent, referer... (some special headers are not supported
          * by Safari and Android browsers)
