@@ -20,7 +20,6 @@
 // @grant         unsafeWindow
 // @run-at        document-start
 // @noframes      true
-// @require       file:E:\Code\Tampermonkey\bilibili-joybook-tampermonkey\dist\joybook.user.js
 // ==/UserScript==
 (function () {
     'use strict';
@@ -194,20 +193,12 @@
         return el.firstElementChild;
     };
     const deleteAllValue = () => GM_listValues().forEach((v) => GM_deleteValue(v));
-    const printMessage = (message) => {
-        console.log(`Tampermonkey: ${message}`);
-    };
 
     const XHR = unsafeWindow.XMLHttpRequest;
     const xhrInstance = new unsafeWindow.XMLHttpRequest();
-    const proxyAjax = (proxyMap) => {
-        // 参数校验
-        if (proxyMap == null) {
-            throw new TypeError("proxyMap can not be undefined or null");
-        }
-        const xhrCache = {};
-        // 代理 XMLHttpRequest 对象
-        const proxy = new Proxy(unsafeWindow.XMLHttpRequest, {
+    const xhrCache = {};
+    function proxyXHR(proxyMap) {
+        return new Proxy(unsafeWindow.XMLHttpRequest, {
             // 代理 new 操作符
             construct(Target) {
                 const xhr = new Target();
@@ -241,7 +232,6 @@
                         }
                         // 代理一些属性诸如 open, send...
                         return (...args) => {
-                            var _a;
                             const next = () => value.call(target, ...args);
                             if (p === "open") {
                                 receiver.method = args[0];
@@ -249,7 +239,7 @@
                             }
                             if (proxyValue) {
                                 if (p === "send") {
-                                    return (_a = proxyValue) === null || _a === void 0 ? void 0 : _a.call(target, args, receiver, next);
+                                    return proxyValue === null || proxyValue === void 0 ? void 0 : proxyValue.call(target, args, receiver, next);
                                 }
                                 else {
                                     proxyValue.call(target, args, receiver);
@@ -298,21 +288,17 @@
                 return xhrProxy;
             },
         });
-        unsafeWindow["XMLHttpRequest"] = proxy;
+    }
+    const proxyAjax = (proxyMap) => {
+        unsafeWindow["XMLHttpRequest"] = proxyXHR(proxyMap);
     };
-    /**
-     * @description 取消代理 Ajax 的方法，调用这个方法取消代理原生 XMLHttpRequest 对象
-     * @author Lazy Duke
-     * @date 2019-10-27
-     * @returns
-     */
     const unProxyAjax = () => {
         unsafeWindow["XMLHttpRequest"] = XHR;
     };
 
     // 监听登录&reload
     const reloadByLogin = (url) => {
-        if (url.includes("/passport-login/web/")) {
+        if (url.includes("/passport-login/web/login")) {
             console.log("login reload");
             sleep(1).then(() => window.location.reload());
         }
@@ -321,6 +307,7 @@
     const listenLogout = (url) => {
         if (url.includes("/login/exit/")) {
             store.remove("userCookie");
+            console.log("logout reload");
             removeCookies().then(() => window.location.reload());
         }
     };
@@ -345,7 +332,6 @@
         return false;
     };
     const listenerAjax = () => __awaiter(void 0, void 0, void 0, function* () {
-        printMessage("白嫖");
         const { vipCookie, userCookie } = getStoreCookies();
         const proxySettings = {
             open: (_args, xhr) => {
@@ -474,7 +460,6 @@
         createContainer();
     };
 
-    printMessage("脚本启动");
     // 解锁会员限制
     unlockVideo();
     // 初始化用户数据&储存cookies
@@ -514,8 +499,8 @@
       }
     }
 
-    var css_248z = ".d-none {\n  display: none;\n}\n\n.button {\n  display: flex;\n  min-width: 32px;\n  min-height: 32px;\n  border-radius: 50%;\n  overflow: hidden;\n  border: 2px solid #8a8a8a;\n  cursor: pointer;\n}\n\n#joybook-container {\n  z-index: 99;\n  width: 48px;\n  height: 48px;\n  position: fixed;\n  bottom: 30px;\n  left: -30px;\n  transition: 0.3s ease-in-out;\n}\n\n#joybook-settings {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n}\n\n.joybook-avatar {\n  box-sizing: border-box;\n  position: relative;\n  cursor: pointer;\n  overflow: hidden;\n  border-radius: 50%;\n  background-color: #888888;\n  border: 4px solid #fb7299;\n  opacity: 1;\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar > img {\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar.user {\n  border: 4px solid #47b5ff;\n}\n\n#settings-options-container {\n  position: relative;\n}\n#settings-options-container > * {\n  margin: 6px 0;\n}";
-    var stylesheet=".d-none {\n  display: none;\n}\n\n.button {\n  display: flex;\n  min-width: 32px;\n  min-height: 32px;\n  border-radius: 50%;\n  overflow: hidden;\n  border: 2px solid #8a8a8a;\n  cursor: pointer;\n}\n\n#joybook-container {\n  z-index: 99;\n  width: 48px;\n  height: 48px;\n  position: fixed;\n  bottom: 30px;\n  left: -30px;\n  transition: 0.3s ease-in-out;\n}\n\n#joybook-settings {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n}\n\n.joybook-avatar {\n  box-sizing: border-box;\n  position: relative;\n  cursor: pointer;\n  overflow: hidden;\n  border-radius: 50%;\n  background-color: #888888;\n  border: 4px solid #fb7299;\n  opacity: 1;\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar > img {\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar.user {\n  border: 4px solid #47b5ff;\n}\n\n#settings-options-container {\n  position: relative;\n}\n#settings-options-container > * {\n  margin: 6px 0;\n}";
+    var css_248z = ".d-none {\n  display: none;\n}\n\n.button {\n  display: flex;\n  min-width: 32px;\n  min-height: 32px;\n  border-radius: 50%;\n  overflow: hidden;\n  border: 2px solid rgb(138, 138, 138);\n  cursor: pointer;\n}\n\n#joybook-container {\n  z-index: 99;\n  width: 48px;\n  height: 48px;\n  position: fixed;\n  bottom: 30px;\n  left: -30px;\n  transition: 0.3s ease-in-out;\n}\n\n#joybook-settings {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n}\n\n.joybook-avatar {\n  box-sizing: border-box;\n  position: relative;\n  cursor: pointer;\n  overflow: hidden;\n  border-radius: 50%;\n  background-color: rgb(136, 136, 136);\n  border: 4px solid #fb7299;\n  opacity: 1;\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar > img {\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar.user {\n  border: 4px solid #47b5ff;\n}\n\n#settings-options-container {\n  position: relative;\n}\n#settings-options-container > * {\n  margin: 6px 0;\n}";
+    var stylesheet=".d-none {\n  display: none;\n}\n\n.button {\n  display: flex;\n  min-width: 32px;\n  min-height: 32px;\n  border-radius: 50%;\n  overflow: hidden;\n  border: 2px solid rgb(138, 138, 138);\n  cursor: pointer;\n}\n\n#joybook-container {\n  z-index: 99;\n  width: 48px;\n  height: 48px;\n  position: fixed;\n  bottom: 30px;\n  left: -30px;\n  transition: 0.3s ease-in-out;\n}\n\n#joybook-settings {\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n}\n\n.joybook-avatar {\n  box-sizing: border-box;\n  position: relative;\n  cursor: pointer;\n  overflow: hidden;\n  border-radius: 50%;\n  background-color: rgb(136, 136, 136);\n  border: 4px solid #fb7299;\n  opacity: 1;\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar > img {\n  width: 100%;\n  height: 100%;\n}\n.joybook-avatar.user {\n  border: 4px solid #47b5ff;\n}\n\n#settings-options-container {\n  position: relative;\n}\n#settings-options-container > * {\n  margin: 6px 0;\n}";
     styleInject(css_248z);
 
     var global = /*#__PURE__*/Object.freeze({

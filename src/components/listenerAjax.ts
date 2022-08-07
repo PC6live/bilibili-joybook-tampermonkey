@@ -5,7 +5,7 @@ import { store } from "src/store";
 
 // 监听登录&reload
 const reloadByLogin = (url: string): void => {
-	if (url.includes("/passport-login/web/")) {
+	if (url.includes("/passport-login/web/login")) {
     console.log("login reload")
 		sleep(1).then(() => window.location.reload());
 	}
@@ -15,6 +15,7 @@ const reloadByLogin = (url: string): void => {
 const listenLogout = (url: string): void => {
 	if (url.includes("/login/exit/")) {
 		store.remove("userCookie");
+    console.log("logout reload")
 		removeCookies().then(() => window.location.reload());
 	}
 };

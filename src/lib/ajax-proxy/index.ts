@@ -1,122 +1,3 @@
-const XHR = unsafeWindow.XMLHttpRequest;
-const xhrInstance = new unsafeWindow.XMLHttpRequest();
-
-export const proxyAjax = (proxyMap: ProxyMap): void => {
-	// 参数校验
-	if (proxyMap == null) {
-		throw new TypeError("proxyMap can not be undefined or null");
-	}
-
-	const xhrCache = {} as Record<string, any>;
-
-	// 代理 XMLHttpRequest 对象
-	const proxy = new Proxy(unsafeWindow.XMLHttpRequest, {
-		// 代理 new 操作符
-		construct(Target) {
-			const xhr = new Target();
-			// 代理 XMLHttpRequest 对象实例
-			const xhrProxy = new Proxy(xhr, {
-				// 代理 读取属性 操作
-				get(target, p: keyof XMLHttpRequest, receiver) {
-					let type = "";
-					try {
-						type = typeof xhrInstance[p]; // 在某些浏览器可能会抛出错误
-					} catch (error) {
-						console.error(error);
-						return target[p];
-					}
-					const value = target[p];
-					const proxyValue = proxyMap[p as keyof ProxyMap] as any;
-
-					// 代理一些属性诸如 response, responseText...
-					if (type !== "function") {
-						// 通过缓存属性值进 _xxx，代理一些 只读属性
-						const v = xhrCache.hasOwnProperty(`_${p.toString()}`)
-							? xhrCache[`_${p.toString()}`]
-							: target[p];
-
-						const attrGetterProxy = (proxyValue || {})["getter"];
-
-						if (typeof attrGetterProxy === "function") {
-							return attrGetterProxy.call(target, v, receiver);
-						} else {
-							return v;
-						}
-					}
-
-					// 代理一些属性诸如 open, send...
-					return (...args: any[]) => {
-						const next = () => value.call(target, ...args);
-
-						if (p === "open") {
-							receiver.method = args[0];
-							receiver.url = args[1];
-						}
-
-            if (proxyValue) {
-              if (p === "send") {
-                return (proxyValue as ProxyMap["send"])?.call(target, args, receiver, next);
-              } else {
-                proxyValue.call(target, args, receiver);
-              }
-            }
-
-						return next();
-					};
-				},
-				// 代理 设置属性值 操作
-				set(target, p: keyof XMLHttpRequest, value, receiver) {
-					const type = typeof xhrInstance[p];
-
-					const proxyValue = proxyMap[p as keyof ProxyMap] as any;
-
-					// 禁止修改一些原生方法如 open,send...
-					if (type === "function") return true;
-
-					// 代理一些事件属性诸如 onreadystatechange,onload...
-					if (typeof proxyValue === "function") {
-						(target[p] as any) = () => {
-							proxyValue.call(target, receiver) || value.call(receiver);
-						};
-					} else {
-						// 代理一些属性如 response, responseText
-						const attrSetterProxy = (proxyValue || {})["setter"];
-						try {
-							(target[p] as any) =
-								(typeof attrSetterProxy === "function" &&
-									attrSetterProxy.call(target, value, receiver)) ||
-								(typeof value === "function" ? value.bind(receiver) : value);
-						} catch (error) {
-							// 代理只读属性是会抛出错误
-							if (attrSetterProxy === true) {
-								// 如果该 只读属性 的 代理setter 为 true
-								// 将 value 缓存进 _xxx
-								xhrCache[`_${p.toString()}`] = value;
-							} else {
-								throw error;
-							}
-						}
-					}
-					return true;
-				},
-			});
-			return xhrProxy;
-		},
-	});
-
-	unsafeWindow["XMLHttpRequest"] = proxy;
-};
-
-/**
- * @description 取消代理 Ajax 的方法，调用这个方法取消代理原生 XMLHttpRequest 对象
- * @author Lazy Duke
- * @date 2019-10-27
- * @returns
- */
-export const unProxyAjax = () => {
-	unsafeWindow["XMLHttpRequest"] = XHR;
-};
-
 export interface ProxyMap {
 	readyState?: AttrProxy<number>;
 	response?: AttrProxy<any>;
@@ -183,3 +64,112 @@ export interface WtritableAttrs {
 	OPENED: number;
 	UNSENT: number;
 }
+
+const XHR = unsafeWindow.XMLHttpRequest;
+const xhrInstance = new unsafeWindow.XMLHttpRequest();
+
+const xhrCache = {} as Record<string, any>;
+
+function proxyXHR(proxyMap: ProxyMap): typeof XMLHttpRequest {
+	return new Proxy(unsafeWindow.XMLHttpRequest, {
+		// 代理 new 操作符
+		construct(Target) {
+			const xhr = new Target();
+			// 代理 XMLHttpRequest 对象实例
+			const xhrProxy = new Proxy(xhr, {
+				// 代理 读取属性 操作
+				get(target, p: keyof XMLHttpRequest, receiver) {
+					let type = "";
+					try {
+						type = typeof xhrInstance[p]; // 在某些浏览器可能会抛出错误
+					} catch (error) {
+						console.error(error);
+						return target[p];
+					}
+					const value = target[p];
+					const proxyValue = proxyMap[p as keyof ProxyMap] as any;
+
+					// 代理一些属性诸如 response, responseText...
+					if (type !== "function") {
+						// 通过缓存属性值进 _xxx，代理一些 只读属性
+						const v = xhrCache.hasOwnProperty(`_${p.toString()}`)
+							? xhrCache[`_${p.toString()}`]
+							: target[p];
+
+						const attrGetterProxy = (proxyValue || {})["getter"];
+
+						if (typeof attrGetterProxy === "function") {
+							return attrGetterProxy.call(target, v, receiver);
+						} else {
+							return v;
+						}
+					}
+
+					// 代理一些属性诸如 open, send...
+					return (...args: any[]) => {
+						const next = () => value.call(target, ...args);
+
+						if (p === "open") {
+							receiver.method = args[0];
+							receiver.url = args[1];
+						}
+
+						if (proxyValue) {
+							if (p === "send") {
+								return (proxyValue as ProxyMap["send"])?.call(target, args, receiver, next);
+							} else {
+								proxyValue.call(target, args, receiver);
+							}
+						}
+
+						return next();
+					};
+				},
+				// 代理 设置属性值 操作
+				set(target, p: keyof XMLHttpRequest, value, receiver) {
+					const type = typeof xhrInstance[p];
+
+					const proxyValue = proxyMap[p as keyof ProxyMap] as any;
+
+					// 禁止修改一些原生方法如 open,send...
+					if (type === "function") return true;
+
+					// 代理一些事件属性诸如 onreadystatechange,onload...
+					if (typeof proxyValue === "function") {
+						(target[p] as any) = () => {
+							proxyValue.call(target, receiver) || value.call(receiver);
+						};
+					} else {
+						// 代理一些属性如 response, responseText
+						const attrSetterProxy = (proxyValue || {})["setter"];
+						try {
+							(target[p] as any) =
+								(typeof attrSetterProxy === "function" &&
+									attrSetterProxy.call(target, value, receiver)) ||
+								(typeof value === "function" ? value.bind(receiver) : value);
+						} catch (error) {
+							// 代理只读属性是会抛出错误
+							if (attrSetterProxy === true) {
+								// 如果该 只读属性 的 代理setter 为 true
+								// 将 value 缓存进 _xxx
+								xhrCache[`_${p.toString()}`] = value;
+							} else {
+								throw error;
+							}
+						}
+					}
+					return true;
+				},
+			});
+			return xhrProxy;
+		},
+	});
+}
+
+export const proxyAjax = (proxyMap: ProxyMap): void => {
+	unsafeWindow["XMLHttpRequest"] = proxyXHR(proxyMap);
+};
+
+export const unProxyAjax = () => {
+	unsafeWindow["XMLHttpRequest"] = XHR;
+};
