@@ -12,6 +12,8 @@ interface HeaderObject {
 
 	author?: string;
 
+  license?: string;
+
 	description?: string;
 
 	homepage?: string;
@@ -65,10 +67,12 @@ const config: HeaderObject = {
 	version: "0.0.7",
 	description: "共享大会员",
 	author: "PC6live",
+  namespace: "https://github.com/PC6live/bilibili-joybook-tampermonkey",
 	match: "*://*.bilibili.com/*",
 	exclude: "*://passport.bilibili.com/*",
 	homepage: "https://github.com/PC6live/bilibili-joybook-tampermonkey",
 	supportURL: "https://github.com/PC6live/bilibili-joybook-tampermonkey/issues",
+  license: "MIT",
 	grant: [
 		"GM_cookie",
 		"GM_setValue",
