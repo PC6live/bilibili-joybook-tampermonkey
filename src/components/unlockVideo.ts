@@ -31,10 +31,8 @@ export const unlockVideo = (): void => {
 	Object.defineProperty(unsafeWindow, "__playinfo__", {
 		configurable: true,
 		set(value: __playinfo__) {
-			const highQuality = (value.result || value.data)?.accept_quality[0].toString();
-			if (highQuality) {
-				lockQuality(highQuality);
-			}
+			const highQuality = (value.result || value.data)?.accept_quality[0];
+			if (highQuality) lockQuality(highQuality);
 		},
 		get() {
 			return {};

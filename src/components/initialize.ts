@@ -4,6 +4,8 @@ import { getStoreCookies, removeCookies, setCookies, storeCookies } from "src/ut
 /** 获取用户数据 */
 const userInfoURL = "//api.bilibili.com/x/web-interface/nav";
 
+// TODO: 检测会员Cookie 是否失效
+
 const getUserType = async (): Promise<{
 	isLogin: boolean;
 	vipStatus: number;
@@ -19,52 +21,40 @@ const cookiesReady = () => {
 	return !!userCookie && !!vipCookie;
 };
 
-export const initialize = async (): Promise<void> => {
-	// 初始化tampermonkey store & 状态
-	store.initStore();
-
-	// 获取登录状态
-	const { isLogin, vipStatus } = await getUserType();
-	if (!isLogin) return;
-
+async function handleLogin(key: "vipCookie" | "userCookie"): Promise<void> {
 	const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"];
-	const { vipCookie, userCookie } = getStoreCookies();
+
+	store.remove(key);
+
+	await storeCookies(key, storeKey);
 
 	store.set("cookiesReady", cookiesReady());
-	if (store.get("cookiesReady")) return setCookies(userCookie);
-	console.log(store.get("cookiesReady"));
 
-	const reload = () => window.location.reload();
+	const ready = store.get("cookiesReady");
+  const { userCookie } = getStoreCookies();
+
+	if (!ready) {
+    removeCookies()
+  } else {
+    setCookies(userCookie)
+  }
+
+	window.location.reload();
+}
+
+export const initialize = async (): Promise<void> => {
+	// 获取登录状态
+	const { isLogin, vipStatus } = await getUserType();
+
+	if (!isLogin || store.get("cookiesReady")) return;
+
+  console.log(vipStatus)
 
 	if (vipStatus) {
 		// vip用户
-		if (userCookie) {
-			// 登录为vip用户并且储存了userCookie
-			storeCookies("vipCookie", storeKey).then(() => {
-				reload();
-			});
-		} else {
-			// 登录为vip用户且未储存userCookie
-			storeCookies("vipCookie", storeKey).then(() => {
-				removeCookies().then(() => {
-					reload();
-				});
-			});
-		}
+		handleLogin("vipCookie");
 	} else {
 		// 普通用户
-		if (vipCookie) {
-			// 登录为普通用户并且储存了vipCookie
-			storeCookies("userCookie", storeKey).then(() => {
-				reload();
-			});
-		} else {
-			// 登录为普通用户且未储存vipCookie
-			storeCookies("userCookie", storeKey).then(() => {
-				removeCookies().then(() => {
-					reload();
-				});
-			});
-		}
+		handleLogin("userCookie");
 	}
 };

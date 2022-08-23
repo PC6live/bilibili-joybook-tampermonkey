@@ -28,6 +28,7 @@
 		"rollup-plugin-postcss": "^4.0.2",
 		"rollup-plugin-scss": "^3.0.0",
 		"sass": "^1.52.3",
+		"type-fest": "^2.18.0",
 		"typescript": "^4.7.3"
 	}
 }

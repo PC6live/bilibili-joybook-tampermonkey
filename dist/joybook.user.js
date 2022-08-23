@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name          bilibili-joybook
-// @version       0.0.7
+// @version       0.0.8
 // @description   共享大会员
 // @author        PC6live
 // @namespace     https://github.com/PC6live/bilibili-joybook-tampermonkey
@@ -91,6 +91,11 @@
             vipCookie,
         };
     };
+    const getCookie = (key) => {
+        return new Promise((resolve) => {
+            GM_cookie.list({}, (cookies) => resolve(cookies.find((c) => c.name === key)));
+        });
+    };
     const getCookies = () => {
         return new Promise((resolve) => {
             GM_cookie.list({}, (cookies) => resolve(cookies));
@@ -126,9 +131,13 @@
             GM_cookie.set(cookie);
         });
     };
+    function cookieToString(cookies) {
+        return cookies.map(v => `${v.name}=${v.value}`).join("; ");
+    }
 
     /** 获取用户数据 */
     const userInfoURL$1 = "//api.bilibili.com/x/web-interface/nav";
+    // TODO: 检测会员Cookie 是否失效
     const getUserType = () => __awaiter(void 0, void 0, void 0, function* () {
         const resp = yield fetch(userInfoURL$1, { method: "get", credentials: "include" });
         const result = yield resp.json();
@@ -138,53 +147,36 @@
         const { userCookie, vipCookie } = getStoreCookies();
         return !!userCookie && !!vipCookie;
     };
-    const initialize = () => __awaiter(void 0, void 0, void 0, function* () {
-        // 初始化tampermonkey store & 状态
-        store.initStore();
-        // 获取登录状态
-        const { isLogin, vipStatus } = yield getUserType();
-        if (!isLogin)
-            return;
-        const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"];
-        const { vipCookie, userCookie } = getStoreCookies();
-        store.set("cookiesReady", cookiesReady());
-        if (store.get("cookiesReady"))
-            return setCookies(userCookie);
-        console.log(store.get("cookiesReady"));
-        const reload = () => window.location.reload();
-        if (vipStatus) {
-            // vip用户
-            if (userCookie) {
-                // 登录为vip用户并且储存了userCookie
-                storeCookies("vipCookie", storeKey).then(() => {
-                    reload();
-                });
+    function handleLogin(key) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"];
+            store.remove(key);
+            yield storeCookies(key, storeKey);
+            store.set("cookiesReady", cookiesReady());
+            const ready = store.get("cookiesReady");
+            const { userCookie } = getStoreCookies();
+            if (!ready) {
+                removeCookies();
             }
             else {
-                // 登录为vip用户且未储存userCookie
-                storeCookies("vipCookie", storeKey).then(() => {
-                    removeCookies().then(() => {
-                        reload();
-                    });
-                });
+                setCookies(userCookie);
             }
+            window.location.reload();
+        });
+    }
+    const initialize = () => __awaiter(void 0, void 0, void 0, function* () {
+        // 获取登录状态
+        const { isLogin, vipStatus } = yield getUserType();
+        if (!isLogin || store.get("cookiesReady"))
+            return;
+        console.log(vipStatus);
+        if (vipStatus) {
+            // vip用户
+            handleLogin("vipCookie");
         }
         else {
             // 普通用户
-            if (vipCookie) {
-                // 登录为普通用户并且储存了vipCookie
-                storeCookies("userCookie", storeKey).then(() => {
-                    reload();
-                });
-            }
-            else {
-                // 登录为普通用户且未储存vipCookie
-                storeCookies("userCookie", storeKey).then(() => {
-                    removeCookies().then(() => {
-                        reload();
-                    });
-                });
-            }
+            handleLogin("userCookie");
         }
     });
 
@@ -196,116 +188,102 @@
     };
     const deleteAllValue = () => GM_listValues().forEach((v) => GM_deleteValue(v));
 
-    const XHR = unsafeWindow.XMLHttpRequest;
-    const xhrInstance = new unsafeWindow.XMLHttpRequest();
-    const xhrCache = {};
-    function proxyXHR(proxyMap) {
-        return new Proxy(unsafeWindow.XMLHttpRequest, {
-            // 代理 new 操作符
+    const realXHR = "_xhr";
+    function setValue(arg, key, value) {
+        arg[key] = value;
+    }
+    function proxy(proxy, win) {
+        win = win || window;
+        win[realXHR] = win[realXHR] || win.XMLHttpRequest;
+        win.XMLHttpRequest = new Proxy(win.XMLHttpRequest, {
             construct(Target) {
+                // 代理 new 操作符
                 const xhr = new Target();
-                // 代理 XMLHttpRequest 对象实例
                 const xhrProxy = new Proxy(xhr, {
-                    // 代理 读取属性 操作
-                    get(target, p, receiver) {
-                        let type = "";
-                        try {
-                            type = typeof xhrInstance[p]; // 在某些浏览器可能会抛出错误
-                        }
-                        catch (error) {
-                            console.error(error);
-                            return target[p];
-                        }
-                        const value = target[p];
-                        const proxyValue = proxyMap[p];
-                        // 代理一些属性诸如 response, responseText...
-                        if (type !== "function") {
-                            // 通过缓存属性值进 _xxx，代理一些 只读属性
-                            const v = xhrCache.hasOwnProperty(`_${p.toString()}`)
-                                ? xhrCache[`_${p.toString()}`]
-                                : target[p];
-                            const attrGetterProxy = (proxyValue || {})["getter"];
-                            if (typeof attrGetterProxy === "function") {
-                                return attrGetterProxy.call(target, v, receiver);
-                            }
-                            else {
-                                return v;
-                            }
-                        }
-                        // 代理一些属性诸如 open, send...
-                        return (...args) => {
-                            const next = () => value.call(target, ...args);
-                            if (p === "open") {
-                                receiver.method = args[0];
-                                receiver.url = args[1];
-                            }
-                            if (proxyValue) {
-                                if (p === "send") {
-                                    return proxyValue === null || proxyValue === void 0 ? void 0 : proxyValue.call(target, args, receiver, next);
-                                }
-                                else {
-                                    proxyValue.call(target, args, receiver);
-                                }
-                            }
-                            return next();
-                        };
-                    },
-                    // 代理 设置属性值 操作
-                    set(target, p, value, receiver) {
-                        const type = typeof xhrInstance[p];
-                        const proxyValue = proxyMap[p];
-                        // 禁止修改一些原生方法如 open,send...
-                        if (type === "function")
-                            return true;
-                        // 代理一些事件属性诸如 onreadystatechange,onload...
-                        if (typeof proxyValue === "function") {
-                            target[p] = () => {
-                                proxyValue.call(target, receiver) || value.call(receiver);
-                            };
-                        }
-                        else {
-                            // 代理一些属性如 response, responseText
-                            const attrSetterProxy = (proxyValue || {})["setter"];
-                            try {
-                                target[p] =
-                                    (typeof attrSetterProxy === "function" &&
-                                        attrSetterProxy.call(target, value, receiver)) ||
-                                        (typeof value === "function" ? value.bind(receiver) : value);
-                            }
-                            catch (error) {
-                                // 代理只读属性是会抛出错误
-                                if (attrSetterProxy === true) {
-                                    // 如果该 只读属性 的 代理setter 为 true
-                                    // 将 value 缓存进 _xxx
-                                    xhrCache[`_${p.toString()}`] = value;
-                                }
-                                else {
-                                    throw error;
-                                }
-                            }
-                        }
-                        return true;
-                    },
+                    get: getterFactory,
+                    set: setterFactory,
                 });
                 return xhrProxy;
             },
         });
+        function setConfig(receiver, p, args) {
+            if (p === "open") {
+                receiver.method = args[0];
+                receiver.url = args[1];
+                receiver.async = args[2];
+                receiver.user = args[3];
+                receiver.password = args[4];
+            }
+            if (p === "send") {
+                receiver.body = args[0];
+            }
+            if (p === "setRequestHeader") {
+                receiver.headers = {};
+                receiver.headers[args[0].toLowerCase()] = args[1];
+            }
+        }
+        const getterFactory = (target, p, receiver) => {
+            var _a, _b;
+            const value = target[p];
+            const hook = proxy[p];
+            const type = typeof value;
+            if (type === "function") {
+                return (...args) => {
+                    const next = () => value.call(target, ...args);
+                    setConfig(receiver, p, args);
+                    return (hook === null || hook === void 0 ? void 0 : hook.call(receiver, target, args)) || next();
+                };
+            }
+            else {
+                const v = ((_a = target === null || target === void 0 ? void 0 : target.cache) === null || _a === void 0 ? void 0 : _a[`_${p}`]) || value;
+                const attrGetterProxy = (_b = hook === null || hook === void 0 ? void 0 : hook["getter"]) === null || _b === void 0 ? void 0 : _b.call(receiver, target, value);
+                return attrGetterProxy || v;
+            }
+        };
+        const setterFactory = (target, p, value, receiver) => {
+            var _a;
+            const hook = proxy[p];
+            if (typeof target[p] === "function")
+                return true;
+            if (typeof hook === "function") {
+                setValue(target, p, (e) => {
+                    const event = Object.assign({}, e);
+                    event.target = event.currentTarget = receiver;
+                    hook.call(receiver, target, event) || value.call(receiver, event);
+                });
+            }
+            else {
+                const attrSetterProxy = (_a = hook === null || hook === void 0 ? void 0 : hook["setter"]) === null || _a === void 0 ? void 0 : _a.call(receiver, target, value);
+                const attrValue = typeof value === "function" ? value.bind(receiver) : value;
+                try {
+                    setValue(target, p, attrSetterProxy || attrValue);
+                }
+                catch (_b) {
+                    // 缓存只读属性
+                    if (!target.cache)
+                        target.cache = {};
+                    target.cache[`_${p}`] = value;
+                }
+            }
+            return true;
+        };
     }
-    const proxyAjax = (proxyMap) => {
-        unsafeWindow["XMLHttpRequest"] = proxyXHR(proxyMap);
-    };
-    const unProxyAjax = () => {
-        unsafeWindow["XMLHttpRequest"] = XHR;
-    };
+    function unProxy(win) {
+        win = win || window;
+        if (win[realXHR])
+            win.XMLHttpRequest = win[realXHR];
+        win[realXHR] = undefined;
+    }
 
-    // 监听登录&reload
+    let next = true;
+    // // 监听登录&reload
     const reloadByLogin = (url) => {
         if (url.includes("/passport-login/web/login")) {
             console.log("login reload");
             sleep(1).then(() => window.location.reload());
         }
     };
-    // 监听登出&reload
+    // // 监听登出&reload
     const listenLogout = (url) => {
         if (url.includes("/login/exit/")) {
             store.remove("userCookie");
@@ -313,7 +291,7 @@
             removeCookies().then(() => window.location.reload());
         }
     };
-    // 判断主要链接
+    // // 判断主要链接
     const handleUrl = (url) => {
         const includes = [
             // bangumi
@@ -333,34 +311,71 @@
         }
         return false;
     };
+    function changeResponse(xhr) {
+        const { vipCookie } = getStoreCookies();
+        GM_xmlhttpRequest({
+            method: xhr.method,
+            url: xhr.url,
+            anonymous: true,
+            cookie: cookieToString(vipCookie),
+            headers: {
+                referer: window.location.href
+            },
+            onreadystatechange: (resp) => {
+                if (resp.readyState === 4) {
+                    xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
+                    xhr.send(xhr.body);
+                    this.response = resp.response;
+                    this.responseText = resp.responseText;
+                    next = false;
+                }
+            },
+        });
+    }
     const listenerAjax = () => __awaiter(void 0, void 0, void 0, function* () {
-        const { vipCookie, userCookie } = getStoreCookies();
-        const proxySettings = {
-            open: (_args, xhr) => {
+        const config = {
+            open(xhr) {
+                const ready = store.get("cookiesReady");
                 reloadByLogin(xhr.url);
                 listenLogout(xhr.url);
+                if (handleUrl(xhr.url) && ready) {
+                    next = true;
+                    changeResponse.call(this, xhr);
+                }
+                else {
+                    next = false;
+                }
+                return next;
             },
-            send: (_args, xhr, next) => {
-                if (handleUrl(xhr.url) && store.get("cookiesReady"))
-                    setCookies(vipCookie);
-                next();
+            send() {
+                return next;
             },
-            onloadend: () => {
-                if (store.get("cookiesReady"))
-                    setCookies(userCookie);
-            }
+            setRequestHeader() {
+                return next;
+            },
         };
-        proxyAjax(proxySettings);
+        proxy(config, unsafeWindow);
     });
 
-    const lockQuality = (quality) => {
-        const bilibiliPlayerSettings = localStorage.getItem("bilibili_player_settings");
-        if (bilibiliPlayerSettings) {
-            const bilibiliPlayerSettingsParse = JSON.parse(bilibiliPlayerSettings);
-            bilibiliPlayerSettingsParse.setting_config.defquality = Number(quality);
-            localStorage.setItem("bilibili_player_settings", JSON.stringify(bilibiliPlayerSettingsParse));
+    const lockQuality = (quality) => __awaiter(void 0, void 0, void 0, function* () {
+        const bilibili_player_settings = localStorage.getItem("bilibili_player_settings");
+        const bpx_player_profile = localStorage.getItem("bpx_player_profile");
+        if (bilibili_player_settings) {
+            const parse = JSON.parse(bilibili_player_settings);
+            parse.setting_config.defquality = quality;
+            localStorage.setItem("bilibili_player_settings", JSON.stringify(parse));
         }
-    };
+        if (bpx_player_profile) {
+            const parse = JSON.parse(bpx_player_profile);
+            parse.media.quality = quality;
+            localStorage.setItem("bpx_player_profile", JSON.stringify(parse));
+        }
+        const qualityCookie = yield getCookie("CURRENT_QUALITY");
+        if (qualityCookie) {
+            qualityCookie.value = quality.toString();
+            GM_cookie.set(qualityCookie);
+        }
+    });
 
     const unlockVideo = () => {
         let PGC;
@@ -381,10 +396,9 @@
             configurable: true,
             set(value) {
                 var _a;
-                const highQuality = (_a = (value.result || value.data)) === null || _a === void 0 ? void 0 : _a.accept_quality[0].toString();
-                if (highQuality) {
+                const highQuality = (_a = (value.result || value.data)) === null || _a === void 0 ? void 0 : _a.accept_quality[0];
+                if (highQuality)
                     lockQuality(highQuality);
-                }
             },
             get() {
                 return {};
@@ -396,35 +410,27 @@
     const container = document.createElement("div");
     /** 获取用户数据 */
     const userInfoURL = "//api.bilibili.com/x/web-interface/nav";
+    // TODO: 切换用户
     function avatar() {
         const { userCookie, vipCookie } = getStoreCookies();
         const cookie = vipCookie || userCookie;
         if (!cookie)
             return;
-        let vipStatus;
-        (function (vipStatus) {
-            /** 普通用户 */
-            vipStatus[vipStatus["user"] = 0] = "user";
-            /** 大会员用户 */
-            vipStatus[vipStatus["vip"] = 1] = "vip";
-        })(vipStatus || (vipStatus = {}));
-        const SESSDATA = cookie.find((v) => v.name === "SESSDATA");
-        if (SESSDATA) {
-            GM_xmlhttpRequest({
-                url: userInfoURL,
-                cookie: `${SESSDATA.name}=${SESSDATA.value}`,
-                onload(resp) {
-                    const result = JSON.parse(resp.response);
-                    const { face, vipStatus } = result.data;
-                    const avatarClass = vipStatus ? "joybook-avatar" : "joybook-avatar user";
-                    const html = createElement(`<div class="${avatarClass}">
+        GM_xmlhttpRequest({
+            url: userInfoURL,
+            cookie: cookieToString(cookie),
+            anonymous: true,
+            onload(resp) {
+                const result = JSON.parse(resp.response);
+                const { face, vipStatus } = result.data;
+                const avatarClass = vipStatus ? "joybook-avatar" : "joybook-avatar user";
+                const html = createElement(`<div class="${avatarClass}">
         <img src=${face}></img>
         </div>`);
-                    if (html)
-                        container.appendChild(html);
-                },
-            });
-        }
+                if (html)
+                    container.appendChild(html);
+            },
+        });
     }
     function handleEvent() {
         const delay = 1500;
@@ -443,7 +449,7 @@
             const result = window.confirm("确定要删除脚本数据吗？");
             if (!result)
                 return;
-            unProxyAjax();
+            unProxy(unsafeWindow);
             deleteAllValue();
             yield removeCookies();
             window.location.reload();

@@ -1,26 +1,28 @@
 import { printMessage, sleep } from "src/utils/helper";
-import { ProxyMap, proxyAjax } from "src/lib/ajax-proxy";
-import { getStoreCookies, removeCookies, setCookies } from "src/utils/cookie";
+import { proxy, ProxyConfig, ProxyOptions } from "src/lib/ajaxProxy";
+import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
 import { store } from "src/store";
 
-// 监听登录&reload
+let next = true;
+
+// // 监听登录&reload
 const reloadByLogin = (url: string): void => {
 	if (url.includes("/passport-login/web/login")) {
-    console.log("login reload")
+		console.log("login reload");
 		sleep(1).then(() => window.location.reload());
 	}
 };
 
-// 监听登出&reload
+// // 监听登出&reload
 const listenLogout = (url: string): void => {
 	if (url.includes("/login/exit/")) {
 		store.remove("userCookie");
-    console.log("logout reload")
+		console.log("logout reload");
 		removeCookies().then(() => window.location.reload());
 	}
 };
 
-// 判断主要链接
+// // 判断主要链接
 const handleUrl = (url: string): boolean => {
 	const includes = [
 		// bangumi
@@ -41,25 +43,56 @@ const handleUrl = (url: string): boolean => {
 	return false;
 };
 
+function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
+	const { vipCookie } = getStoreCookies();
+
+	GM_xmlhttpRequest({
+		method: xhr.method,
+		url: xhr.url,
+		anonymous: true,
+		cookie: cookieToString(vipCookie),
+    headers: {
+      referer: window.location.href
+    },
+		onreadystatechange: (resp) => {
+			if (resp.readyState === 4) {
+				xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
+				xhr.send(xhr.body);
+
+				this.response = resp.response;
+				this.responseText = resp.responseText;
+				next = false;
+			}
+		},
+	});
+}
+
 export const listenerAjax = async (): Promise<void> => {
 	printMessage("白嫖");
 
-	const { vipCookie, userCookie } = getStoreCookies();
+	const config: ProxyOptions = {
+    open(xhr) {
+      const ready = store.get("cookiesReady");
 
-	const proxySettings: ProxyMap = {
-		open: (_args, xhr) => {
-			reloadByLogin(xhr.url);
+      reloadByLogin(xhr.url);
 			listenLogout(xhr.url);
-		},
-		send: (_args, xhr, next) => {
-			if (handleUrl(xhr.url) && store.get("cookiesReady")) setCookies(vipCookie);
 
-      next();
+      if (handleUrl(xhr.url) && ready) {
+				next = true;
+				changeResponse.call(this, xhr);
+			} else {
+        next = false;
+      }
+
+			return next;
 		},
-    onloadend: () => {
-      if (store.get("cookiesReady")) setCookies(userCookie);
-    }
+		send() {
+			return next;
+		},
+		setRequestHeader() {
+      return next
+		},
 	};
 
-	proxyAjax(proxySettings);
+	proxy(config, unsafeWindow);
 };

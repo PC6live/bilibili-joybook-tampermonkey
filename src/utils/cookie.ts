@@ -1,6 +1,6 @@
 import { store, StoreCookies } from "src/store";
 
-const getStoreCookies = (): StoreCookies => {
+export const getStoreCookies = (): StoreCookies => {
 	const userCookie = store.get("userCookie");
 	const vipCookie = store.get("vipCookie");
 	return {
@@ -9,27 +9,33 @@ const getStoreCookies = (): StoreCookies => {
 	};
 };
 
-const getCookies = (): Promise<Cookie[]> => {
+export const getCookie = (key: string): Promise<Cookie | undefined> => {
+	return new Promise((resolve) => {
+		GM_cookie.list({}, (cookies) => resolve(cookies.find((c) => c.name === key)));
+	});
+};
+
+export const getCookies = (): Promise<Cookie[]> => {
 	return new Promise((resolve) => {
 		GM_cookie.list({}, (cookies) => resolve(cookies));
 	});
 };
 
-const removeCookies = async (): Promise<void> => {
+export const removeCookies = async (): Promise<void> => {
 	const cookies = await getCookies();
 	cookies.forEach((cookie) => {
 		GM_cookie.delete({ name: cookie.name });
 	});
 };
 
-const storeCookies = async (name: keyof StoreCookies, queryName: string[]): Promise<void> => {
+export const storeCookies = async (name: keyof StoreCookies, queryName: string[]): Promise<void> => {
 	const cookies = (await getCookies()).filter((cookie) => {
 		return cookie.name && queryName.includes(cookie.name);
 	});
 	store.set(name, cookies);
 };
 
-const setCookies = (cookies: Cookie[]) => {
+export const setCookies = (cookies: Cookie[]) => {
 	const formatCookies = cookies.map((cookie) => {
 		return {
 			domain: cookie.domain,
@@ -49,4 +55,6 @@ const setCookies = (cookies: Cookie[]) => {
 	});
 };
 
-export { getCookies, removeCookies, storeCookies, setCookies, getStoreCookies };
+export function cookieToString(cookies: Cookie[]) {
+  return cookies.map(v => `${v.name}=${v.value}`).join("; ")
+}

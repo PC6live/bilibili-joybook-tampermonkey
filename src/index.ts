@@ -1,7 +1,4 @@
 import { unlockVideo, initialize, listenerAjax, settings } from "src/components";
-import { printMessage } from "./utils/helper";
-
-printMessage("脚本启动")
 
 // 解锁会员限制
 unlockVideo();
