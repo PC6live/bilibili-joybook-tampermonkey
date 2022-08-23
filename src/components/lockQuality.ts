@@ -11,17 +11,30 @@ export const lockQuality = async (quality: number) => {
 		localStorage.setItem("bilibili_player_settings", JSON.stringify(parse));
 	}
 
-  if (bpx_player_profile) {
-    const parse = JSON.parse(bpx_player_profile);
+	if (bpx_player_profile) {
+		const parse = JSON.parse(bpx_player_profile);
 
 		parse.media.quality = quality;
 		localStorage.setItem("bpx_player_profile", JSON.stringify(parse));
-  }
+	}
 
-  const qualityCookie = await getCookie("CURRENT_QUALITY")
+	let qualityCookie = await getCookie("CURRENT_QUALITY");
 
-  if (qualityCookie) {
-    qualityCookie.value = quality.toString()
-    GM_cookie.set(qualityCookie)
-  }
+	const date = new Date();
+
+	if (!qualityCookie) {
+		qualityCookie = {
+			domain: ".bilibili.com",
+			expirationDate: new Date(date.getFullYear() + 1, date.getMonth(), date.getDate()).getTime(),
+			hostOnly: false,
+			httpOnly: false,
+			name: "CURRENT_QUALITY",
+			path: "/",
+			sameSite: "unspecified",
+			secure: false,
+			session: false,
+			value: quality.toString(),
+		};
+	}
+  GM_cookie.set(qualityCookie);
 };

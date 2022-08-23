@@ -116,6 +116,7 @@ interface Cookie {
 	httpOnly?: boolean;
 	sameSite?: string;
 	expirationDate?: number;
+  session?: boolean;
 }
 
 interface GM_cookie {

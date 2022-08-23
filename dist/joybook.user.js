@@ -370,11 +370,23 @@
             parse.media.quality = quality;
             localStorage.setItem("bpx_player_profile", JSON.stringify(parse));
         }
-        const qualityCookie = yield getCookie("CURRENT_QUALITY");
-        if (qualityCookie) {
-            qualityCookie.value = quality.toString();
-            GM_cookie.set(qualityCookie);
+        let qualityCookie = yield getCookie("CURRENT_QUALITY");
+        const date = new Date();
+        if (!qualityCookie) {
+            qualityCookie = {
+                domain: ".bilibili.com",
+                expirationDate: new Date(date.getFullYear() + 1, date.getMonth(), date.getDate()).getTime(),
+                hostOnly: false,
+                httpOnly: false,
+                name: "CURRENT_QUALITY",
+                path: "/",
+                sameSite: "unspecified",
+                secure: false,
+                session: false,
+                value: quality.toString(),
+            };
         }
+        GM_cookie.set(qualityCookie);
     });
 
     const unlockVideo = () => {
