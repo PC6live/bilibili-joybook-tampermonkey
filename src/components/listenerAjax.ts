@@ -3,7 +3,7 @@ import { proxy, ProxyConfig, ProxyOptions } from "src/lib/ajaxProxy";
 import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
 import { store } from "src/store";
 
-let next = true;
+let next = false;
 
 // // 监听登录&reload
 const reloadByLogin = (url: string): void => {
@@ -51,9 +51,9 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 		url: xhr.url,
 		anonymous: true,
 		cookie: cookieToString(vipCookie),
-    headers: {
-      referer: window.location.href
-    },
+		headers: {
+			referer: window.location.href,
+		},
 		onreadystatechange: (resp) => {
 			if (resp.readyState === 4) {
 				xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
@@ -71,18 +71,18 @@ export const listenerAjax = async (): Promise<void> => {
 	printMessage("白嫖");
 
 	const config: ProxyOptions = {
-    open(xhr) {
-      const ready = store.get("cookiesReady");
+		open(xhr) {
+			const ready = store.get("cookiesReady");
 
-      reloadByLogin(xhr.url);
+			reloadByLogin(xhr.url);
 			listenLogout(xhr.url);
 
-      if (handleUrl(xhr.url) && ready) {
+			if (handleUrl(xhr.url) && ready) {
 				next = true;
 				changeResponse.call(this, xhr);
 			} else {
-        next = false;
-      }
+				next = false;
+			}
 
 			return next;
 		},
@@ -90,7 +90,7 @@ export const listenerAjax = async (): Promise<void> => {
 			return next;
 		},
 		setRequestHeader() {
-      return next
+			return next;
 		},
 	};
 

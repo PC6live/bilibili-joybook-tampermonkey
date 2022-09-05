@@ -192,9 +192,9 @@
     function setValue(arg, key, value) {
         arg[key] = value;
     }
-    function proxy(proxy, win) {
-        win = win || window;
+    function proxy(proxy, win = window) {
         win[realXHR] = win[realXHR] || win.XMLHttpRequest;
+        const instance = new win[realXHR]();
         win.XMLHttpRequest = new Proxy(win.XMLHttpRequest, {
             construct(Target) {
                 // 代理 new 操作符
@@ -226,7 +226,7 @@
             var _a, _b;
             const value = target[p];
             const hook = proxy[p];
-            const type = typeof value;
+            const type = typeof instance[p];
             if (type === "function") {
                 return (...args) => {
                     const next = () => value.call(target, ...args);
@@ -243,7 +243,7 @@
         const setterFactory = (target, p, value, receiver) => {
             var _a;
             const hook = proxy[p];
-            if (typeof target[p] === "function")
+            if (typeof instance[p] === "function")
                 return true;
             if (typeof hook === "function") {
                 setValue(target, p, (e) => {
@@ -275,7 +275,7 @@
         win[realXHR] = undefined;
     }
 
-    let next = true;
+    let next = false;
     // // 监听登录&reload
     const reloadByLogin = (url) => {
         if (url.includes("/passport-login/web/login")) {
@@ -319,7 +319,7 @@
             anonymous: true,
             cookie: cookieToString(vipCookie),
             headers: {
-                referer: window.location.href
+                referer: window.location.href,
             },
             onreadystatechange: (resp) => {
                 if (resp.readyState === 4) {

@@ -69,9 +69,10 @@ function setValue<K extends keyof XMLHttpRequest>(arg: XMLHttpRequest, key: K, v
 	arg[key] = value;
 }
 
-export function proxy(proxy: ProxyOptions, win?: ProxyWin): void {
-	win = win || window;
+export function proxy(proxy: ProxyOptions, win: ProxyWin = window): void {
 	win[realXHR] = win[realXHR] || win.XMLHttpRequest;
+
+  const instance = new win[realXHR]();
 
 	win.XMLHttpRequest = new Proxy(win.XMLHttpRequest, {
 		construct(Target) {
@@ -109,7 +110,7 @@ export function proxy(proxy: ProxyOptions, win?: ProxyWin): void {
 	): any => {
 		const value = target[p];
 		const hook = proxy[p];
-		const type = typeof value;
+		const type = typeof instance[p];
 
 		if (type === "function") {
 			return (...args: any[]) => {
@@ -134,7 +135,7 @@ export function proxy(proxy: ProxyOptions, win?: ProxyWin): void {
 	) => {
 		const hook = proxy[p];
 
-		if (typeof target[p] === "function") return true;
+		if (typeof instance[p] === "function") return true;
 
 		if (typeof hook === "function") {
 			setValue(target, p, (e: ProgressEvent<EventTarget>) => {
