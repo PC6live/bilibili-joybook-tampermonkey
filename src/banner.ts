@@ -64,7 +64,7 @@ interface HeaderObject {
 
 const config: HeaderObject = {
 	name: "bilibili-joybook",
-	version: "0.0.8",
+	version: "0.0.9",
 	description: "共享大会员",
 	author: "PC6live",
   namespace: "https://github.com/PC6live/bilibili-joybook-tampermonkey",

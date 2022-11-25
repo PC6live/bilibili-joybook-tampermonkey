@@ -3,7 +3,7 @@ import { proxy, ProxyConfig, ProxyOptions } from "src/lib/ajaxProxy";
 import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
 import { store } from "src/store";
 
-let next = false;
+// let next = false;
 
 // // 监听登录&reload
 const reloadByLogin = (url: string): void => {
@@ -30,6 +30,7 @@ const handleUrl = (url: string): boolean => {
 		// video
 		"api.bilibili.com/x/player/playurl",
 		"api.bilibili.com/x/player/v2",
+		"api.bilibili.com/x/player/wbi/playurl",
 	];
 	const excludes = ["data.bilibili.com"];
 
@@ -61,7 +62,7 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 
 				this.response = resp.response;
 				this.responseText = resp.responseText;
-				next = false;
+				// next = false;
 			}
 		},
 	});
@@ -69,28 +70,31 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 
 export const listenerAjax = async (): Promise<void> => {
 	printMessage("白嫖");
+	const ready = store.get("cookiesReady");
 
 	const config: ProxyOptions = {
 		open(xhr) {
-			const ready = store.get("cookiesReady");
-
 			reloadByLogin(xhr.url);
 			listenLogout(xhr.url);
 
 			if (handleUrl(xhr.url) && ready) {
-				next = true;
 				changeResponse.call(this, xhr);
-			} else {
-				next = false;
+				return true;
 			}
 
-			return next;
+			return false;
 		},
-		send() {
-			return next;
+		send(xhr) {
+			if (handleUrl(xhr.url) && ready) {
+				return true;
+			}
+			return false;
 		},
-		setRequestHeader() {
-			return next;
+		setRequestHeader(xhr) {
+			if (handleUrl(xhr.url) && ready) {
+				return true;
+			}
+			return false;
 		},
 	};
 

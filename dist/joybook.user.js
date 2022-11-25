@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name          bilibili-joybook
-// @version       0.0.8
+// @version       0.0.9
 // @description   共享大会员
 // @author        PC6live
 // @namespace     https://github.com/PC6live/bilibili-joybook-tampermonkey
@@ -275,7 +275,7 @@
         win[realXHR] = undefined;
     }
 
-    let next = false;
+    // let next = false;
     // // 监听登录&reload
     const reloadByLogin = (url) => {
         if (url.includes("/passport-login/web/login")) {
@@ -299,6 +299,7 @@
             // video
             "api.bilibili.com/x/player/playurl",
             "api.bilibili.com/x/player/v2",
+            "api.bilibili.com/x/player/wbi/playurl",
         ];
         const excludes = ["data.bilibili.com"];
         for (let i = 0; i < excludes.length; ++i) {
@@ -327,31 +328,34 @@
                     xhr.send(xhr.body);
                     this.response = resp.response;
                     this.responseText = resp.responseText;
-                    next = false;
+                    // next = false;
                 }
             },
         });
     }
     const listenerAjax = () => __awaiter(void 0, void 0, void 0, function* () {
+        const ready = store.get("cookiesReady");
         const config = {
             open(xhr) {
-                const ready = store.get("cookiesReady");
                 reloadByLogin(xhr.url);
                 listenLogout(xhr.url);
                 if (handleUrl(xhr.url) && ready) {
-                    next = true;
                     changeResponse.call(this, xhr);
+                    return true;
                 }
-                else {
-                    next = false;
+                return false;
+            },
+            send(xhr) {
+                if (handleUrl(xhr.url) && ready) {
+                    return true;
                 }
-                return next;
+                return false;
             },
-            send() {
-                return next;
-            },
-            setRequestHeader() {
-                return next;
+            setRequestHeader(xhr) {
+                if (handleUrl(xhr.url) && ready) {
+                    return true;
+                }
+                return false;
             },
         };
         proxy(config, unsafeWindow);
