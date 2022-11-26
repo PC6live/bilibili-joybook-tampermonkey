@@ -22,6 +22,7 @@
 // @grant         unsafeWindow
 // @run-at        document-start
 // @noframes      true
+// @require       file:E:\Code\Tampermonkey\bilibili-joybook-tampermonkey\dist\joybook.user.js
 // ==/UserScript==
 (function () {
     'use strict';
@@ -187,6 +188,9 @@
         return el.firstElementChild;
     };
     const deleteAllValue = () => GM_listValues().forEach((v) => GM_deleteValue(v));
+    const printMessage = (message) => {
+        console.log(`Tampermonkey: ${message}`);
+    };
 
     const realXHR = "_xhr";
     function setValue(arg, key, value) {
@@ -275,7 +279,6 @@
         win[realXHR] = undefined;
     }
 
-    // let next = false;
     // // 监听登录&reload
     const reloadByLogin = (url) => {
         if (url.includes("/passport-login/web/login")) {
@@ -300,17 +303,18 @@
             "api.bilibili.com/x/player/playurl",
             "api.bilibili.com/x/player/v2",
             "api.bilibili.com/x/player/wbi/playurl",
+            "api.bilibili.com/pgc/view/web/season",
         ];
         const excludes = ["data.bilibili.com"];
-        for (let i = 0; i < excludes.length; ++i) {
-            if (url.includes(excludes[i]))
-                return false;
+        if (excludes.findIndex((v) => url.includes(v)) > -1) {
+            return false;
         }
-        for (let i = 0; i < includes.length; ++i) {
-            if (url.includes(includes[i]))
-                return true;
+        else if (includes.findIndex((v) => url.includes(v)) > -1) {
+            return true;
         }
-        return false;
+        else {
+            return false;
+        }
     };
     function changeResponse(xhr) {
         const { vipCookie } = getStoreCookies();
@@ -328,12 +332,12 @@
                     xhr.send(xhr.body);
                     this.response = resp.response;
                     this.responseText = resp.responseText;
-                    // next = false;
                 }
             },
         });
     }
     const listenerAjax = () => __awaiter(void 0, void 0, void 0, function* () {
+        printMessage("白嫖");
         const ready = store.get("cookiesReady");
         const config = {
             open(xhr) {

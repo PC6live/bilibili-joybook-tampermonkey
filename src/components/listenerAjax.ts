@@ -3,8 +3,6 @@ import { proxy, ProxyConfig, ProxyOptions } from "src/lib/ajaxProxy";
 import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
 import { store } from "src/store";
 
-// let next = false;
-
 // // 监听登录&reload
 const reloadByLogin = (url: string): void => {
 	if (url.includes("/passport-login/web/login")) {
@@ -31,17 +29,17 @@ const handleUrl = (url: string): boolean => {
 		"api.bilibili.com/x/player/playurl",
 		"api.bilibili.com/x/player/v2",
 		"api.bilibili.com/x/player/wbi/playurl",
+		"api.bilibili.com/pgc/view/web/season",
 	];
 	const excludes = ["data.bilibili.com"];
 
-	for (let i = 0; i < excludes.length; ++i) {
-		if (url.includes(excludes[i])) return false;
+	if (excludes.findIndex((v) => url.includes(v)) > -1) {
+		return false;
+	} else if (includes.findIndex((v) => url.includes(v)) > -1) {
+		return true;
+	} else {
+		return false;
 	}
-	for (let i = 0; i < includes.length; ++i) {
-		if (url.includes(includes[i])) return true;
-	}
-
-	return false;
 };
 
 function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
@@ -62,7 +60,6 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 
 				this.response = resp.response;
 				this.responseText = resp.responseText;
-				// next = false;
 			}
 		},
 	});
