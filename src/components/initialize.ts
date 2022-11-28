@@ -31,13 +31,13 @@ async function handleLogin(key: "vipCookie" | "userCookie"): Promise<void> {
 	store.set("cookiesReady", cookiesReady());
 
 	const ready = store.get("cookiesReady");
-  const { userCookie } = getStoreCookies();
+	const { userCookie } = getStoreCookies();
 
 	if (!ready) {
-    removeCookies()
-  } else {
-    setCookies(userCookie)
-  }
+		removeCookies();
+	} else {
+		setCookies(userCookie);
+	}
 
 	window.location.reload();
 }
@@ -47,8 +47,6 @@ export const initialize = async (): Promise<void> => {
 	const { isLogin, vipStatus } = await getUserType();
 
 	if (!isLogin || store.get("cookiesReady")) return;
-
-  console.log(vipStatus)
 
 	if (vipStatus) {
 		// vip用户

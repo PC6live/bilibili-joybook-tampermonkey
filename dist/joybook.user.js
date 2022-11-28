@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name          bilibili-joybook
-// @version       0.0.9
+// @version       0.0.10
 // @description   共享大会员
 // @author        PC6live
 // @namespace     https://github.com/PC6live/bilibili-joybook-tampermonkey
@@ -22,7 +22,6 @@
 // @grant         unsafeWindow
 // @run-at        document-start
 // @noframes      true
-// @require       file:E:\Code\Tampermonkey\bilibili-joybook-tampermonkey\dist\joybook.user.js
 // ==/UserScript==
 (function () {
     'use strict';
@@ -170,7 +169,6 @@
         const { isLogin, vipStatus } = yield getUserType();
         if (!isLogin || store.get("cookiesReady"))
             return;
-        console.log(vipStatus);
         if (vipStatus) {
             // vip用户
             handleLogin("vipCookie");
@@ -188,9 +186,6 @@
         return el.firstElementChild;
     };
     const deleteAllValue = () => GM_listValues().forEach((v) => GM_deleteValue(v));
-    const printMessage = (message) => {
-        console.log(`Tampermonkey: ${message}`);
-    };
 
     const realXHR = "_xhr";
     function setValue(arg, key, value) {
@@ -337,7 +332,6 @@
         });
     }
     const listenerAjax = () => __awaiter(void 0, void 0, void 0, function* () {
-        printMessage("白嫖");
         const ready = store.get("cookiesReady");
         const config = {
             open(xhr) {
@@ -365,38 +359,42 @@
         proxy(config, unsafeWindow);
     });
 
-    const lockQuality = (quality) => __awaiter(void 0, void 0, void 0, function* () {
-        const bilibili_player_settings = localStorage.getItem("bilibili_player_settings");
-        const bpx_player_profile = localStorage.getItem("bpx_player_profile");
-        if (bilibili_player_settings) {
-            const parse = JSON.parse(bilibili_player_settings);
-            parse.setting_config.defquality = quality;
-            localStorage.setItem("bilibili_player_settings", JSON.stringify(parse));
-        }
-        if (bpx_player_profile) {
-            const parse = JSON.parse(bpx_player_profile);
-            parse.media.quality = quality;
-            localStorage.setItem("bpx_player_profile", JSON.stringify(parse));
-        }
-        let qualityCookie = yield getCookie("CURRENT_QUALITY");
-        const date = new Date();
-        if (!qualityCookie) {
-            qualityCookie = {
-                domain: ".bilibili.com",
-                expirationDate: new Date(date.getFullYear() + 1, date.getMonth(), date.getDate()).getTime(),
-                hostOnly: false,
-                httpOnly: false,
-                name: "CURRENT_QUALITY",
-                path: "/",
-                sameSite: "unspecified",
-                secure: false,
-                session: false,
-                value: quality.toString(),
-            };
-        }
-        GM_cookie.set(qualityCookie);
-    });
-
+    function setDefaultQuality(quality) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const bilibili_player_settings = localStorage.getItem("bilibili_player_settings");
+            const bpx_player_profile = localStorage.getItem("bpx_player_profile");
+            if (bilibili_player_settings) {
+                const parse = JSON.parse(bilibili_player_settings);
+                parse.setting_config.defquality = quality;
+                localStorage.setItem("bilibili_player_settings", JSON.stringify(parse));
+            }
+            if (bpx_player_profile) {
+                const parse = JSON.parse(bpx_player_profile);
+                parse.media.quality = quality;
+                localStorage.setItem("bpx_player_profile", JSON.stringify(parse));
+            }
+            let qualityCookie = yield getCookie("CURRENT_QUALITY");
+            const date = new Date();
+            if (!qualityCookie) {
+                qualityCookie = {
+                    domain: ".bilibili.com",
+                    expirationDate: new Date(date.getFullYear() + 1, date.getMonth(), date.getDate()).getTime(),
+                    hostOnly: false,
+                    httpOnly: false,
+                    name: "CURRENT_QUALITY",
+                    path: "/",
+                    sameSite: "unspecified",
+                    secure: false,
+                    session: false,
+                    value: quality.toString(),
+                };
+            }
+            else {
+                qualityCookie.value = quality.toString();
+            }
+            GM_cookie.set(qualityCookie);
+        });
+    }
     const unlockVideo = () => {
         let PGC;
         Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
@@ -416,9 +414,9 @@
             configurable: true,
             set(value) {
                 var _a;
-                const highQuality = (_a = (value.result || value.data)) === null || _a === void 0 ? void 0 : _a.accept_quality[0];
-                if (highQuality)
-                    lockQuality(highQuality);
+                const quality = (_a = (value.result || value.data)) === null || _a === void 0 ? void 0 : _a.accept_quality[0];
+                if (quality)
+                    setDefaultQuality(quality);
             },
             get() {
                 return {};
