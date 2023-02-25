@@ -1,12 +1,9 @@
-import { store, StoreCookies } from "src/store";
+import { StoreCookies, get, set, del } from "src/store";
 
 export const getStoreCookies = (): StoreCookies => {
-	const userCookie = store.get("userCookie");
-	const vipCookie = store.get("vipCookie");
-	return {
-		userCookie,
-		vipCookie,
-	};
+	const userCookie = get("userCookie");
+	const vipCookie = get("vipCookie");
+	return { userCookie, vipCookie };
 };
 
 export const getCookie = (key: string): Promise<Cookie | undefined> => {
@@ -29,10 +26,11 @@ export const removeCookies = async (): Promise<void> => {
 };
 
 export const storeCookies = async (name: keyof StoreCookies, queryName: string[]): Promise<void> => {
+	del(name);
 	const cookies = (await getCookies()).filter((cookie) => {
 		return cookie.name && queryName.includes(cookie.name);
 	});
-	store.set(name, cookies);
+	set(name, cookies);
 };
 
 export const setCookies = (cookies: Cookie[]) => {
@@ -56,5 +54,5 @@ export const setCookies = (cookies: Cookie[]) => {
 };
 
 export function cookieToString(cookies: Cookie[]) {
-  return cookies.map(v => `${v.name}=${v.value}`).join("; ")
+	return cookies.map((v) => `${v.name}=${v.value}`).join("; ");
 }

@@ -1,7 +1,8 @@
 import { printMessage, sleep } from "src/utils/helper";
 import { proxy, ProxyConfig, ProxyOptions } from "src/lib/ajaxProxy";
 import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
-import { store } from "src/store";
+import { del } from "src/store";
+import { cookiesReady } from "./initialize";
 
 // // 监听登录&reload
 const reloadByLogin = (url: string): void => {
@@ -14,7 +15,7 @@ const reloadByLogin = (url: string): void => {
 // // 监听登出&reload
 const listenLogout = (url: string): void => {
 	if (url.includes("/login/exit/")) {
-		store.remove("userCookie");
+		del("userCookie");
 		console.log("logout reload");
 		removeCookies().then(() => window.location.reload());
 	}
@@ -67,13 +68,15 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 }
 
 export const listenerAjax = async (): Promise<void> => {
-  const ready = store.get("cookiesReady");
+	const ready = cookiesReady();
 
-  if (ready) {
-    printMessage("白嫖");
-  } else {
-    printMessage("请按照wiki指示登录账号 https://github.com/PC6live/bilibili-joybook-tampermonkey/wiki/%E4%BD%BF%E7%94%A8")
-  }
+	if (ready) {
+		printMessage("白嫖");
+	} else {
+		printMessage(
+			"请按照wiki指示登录账号 https://github.com/PC6live/bilibili-joybook-tampermonkey/wiki/%E4%BD%BF%E7%94%A8"
+		);
+	}
 
 	const config: ProxyOptions = {
 		open(xhr) {

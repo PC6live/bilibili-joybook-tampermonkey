@@ -2,36 +2,30 @@
 import { unProxy } from "src/lib/ajaxProxy";
 import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
 import { createElement, deleteAllValue } from "src/utils/helper";
+import { USER_INFO_URL } from "src/utils/url";
+import { UserInfo } from "./initialize";
 
 /** 头像容器 */
 const container: HTMLDivElement = document.createElement("div");
-/** 获取用户数据 */
-const userInfoURL = "//api.bilibili.com/x/web-interface/nav";
-
-// TODO: 切换用户
 
 function avatar() {
 	const { userCookie, vipCookie } = getStoreCookies();
 	const cookie = vipCookie || userCookie;
 
-	if (!cookie) return;
-
 	GM_xmlhttpRequest({
-		url: userInfoURL,
-		cookie: cookieToString(cookie),
+		url: USER_INFO_URL,
+		cookie: cookie && cookieToString(cookie),
 		anonymous: true,
 		onload(resp) {
-			const result = JSON.parse(resp.response) as {
-				data: {
-					face: string;
-					vipStatus: number;
-				};
-			};
-			const { face, vipStatus } = result.data;
+			const { face, vipStatus } = JSON.parse(resp.response).data as UserInfo;
 			const avatarClass = vipStatus ? "joybook-avatar" : "joybook-avatar user";
-			const html = createElement(`<div class="${avatarClass}">
-        <img src=${face}></img>
-        </div>`);
+
+			const img = face ? `<img src=${face}></img>` : "";
+			const html = createElement(`
+          <div class="${avatarClass}">
+            ${img}
+          </div>
+        `);
 			if (html) container.appendChild(html);
 		},
 	});

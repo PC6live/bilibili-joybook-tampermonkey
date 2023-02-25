@@ -9,8 +9,8 @@
 	"author": "PClive",
 	"license": "MIT",
 	"scripts": {
-		"start": "cross-env NODE_ENV=development rollup -c -w --configPlugin typescript",
-		"build": "cross-env NODE_ENV=production rollup -c --configPlugin typescript",
+		"start": "cross-env NODE_ENV=development rollup -c -w --configPlugin typescript --bundleConfigAsCjs",
+		"build": "cross-env NODE_ENV=production rollup -c --configPlugin typescript --bundleConfigAsCjs",
 		"lint": "eslint . --ext .ts,.tsx"
 	},
 	"devDependencies": {

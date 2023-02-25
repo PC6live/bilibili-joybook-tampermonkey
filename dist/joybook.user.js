@@ -51,45 +51,20 @@
         });
     }
 
-    const obj = {
-        cookiesReady: false,
-        init: false,
-    };
     const set = (key, value) => {
         GM_setValue(key, value);
     };
     const get = (key, defaultValue) => {
         return GM_getValue(key, defaultValue);
     };
-    const remove = (key) => {
+    const del = (key) => {
         GM_deleteValue(key);
     };
-    const initStore = () => {
-        if (get("init"))
-            return;
-        Object.keys(obj).forEach(v => {
-            const key = v;
-            set(key, obj[key]);
-        });
-        set("init", true);
-    };
-    const getAll = () => {
-        const result = {};
-        Object.keys(obj).forEach(v => {
-            const key = v;
-            result[key] = get(key);
-        });
-        return result;
-    };
-    const store = { set, get, remove, initStore, getAll };
 
     const getStoreCookies = () => {
-        const userCookie = store.get("userCookie");
-        const vipCookie = store.get("vipCookie");
-        return {
-            userCookie,
-            vipCookie,
-        };
+        const userCookie = get("userCookie");
+        const vipCookie = get("vipCookie");
+        return { userCookie, vipCookie };
     };
     const getCookie = (key) => {
         return new Promise((resolve) => {
@@ -108,10 +83,11 @@
         });
     });
     const storeCookies = (name, queryName) => __awaiter(void 0, void 0, void 0, function* () {
+        del(name);
         const cookies = (yield getCookies()).filter((cookie) => {
             return cookie.name && queryName.includes(cookie.name);
         });
-        store.set(name, cookies);
+        set(name, cookies);
     });
     const setCookies = (cookies) => {
         const formatCookies = cookies.map((cookie) => {
@@ -132,30 +108,26 @@
         });
     };
     function cookieToString(cookies) {
-        return cookies.map(v => `${v.name}=${v.value}`).join("; ");
+        return cookies.map((v) => `${v.name}=${v.value}`).join("; ");
     }
 
-    /** 获取用户数据 */
-    const userInfoURL$1 = "//api.bilibili.com/x/web-interface/nav";
-    // TODO: 检测会员Cookie 是否失效
+    const USER_INFO_URL = "//api.bilibili.com/x/web-interface/nav";
+
     const getUserType = () => __awaiter(void 0, void 0, void 0, function* () {
-        const resp = yield fetch(userInfoURL$1, { method: "get", credentials: "include" });
+        const resp = yield fetch(USER_INFO_URL, { method: "get", credentials: "include" });
         const result = yield resp.json();
         return result.data;
     });
-    const cookiesReady = () => {
+    function cookiesReady() {
         const { userCookie, vipCookie } = getStoreCookies();
-        return !!userCookie && !!vipCookie;
-    };
+        return userCookie && vipCookie;
+    }
     function handleLogin(key) {
         return __awaiter(this, void 0, void 0, function* () {
             const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"];
-            store.remove(key);
             yield storeCookies(key, storeKey);
-            store.set("cookiesReady", cookiesReady());
-            const ready = store.get("cookiesReady");
             const { userCookie } = getStoreCookies();
-            if (!ready) {
+            if (!cookiesReady()) {
                 removeCookies();
             }
             else {
@@ -167,7 +139,7 @@
     const initialize = () => __awaiter(void 0, void 0, void 0, function* () {
         // 获取登录状态
         const { isLogin, vipStatus } = yield getUserType();
-        if (!isLogin || store.get("cookiesReady"))
+        if (!isLogin || cookiesReady())
             return;
         if (vipStatus) {
             // vip用户
@@ -284,7 +256,7 @@
     // // 监听登出&reload
     const listenLogout = (url) => {
         if (url.includes("/login/exit/")) {
-            store.remove("userCookie");
+            del("userCookie");
             console.log("logout reload");
             removeCookies().then(() => window.location.reload());
         }
@@ -330,7 +302,7 @@
         });
     }
     const listenerAjax = () => __awaiter(void 0, void 0, void 0, function* () {
-        const ready = store.get("cookiesReady");
+        const ready = cookiesReady();
         const config = {
             open(xhr) {
                 reloadByLogin(xhr.url);
@@ -424,25 +396,22 @@
 
     /** 头像容器 */
     const container = document.createElement("div");
-    /** 获取用户数据 */
-    const userInfoURL = "//api.bilibili.com/x/web-interface/nav";
-    // TODO: 切换用户
     function avatar() {
         const { userCookie, vipCookie } = getStoreCookies();
         const cookie = vipCookie || userCookie;
-        if (!cookie)
-            return;
         GM_xmlhttpRequest({
-            url: userInfoURL,
-            cookie: cookieToString(cookie),
+            url: USER_INFO_URL,
+            cookie: cookie && cookieToString(cookie),
             anonymous: true,
             onload(resp) {
-                const result = JSON.parse(resp.response);
-                const { face, vipStatus } = result.data;
+                const { face, vipStatus } = JSON.parse(resp.response).data;
                 const avatarClass = vipStatus ? "joybook-avatar" : "joybook-avatar user";
-                const html = createElement(`<div class="${avatarClass}">
-        <img src=${face}></img>
-        </div>`);
+                const img = face ? `<img src=${face}></img>` : "";
+                const html = createElement(`
+          <div class="${avatarClass}">
+            ${img}
+          </div>
+        `);
                 if (html)
                     container.appendChild(html);
             },
