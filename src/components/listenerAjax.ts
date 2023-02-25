@@ -35,11 +35,12 @@ const handleUrl = (url: string): boolean => {
 
 	if (excludes.findIndex((v) => url.includes(v)) > -1) {
 		return false;
-	} else if (includes.findIndex((v) => url.includes(v)) > -1) {
-		return true;
-	} else {
-		return false;
 	}
+	if (includes.findIndex((v) => url.includes(v)) > -1) {
+		return true;
+	}
+
+	return false;
 };
 
 function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
@@ -66,8 +67,13 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 }
 
 export const listenerAjax = async (): Promise<void> => {
-	printMessage("白嫖");
-	const ready = store.get("cookiesReady");
+  const ready = store.get("cookiesReady");
+
+  if (ready) {
+    printMessage("白嫖");
+  } else {
+    printMessage("请按照wiki指示登录账号 https://github.com/PC6live/bilibili-joybook-tampermonkey/wiki/%E4%BD%BF%E7%94%A8")
+  }
 
 	const config: ProxyOptions = {
 		open(xhr) {

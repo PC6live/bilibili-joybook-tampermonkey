@@ -304,12 +304,10 @@
         if (excludes.findIndex((v) => url.includes(v)) > -1) {
             return false;
         }
-        else if (includes.findIndex((v) => url.includes(v)) > -1) {
+        if (includes.findIndex((v) => url.includes(v)) > -1) {
             return true;
         }
-        else {
-            return false;
-        }
+        return false;
     };
     function changeResponse(xhr) {
         const { vipCookie } = getStoreCookies();
@@ -531,7 +529,7 @@
 
     var global = /*#__PURE__*/Object.freeze({
         __proto__: null,
-        'default': css_248z,
+        default: css_248z,
         stylesheet: stylesheet
     });
 

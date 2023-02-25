@@ -1,7 +1,7 @@
 {
 	"name": "bili-joybook",
 	"version": "1.0.0",
-	"description": "",
+	"description": "白嫖大会员",
 	"main": "dist/joybook.user.js",
 	"keywords": [
 		"bilibili"
@@ -14,21 +14,21 @@
 		"lint": "eslint . --ext .ts,.tsx"
 	},
 	"devDependencies": {
-		"@rollup/plugin-alias": "^3.1.9",
-		"@rollup/plugin-json": "^4.1.0",
-		"@rollup/plugin-replace": "^4.0.0",
-		"@rollup/plugin-typescript": "^8.3.3",
-		"@typescript-eslint/eslint-plugin": "^5.28.0",
-		"@typescript-eslint/parser": "^5.28.0",
+		"@rollup/plugin-alias": "^4.0.3",
+		"@rollup/plugin-json": "^6.0.0",
+		"@rollup/plugin-replace": "^5.0.2",
+		"@rollup/plugin-typescript": "^11.0.0",
+		"@typescript-eslint/eslint-plugin": "^5.53.0",
+		"@typescript-eslint/parser": "^5.53.0",
 		"cross-env": "^7.0.3",
-		"eslint": "^8.17.0",
-		"eslint-config-prettier": "^8.5.0",
-		"postcss": "^8.4.14",
-		"rollup": "^2.75.6",
+		"eslint": "^8.34.0",
+		"eslint-config-prettier": "^8.6.0",
+		"postcss": "^8.4.21",
+		"rollup": "^3.17.2",
 		"rollup-plugin-postcss": "^4.0.2",
-		"rollup-plugin-scss": "^3.0.0",
-		"sass": "^1.52.3",
-		"type-fest": "^2.18.0",
-		"typescript": "^4.7.3"
+		"rollup-plugin-scss": "^4.0.0",
+		"sass": "^1.58.3",
+		"type-fest": "^3.6.0",
+		"typescript": "^4.9.5"
 	}
 }

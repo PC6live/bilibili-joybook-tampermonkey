@@ -6,7 +6,7 @@ import replace from "@rollup/plugin-replace";
 import json from "@rollup/plugin-json";
 import scss from "rollup-plugin-scss";
 import postcss from "rollup-plugin-postcss";
-import pkg from "./package.json";
+import pkg from "./package.json" assert { type: 'json' };
 
 const config = defineConfig({
 	input: "src/index.ts",
