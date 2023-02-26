@@ -22,6 +22,7 @@
 // @grant         unsafeWindow
 // @run-at        document-start
 // @noframes      true
+// @connect       bilibili.com
 // ==/UserScript==
 (function () {
     'use strict';
@@ -111,7 +112,8 @@
         return cookies.map((v) => `${v.name}=${v.value}`).join("; ");
     }
 
-    const USER_INFO_URL = "//api.bilibili.com/x/web-interface/nav";
+    const USER_INFO_URL = "https://api.bilibili.com/x/web-interface/nav";
+    const WEB_URL = "https://www.bilibili.com/";
 
     const getUserType = () => __awaiter(void 0, void 0, void 0, function* () {
         const resp = yield fetch(USER_INFO_URL, { method: "get", credentials: "include" });
@@ -283,9 +285,10 @@
     };
     function changeResponse(xhr) {
         const { vipCookie } = getStoreCookies();
+        const url = new URL(xhr.url, WEB_URL);
         GM_xmlhttpRequest({
             method: xhr.method,
-            url: xhr.url,
+            url: url.href,
             anonymous: true,
             cookie: cookieToString(vipCookie),
             headers: {
@@ -293,7 +296,7 @@
             },
             onreadystatechange: (resp) => {
                 if (resp.readyState === 4) {
-                    xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
+                    xhr.open(xhr.method, url.href, xhr.async !== false, xhr.user, xhr.password);
                     xhr.send(xhr.body);
                     this.response = resp.response;
                     this.responseText = resp.responseText;
@@ -403,6 +406,9 @@
             url: USER_INFO_URL,
             cookie: cookie && cookieToString(cookie),
             anonymous: true,
+            headers: {
+                referer: window.location.href,
+            },
             onload(resp) {
                 const { face, vipStatus } = JSON.parse(resp.response).data;
                 const avatarClass = vipStatus ? "joybook-avatar" : "joybook-avatar user";

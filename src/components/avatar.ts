@@ -11,11 +11,13 @@ const container: HTMLDivElement = document.createElement("div");
 function avatar() {
 	const { userCookie, vipCookie } = getStoreCookies();
 	const cookie = vipCookie || userCookie;
-
 	GM_xmlhttpRequest({
 		url: USER_INFO_URL,
 		cookie: cookie && cookieToString(cookie),
 		anonymous: true,
+    headers: {
+			referer: window.location.href,
+		},
 		onload(resp) {
 			const { face, vipStatus } = JSON.parse(resp.response).data as UserInfo;
 			const avatarClass = vipStatus ? "joybook-avatar" : "joybook-avatar user";

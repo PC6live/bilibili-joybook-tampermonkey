@@ -88,6 +88,7 @@ const config: HeaderObject = {
 	],
 	"run-at": "document-start",
 	noframes: true,
+  connect: "bilibili.com"
 };
 
 const convertToComment = (header: HeaderObject): string => {

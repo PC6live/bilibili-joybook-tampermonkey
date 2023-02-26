@@ -3,6 +3,7 @@ import { proxy, ProxyConfig, ProxyOptions } from "src/lib/ajaxProxy";
 import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
 import { del } from "src/store";
 import { cookiesReady } from "./initialize";
+import { WEB_URL } from "src/utils/url";
 
 // // 监听登录&reload
 const reloadByLogin = (url: string): void => {
@@ -47,9 +48,11 @@ const handleUrl = (url: string): boolean => {
 function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 	const { vipCookie } = getStoreCookies();
 
+  const url = new URL(xhr.url, WEB_URL)
+
 	GM_xmlhttpRequest({
 		method: xhr.method,
-		url: xhr.url,
+		url: url.href,
 		anonymous: true,
 		cookie: cookieToString(vipCookie),
 		headers: {
@@ -57,7 +60,7 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 		},
 		onreadystatechange: (resp) => {
 			if (resp.readyState === 4) {
-				xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
+				xhr.open(xhr.method, url.href, xhr.async !== false, xhr.user, xhr.password);
 				xhr.send(xhr.body);
 
 				this.response = resp.response;
