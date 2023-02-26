@@ -20,6 +20,8 @@
 
 如果无法正常使用，可以点击左下角头像清除数据之后并禁用其他 Tampermonkey 脚本再次尝试。
 
+csrf校验失败，清除数据之后重新登录。
+
 ## 本地构建
 
 - 安装 [Node.js](https://nodejs.org) Current 或者 LTS 版本
