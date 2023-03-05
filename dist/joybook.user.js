@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name          bilibili-joybook
-// @version       0.0.10
+// @version       0.0.11
 // @description   共享大会员
 // @author        PC6live
 // @namespace     https://github.com/PC6live/bilibili-joybook-tampermonkey
@@ -62,79 +62,70 @@
         GM_deleteValue(key);
     };
 
-    const getStoreCookies = () => {
-        const userCookie = get("userCookie");
-        const vipCookie = get("vipCookie");
-        return { userCookie, vipCookie };
-    };
-    const getCookie = (key) => {
+    const getStoreCookies = () => ({ userCookie: get("userCookie"), vipCookie: get("vipCookie") });
+    function getCookies(detail = { domain: ".bilibili.com" }) {
         return new Promise((resolve) => {
-            GM_cookie.list({}, (cookies) => resolve(cookies.find((c) => c.name === key)));
+            GM_cookie.list(detail, (cookies) => resolve(cookies));
         });
-    };
-    const getCookies = () => {
-        return new Promise((resolve) => {
-            GM_cookie.list({}, (cookies) => resolve(cookies));
+    }
+    function removeCookies() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const cookies = yield getCookies();
+            cookies.forEach((cookie) => {
+                GM_cookie.delete({ name: cookie.name });
+            });
         });
-    };
-    const removeCookies = () => __awaiter(void 0, void 0, void 0, function* () {
-        const cookies = yield getCookies();
+    }
+    function storeCookies(storeName, keys) {
+        return __awaiter(this, void 0, void 0, function* () {
+            del(storeName);
+            const cookies = (yield getCookies()).filter((cookie) => keys.includes(cookie.name));
+            set(storeName, cookies);
+        });
+    }
+    function setCookies(cookies) {
         cookies.forEach((cookie) => {
-            GM_cookie.delete({ name: cookie.name });
-        });
-    });
-    const storeCookies = (name, queryName) => __awaiter(void 0, void 0, void 0, function* () {
-        del(name);
-        const cookies = (yield getCookies()).filter((cookie) => {
-            return cookie.name && queryName.includes(cookie.name);
-        });
-        set(name, cookies);
-    });
-    const setCookies = (cookies) => {
-        const formatCookies = cookies.map((cookie) => {
-            return {
-                domain: cookie.domain,
-                expirationDate: cookie.expirationDate,
-                hostOnly: cookie.hostOnly,
-                httpOnly: cookie.httpOnly,
-                name: cookie.name,
-                path: cookie.path,
-                sameSite: cookie.sameSite,
-                secure: cookie.secure,
-                value: cookie.value,
-            };
-        });
-        formatCookies.forEach((cookie) => {
             GM_cookie.set(cookie);
         });
-    };
+    }
     function cookieToString(cookies) {
         return cookies.map((v) => `${v.name}=${v.value}`).join("; ");
     }
 
+    const sleep = (time = 1) => new Promise((resolve) => setTimeout(resolve, 1000 * time));
+    const createElement = (str) => {
+        const el = document.createElement("div");
+        el.innerHTML = str;
+        return el.firstElementChild;
+    };
+    const deleteAllValue = () => GM_listValues().forEach((v) => GM_deleteValue(v));
+    function cookiesReady() {
+        const { userCookie, vipCookie } = getStoreCookies();
+        return userCookie && vipCookie;
+    }
+    function changeUser(type) {
+        if (!cookiesReady())
+            return;
+        const { userCookie, vipCookie } = getStoreCookies();
+        const cookie = type === "vip" ? vipCookie : userCookie;
+        setCookies(cookie);
+    }
+
     const USER_INFO_URL = "https://api.bilibili.com/x/web-interface/nav";
-    const WEB_URL = "https://www.bilibili.com/";
 
     const getUserType = () => __awaiter(void 0, void 0, void 0, function* () {
         const resp = yield fetch(USER_INFO_URL, { method: "get", credentials: "include" });
         const result = yield resp.json();
         return result.data;
     });
-    function cookiesReady() {
-        const { userCookie, vipCookie } = getStoreCookies();
-        return userCookie && vipCookie;
-    }
     function handleLogin(key) {
         return __awaiter(this, void 0, void 0, function* () {
-            const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"];
+            const storeKey = ["SESSDATA", "DedeUserID", "bili_jct"];
             yield storeCookies(key, storeKey);
             const { userCookie } = getStoreCookies();
-            if (!cookiesReady()) {
-                removeCookies();
-            }
-            else {
+            removeCookies();
+            if (cookiesReady())
                 setCookies(userCookie);
-            }
             window.location.reload();
         });
     }
@@ -153,21 +144,30 @@
         }
     });
 
-    const sleep = (time = 1) => new Promise((resolve) => setTimeout(resolve, 1000 * time));
-    const createElement = (str) => {
-        const el = document.createElement("div");
-        el.innerHTML = str;
-        return el.firstElementChild;
-    };
-    const deleteAllValue = () => GM_listValues().forEach((v) => GM_deleteValue(v));
-
-    const realXHR = "_xhr";
+    const REAL_XHR = "_xhr";
     function setValue(arg, key, value) {
         arg[key] = value;
     }
-    function proxy(proxy, win = window) {
-        win[realXHR] = win[realXHR] || win.XMLHttpRequest;
-        const instance = new win[realXHR]();
+    function setConfig(receiver, p, args) {
+        if (p === "open") {
+            receiver.method = args[0];
+            receiver.url = args[1];
+            receiver.async = args[2];
+            receiver.user = args[3];
+            receiver.password = args[4];
+        }
+        if (p === "send") {
+            receiver.body = args[0];
+        }
+        if (p === "setRequestHeader") {
+            receiver.headers = {};
+            receiver.headers[args[0].toLowerCase()] = args[1];
+        }
+    }
+    function proxy(proxy, win = unsafeWindow) {
+        // 保存真实 XMLHttpRequest
+        win[REAL_XHR] = win[REAL_XHR] || win.XMLHttpRequest;
+        const instance = new win[REAL_XHR]();
         win.XMLHttpRequest = new Proxy(win.XMLHttpRequest, {
             construct(Target) {
                 // 代理 new 操作符
@@ -179,22 +179,6 @@
                 return xhrProxy;
             },
         });
-        function setConfig(receiver, p, args) {
-            if (p === "open") {
-                receiver.method = args[0];
-                receiver.url = args[1];
-                receiver.async = args[2];
-                receiver.user = args[3];
-                receiver.password = args[4];
-            }
-            if (p === "send") {
-                receiver.body = args[0];
-            }
-            if (p === "setRequestHeader") {
-                receiver.headers = {};
-                receiver.headers[args[0].toLowerCase()] = args[1];
-            }
-        }
         const getterFactory = (target, p, receiver) => {
             var _a, _b;
             const value = target[p];
@@ -207,11 +191,9 @@
                     return (hook === null || hook === void 0 ? void 0 : hook.call(receiver, target, args)) || next();
                 };
             }
-            else {
-                const v = ((_a = target === null || target === void 0 ? void 0 : target.cache) === null || _a === void 0 ? void 0 : _a[`_${p}`]) || value;
-                const attrGetterProxy = (_b = hook === null || hook === void 0 ? void 0 : hook["getter"]) === null || _b === void 0 ? void 0 : _b.call(receiver, target, value);
-                return attrGetterProxy || v;
-            }
+            const v = ((_a = target === null || target === void 0 ? void 0 : target.cache) === null || _a === void 0 ? void 0 : _a[`_${p}`]) || value;
+            const attrGetterProxy = (_b = hook === null || hook === void 0 ? void 0 : hook["getter"]) === null || _b === void 0 ? void 0 : _b.call(receiver, target, value);
+            return attrGetterProxy || v;
         };
         const setterFactory = (target, p, value, receiver) => {
             var _a;
@@ -241,17 +223,16 @@
             return true;
         };
     }
-    function unProxy(win) {
+    function unProxy(win = unsafeWindow) {
         win = win || window;
-        if (win[realXHR])
-            win.XMLHttpRequest = win[realXHR];
-        win[realXHR] = undefined;
+        if (win[REAL_XHR])
+            win.XMLHttpRequest = win[REAL_XHR];
+        win[REAL_XHR] = undefined;
     }
 
     // // 监听登录&reload
     const reloadByLogin = (url) => {
         if (url.includes("/passport-login/web/login")) {
-            console.log("login reload");
             sleep(1).then(() => window.location.reload());
         }
     };
@@ -259,7 +240,6 @@
     const listenLogout = (url) => {
         if (url.includes("/login/exit/")) {
             del("userCookie");
-            console.log("logout reload");
             removeCookies().then(() => window.location.reload());
         }
     };
@@ -267,12 +247,12 @@
     const handleUrl = (url) => {
         const includes = [
             // bangumi
-            "api.bilibili.com/pgc/player/web/playurl",
+            "/pgc/player/web/playurl",
+            "/pgc/view/web/season",
             // video
-            "api.bilibili.com/x/player/playurl",
-            "api.bilibili.com/x/player/v2",
-            "api.bilibili.com/x/player/wbi/playurl",
-            "api.bilibili.com/pgc/view/web/season",
+            "/player/playurl",
+            "/player/v2",
+            "/player/wbi/playurl",
         ];
         const excludes = ["data.bilibili.com"];
         if (excludes.findIndex((v) => url.includes(v)) > -1) {
@@ -283,12 +263,20 @@
         }
         return false;
     };
+    function requestHandle(xhr) {
+        xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
+        for (const key in xhr.headers) {
+            xhr.setRequestHeader(key, xhr.headers[key]);
+        }
+        xhr.send(xhr.body);
+    }
     function changeResponse(xhr) {
         const { vipCookie } = getStoreCookies();
-        const url = new URL(xhr.url, WEB_URL);
+        const url = new URL(xhr.url, window.location.href);
+        xhr.url = url.href;
         GM_xmlhttpRequest({
             method: xhr.method,
-            url: url.href,
+            url: xhr.url,
             anonymous: true,
             cookie: cookieToString(vipCookie),
             headers: {
@@ -296,107 +284,71 @@
             },
             onreadystatechange: (resp) => {
                 if (resp.readyState === 4) {
-                    xhr.open(xhr.method, url.href, xhr.async !== false, xhr.user, xhr.password);
-                    xhr.send(xhr.body);
+                    requestHandle(xhr);
                     this.response = resp.response;
                     this.responseText = resp.responseText;
                 }
             },
         });
     }
-    const listenerAjax = () => __awaiter(void 0, void 0, void 0, function* () {
-        const ready = cookiesReady();
-        const config = {
-            open(xhr) {
-                reloadByLogin(xhr.url);
-                listenLogout(xhr.url);
-                if (handleUrl(xhr.url) && ready) {
-                    changeResponse.call(this, xhr);
-                    return true;
-                }
-                return false;
-            },
-            send(xhr) {
-                if (handleUrl(xhr.url) && ready) {
-                    return true;
-                }
-                return false;
-            },
-            setRequestHeader(xhr) {
-                if (handleUrl(xhr.url) && ready) {
-                    return true;
-                }
-                return false;
-            },
-        };
-        proxy(config, unsafeWindow);
-    });
-
-    function setDefaultQuality(quality) {
+    function listenerAjax() {
         return __awaiter(this, void 0, void 0, function* () {
-            const bilibili_player_settings = localStorage.getItem("bilibili_player_settings");
-            const bpx_player_profile = localStorage.getItem("bpx_player_profile");
-            if (bilibili_player_settings) {
-                const parse = JSON.parse(bilibili_player_settings);
-                parse.setting_config.defquality = quality;
-                localStorage.setItem("bilibili_player_settings", JSON.stringify(parse));
-            }
-            if (bpx_player_profile) {
-                const parse = JSON.parse(bpx_player_profile);
-                parse.media.quality = quality;
-                localStorage.setItem("bpx_player_profile", JSON.stringify(parse));
-            }
-            let qualityCookie = yield getCookie("CURRENT_QUALITY");
-            const date = new Date();
-            if (!qualityCookie) {
-                qualityCookie = {
-                    domain: ".bilibili.com",
-                    expirationDate: new Date(date.getFullYear() + 1, date.getMonth(), date.getDate()).getTime(),
-                    hostOnly: false,
-                    httpOnly: false,
-                    name: "CURRENT_QUALITY",
-                    path: "/",
-                    sameSite: "unspecified",
-                    secure: false,
-                    session: false,
-                    value: quality.toString(),
-                };
-            }
-            else {
-                qualityCookie.value = quality.toString();
-            }
-            GM_cookie.set(qualityCookie);
+            const ready = cookiesReady();
+            const config = {
+                open(xhr) {
+                    reloadByLogin(xhr.url);
+                    listenLogout(xhr.url);
+                    if (handleUrl(xhr.url) && ready) {
+                        changeResponse.call(this, xhr);
+                        return true;
+                    }
+                    return false;
+                },
+                send(xhr) {
+                    if (handleUrl(xhr.url) && ready) {
+                        return true;
+                    }
+                    return false;
+                },
+                setRequestHeader(xhr) {
+                    if (handleUrl(xhr.url) && ready) {
+                        return true;
+                    }
+                    return false;
+                },
+            };
+            proxy(config, unsafeWindow);
         });
     }
-    const unlockVideo = () => {
-        let PGC;
-        Object.defineProperty(unsafeWindow, "__PGC_USERSTATE__", {
-            set(value) {
-                PGC = Object.assign(Object.assign({}, value), { area_limit: 0, ban_area_show: 1, follow: 1, follow_status: 2, login: 1, pay: 1, pay_pack_paid: 0, sponsor: 0, vip_info: {
-                        due_date: 0,
-                        status: 1,
-                        type: 2,
-                    } });
-                delete PGC.dialog;
-            },
-            get() {
-                return PGC;
-            },
-        });
-        Object.defineProperty(unsafeWindow, "__playinfo__", {
-            configurable: true,
-            set(value) {
-                var _a;
-                const quality = (_a = (value.result || value.data)) === null || _a === void 0 ? void 0 : _a.accept_quality[0];
-                if (quality)
-                    setDefaultQuality(quality);
-            },
-            get() {
-                return {};
-            },
-        });
-    };
 
+    // 解除非会员点击切换画质限制
+    function unlockVideo() {
+        document.addEventListener("readystatechange", () => {
+            const iterator = document.evaluate("//script[contains(., 'vip_info')]", document, null, XPathResult.ANY_TYPE, null);
+            try {
+                let node = iterator.iterateNext();
+                while (node) {
+                    if (node && node.textContent) {
+                        const vipStatusReg = new RegExp(/"vip_status.*?,/g);
+                        const vipTypeReg = new RegExp(/"vip_type.*?,/g);
+                        const vipInfoReg = new RegExp(/"vip_info.*?\}/g);
+                        const vipInfo = `"vip_info":{"is_vip":true,"due_date":0,"status":1,"type":2}`;
+                        const vipStatus = `"vip_status":1,`;
+                        const vipType = `"vip_type":2,`;
+                        node.textContent = node.textContent.replace(vipStatusReg, vipStatus);
+                        node.textContent = node.textContent.replace(vipTypeReg, vipType);
+                        node.textContent = node.textContent.replace(vipInfoReg, vipInfo);
+                    }
+                    node = iterator.iterateNext();
+                }
+            }
+            catch (e) {
+                console.log("Error: Document tree modified during iteration " + e);
+            }
+        });
+    }
+
+    // TODO: 添加快速切换会员账户，用于脚本失效场景。
     /** 头像容器 */
     const container = document.createElement("div");
     function avatar() {
@@ -449,27 +401,80 @@
         container.addEventListener("mouseleave", onMouseLeave);
         container.addEventListener("click", onDeleteClick);
     }
-    function createContainer() {
-        container.id = "joybook-container";
-        document.body.appendChild(container);
-        avatar();
-        handleEvent();
+    function createAvatar() {
+        window.addEventListener("load", () => {
+            // 渲染设定
+            container.id = "joybook-container";
+            document.body.appendChild(container);
+            avatar();
+            handleEvent();
+        });
     }
-    const settings = () => {
-        createContainer();
-    };
 
-    // 解锁会员限制
-    unlockVideo();
-    // 初始化用户数据&储存cookies
-    initialize();
-    // 监听XHR
-    listenerAjax();
-    window.addEventListener("load", () => {
-        Promise.resolve().then(function () { return global; });
-        // 渲染设定
-        settings();
-    });
+    function setQuality(quality) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let qualityCookie = (yield getCookies({ name: "CURRENT_QUALITY" }))[0];
+            if (!qualityCookie) {
+                qualityCookie = {
+                    domain: ".bilibili.com",
+                    hostOnly: false,
+                    httpOnly: false,
+                    name: "CURRENT_QUALITY",
+                    path: "/",
+                    sameSite: "unspecified",
+                    secure: false,
+                    session: false,
+                    value: quality,
+                };
+            }
+            else {
+                qualityCookie.value = quality;
+            }
+            GM_cookie.set(qualityCookie);
+        });
+    }
+    function highQuality() {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            // 处理 video 画质
+            Object.defineProperty(unsafeWindow, "__playinfo__", {
+                configurable: true,
+                set(value) {
+                    var _a;
+                    const quality = (_a = (value.result || value.data)) === null || _a === void 0 ? void 0 : _a.accept_quality[0];
+                    if (quality)
+                        setQuality(quality);
+                },
+                get() {
+                    return {};
+                },
+            });
+            // 处理 bangumi 画质
+            if (window.location.pathname.includes("bangumi")) {
+                const search = new URLSearchParams(window.location.search);
+                const url = `https://api.bilibili.com/pgc/player/web/playurl?fnval=4048&ep_id=${(_a = search.get("videoId")) === null || _a === void 0 ? void 0 : _a.slice(2)}`;
+                const resp = yield (yield fetch(url)).json();
+                const quality = resp.result.accept_quality[0];
+                setQuality(quality);
+            }
+        });
+    }
+
+    Promise.resolve().then(function () { return global; });
+    (() => __awaiter(void 0, void 0, void 0, function* () {
+        cookiesReady();
+        // 解锁会员限制
+        unlockVideo();
+        // 自动设置最高画质
+        highQuality();
+        // 初始化用户数据&储存cookies
+        initialize();
+        // 监听XHR
+        listenerAjax();
+        // 创建头像
+        createAvatar();
+        changeUser("user");
+    }))();
 
     function styleInject(css, ref) {
       if ( ref === void 0 ) ref = {};

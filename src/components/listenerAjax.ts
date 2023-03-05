@@ -1,14 +1,13 @@
-import { printMessage, sleep } from "src/utils/helper";
-import { proxy, ProxyConfig, ProxyOptions } from "src/lib/ajaxProxy";
+import { sleep, cookiesReady, printMessage } from "src/utils/helper";
+import { proxy } from "src/lib/ajaxProxy";
 import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
 import { del } from "src/store";
-import { cookiesReady } from "./initialize";
-import { WEB_URL } from "src/utils/url";
+import { ProxyConfig, ProxyOptions } from "src/lib/ajaxProxy.types";
 
 // // 监听登录&reload
 const reloadByLogin = (url: string): void => {
 	if (url.includes("/passport-login/web/login")) {
-		console.log("login reload");
+		printMessage("login reload");
 		sleep(1).then(() => window.location.reload());
 	}
 };
@@ -17,7 +16,7 @@ const reloadByLogin = (url: string): void => {
 const listenLogout = (url: string): void => {
 	if (url.includes("/login/exit/")) {
 		del("userCookie");
-		console.log("logout reload");
+		printMessage("logout reload");
 		removeCookies().then(() => window.location.reload());
 	}
 };
@@ -26,12 +25,12 @@ const listenLogout = (url: string): void => {
 const handleUrl = (url: string): boolean => {
 	const includes = [
 		// bangumi
-		"api.bilibili.com/pgc/player/web/playurl",
+		"/pgc/player/web/playurl",
+		"/pgc/view/web/season",
 		// video
-		"api.bilibili.com/x/player/playurl",
-		"api.bilibili.com/x/player/v2",
-		"api.bilibili.com/x/player/wbi/playurl",
-		"api.bilibili.com/pgc/view/web/season",
+		"/player/playurl",
+		"/player/v2",
+		"/player/wbi/playurl",
 	];
 	const excludes = ["data.bilibili.com"];
 
@@ -45,14 +44,26 @@ const handleUrl = (url: string): boolean => {
 	return false;
 };
 
+function requestHandle(xhr: ProxyConfig) {
+	xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
+
+	for (const key in xhr.headers) {
+		xhr.setRequestHeader(key, xhr.headers[key]);
+	}
+
+	xhr.send(xhr.body);
+}
+
 function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 	const { vipCookie } = getStoreCookies();
 
-  const url = new URL(xhr.url, WEB_URL)
+	const url = new URL(xhr.url, window.location.href);
+
+	xhr.url = url.href;
 
 	GM_xmlhttpRequest({
 		method: xhr.method,
-		url: url.href,
+		url: xhr.url,
 		anonymous: true,
 		cookie: cookieToString(vipCookie),
 		headers: {
@@ -60,8 +71,7 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 		},
 		onreadystatechange: (resp) => {
 			if (resp.readyState === 4) {
-				xhr.open(xhr.method, url.href, xhr.async !== false, xhr.user, xhr.password);
-				xhr.send(xhr.body);
+				requestHandle(xhr);
 
 				this.response = resp.response;
 				this.responseText = resp.responseText;
@@ -70,16 +80,8 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 	});
 }
 
-export const listenerAjax = async (): Promise<void> => {
+export async function listenerAjax(): Promise<void> {
 	const ready = cookiesReady();
-
-	if (ready) {
-		printMessage("白嫖");
-	} else {
-		printMessage(
-			"请按照wiki指示登录账号 https://github.com/PC6live/bilibili-joybook-tampermonkey/wiki/%E4%BD%BF%E7%94%A8"
-		);
-	}
 
 	const config: ProxyOptions = {
 		open(xhr) {
@@ -108,4 +110,4 @@ export const listenerAjax = async (): Promise<void> => {
 	};
 
 	proxy(config, unsafeWindow);
-};
+}

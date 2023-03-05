@@ -1,17 +1,31 @@
-const sleep = (time = 1): Promise<void> => new Promise((resolve) => setTimeout(resolve, 1000 * time));
+import { getStoreCookies, setCookies } from "./cookie";
 
-const createElement = (str: string): Element | null => {
+export const sleep = (time = 1): Promise<void> => new Promise((resolve) => setTimeout(resolve, 1000 * time));
+
+export const createElement = (str: string): Element | null => {
 	const el = document.createElement("div");
 	el.innerHTML = str;
 	return el.firstElementChild;
 };
 
-const isVideo = (): boolean => /(bangumi\/play\/*)|(video\/*)/gi.test(window.location.pathname);
+export const isVideo = (): boolean => /(bangumi\/play\/*)|(video\/*)/gi.test(window.location.pathname);
 
-const deleteAllValue = (): void => GM_listValues().forEach((v) => GM_deleteValue(v));
+export const deleteAllValue = (): void => GM_listValues().forEach((v) => GM_deleteValue(v));
 
-const printMessage = (message: string): void => {
+export const printMessage = (message: string): void => {
 	if (process.env.NODE_ENV === "development") console.log(`Tampermonkey: ${message}`);
 };
 
-export { sleep, createElement, isVideo, deleteAllValue, printMessage };
+export function cookiesReady() {
+	const { userCookie, vipCookie } = getStoreCookies();
+	return userCookie && vipCookie;
+}
+
+export function changeUser (type: "vip" | "user") {
+  if (!cookiesReady()) return;
+  const { userCookie, vipCookie } = getStoreCookies();
+
+  const cookie = type === "vip" ? vipCookie : userCookie
+
+  setCookies(cookie);
+}

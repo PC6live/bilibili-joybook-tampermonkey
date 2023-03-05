@@ -62,9 +62,11 @@ interface HeaderObject {
 	[field: string]: Field; // For any other field not listed above.;
 }
 
+const joybookName = "bilibili-joybook";
+
 const config: HeaderObject = {
-	name: "bilibili-joybook",
-	version: "0.0.10",
+	name: joybookName,
+	version: "0.0.11",
 	description: "共享大会员",
 	author: "PC6live",
   namespace: "https://github.com/PC6live/bilibili-joybook-tampermonkey",
@@ -115,11 +117,15 @@ const convertToComment = (header: HeaderObject): string => {
 		}
 	});
 
-  // dev测试文件路径
   if (process.env.NODE_ENV === "development") {
+    // dev测试文件路径
     const filePath = path.resolve(__dirname, pkg.main)
     comment += append("require", `file:${filePath}`);
+
+    // dev测试文件名称
+    comment = comment.replace(joybookName, `${joybookName}-dev`)
   }
+
 
 	// 结束
 	comment += "// ==/UserScript==";

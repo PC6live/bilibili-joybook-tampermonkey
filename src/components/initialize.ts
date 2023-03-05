@@ -1,7 +1,6 @@
 import { getStoreCookies, removeCookies, setCookies, storeCookies } from "src/utils/cookie";
+import { cookiesReady } from "src/utils/helper";
 import { USER_INFO_URL } from "src/utils/url";
-
-// TODO: 检测会员Cookie 是否失效
 
 export interface UserInfo {
   face: string;
@@ -16,23 +15,16 @@ const getUserType = async (): Promise<UserInfo> => {
 	return result.data;
 };
 
-export function cookiesReady() {
-	const { userCookie, vipCookie } = getStoreCookies();
-	return userCookie && vipCookie;
-}
-
 async function handleLogin(key: "vipCookie" | "userCookie"): Promise<void> {
-	const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5"];
+	const storeKey = ["SESSDATA", "DedeUserID", "bili_jct"];
 
 	await storeCookies(key, storeKey);
 
 	const { userCookie } = getStoreCookies();
 
-	if (!cookiesReady()) {
-		removeCookies();
-	} else {
-		setCookies(userCookie);
-	}
+  removeCookies();
+
+  if (cookiesReady()) setCookies(userCookie)
 
 	window.location.reload();
 }

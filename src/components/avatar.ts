@@ -5,6 +5,7 @@ import { createElement, deleteAllValue } from "src/utils/helper";
 import { USER_INFO_URL } from "src/utils/url";
 import { UserInfo } from "./initialize";
 
+// TODO: 添加快速切换会员账户，用于脚本失效场景。
 /** 头像容器 */
 const container: HTMLDivElement = document.createElement("div");
 
@@ -15,7 +16,7 @@ function avatar() {
 		url: USER_INFO_URL,
 		cookie: cookie && cookieToString(cookie),
 		anonymous: true,
-    headers: {
+		headers: {
 			referer: window.location.href,
 		},
 		onload(resp) {
@@ -62,14 +63,13 @@ function handleEvent() {
 	container.addEventListener("click", onDeleteClick);
 }
 
-function createContainer(): void {
-	container.id = "joybook-container";
-	document.body.appendChild(container);
+export function createAvatar(): void {
+	window.addEventListener("load", () => {
+		// 渲染设定
+		container.id = "joybook-container";
+		document.body.appendChild(container);
 
-	avatar();
-	handleEvent();
+		avatar();
+		handleEvent();
+	});
 }
-
-export const settings = (): void => {
-	createContainer();
-};

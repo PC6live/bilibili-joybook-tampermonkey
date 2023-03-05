@@ -1,16 +1,32 @@
-import { unlockVideo, initialize, listenerAjax, settings } from "src/components";
+import { initialize, listenerAjax, createAvatar, unlockVideo, highQuality } from "src/components";
+import { changeUser, cookiesReady, printMessage } from "./utils/helper";
+import("src/styles/global.scss");
 
-// 解锁会员限制
-unlockVideo();
+(async () => {
+  const ready = cookiesReady();
 
-// 初始化用户数据&储存cookies
-initialize();
+	if (ready) {
+		printMessage("白嫖");
+	} else {
+		printMessage(
+			"请按照操作说明 https://github.com/PC6live/bilibili-joybook-tampermonkey#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9 登录账号"
+		);
+	}
 
-// 监听XHR
-listenerAjax();
+	// 解锁会员限制
+	unlockVideo();
 
-window.addEventListener("load", () => {
-	import("src/styles/global.scss");
-	// 渲染设定
-	settings();
-});
+	// 自动设置最高画质
+	highQuality();
+
+	// 初始化用户数据&储存cookies
+	initialize();
+
+	// 监听XHR
+	listenerAjax();
+
+	// 创建头像
+	createAvatar();
+
+	changeUser("user");
+})();

@@ -1,78 +1,33 @@
-import { Writable } from "type-fest";
+import { ProxyConfig, ProxyOptions, ProxyWin, ProxyRequestEventFunc, SetGetFn, ProxyXHRFunc } from "./ajaxProxy.types";
 
-export type ProxyConfig = Writable<XMLHttpRequest> & {
-	method: "GET" | "HEAD" | "POST";
-	url: string;
-	async: boolean;
-	user: string;
-	password: string;
-	body: string;
-	headers: Record<string, string>;
-	next: boolean;
-	cache: Partial<Record<`_${keyof XMLHttpRequest}`, string>>;
-};
-
-type ProxyRequestEventFunc = (this: ProxyConfig, xhr: ProxyConfig, ev: ProgressEvent) => boolean | undefined;
-
-type ProxyRequestEvent = Record<
-	"onreadystatechange" | "onabort" | "onerror" | "onload" | "onloadend" | "onloadstart" | "onprogress" | "ontimeout",
-	ProxyRequestEventFunc
->;
-
-type ProxyXHRFunc = (this: ProxyConfig, xhr: ProxyConfig, args: any[]) => boolean | undefined;
-
-type ProxyXHR = Record<
-	| "open"
-	| "abort"
-	| "getAllResponseHeaders"
-	| "getResponseHeader"
-	| "overrideMimeType"
-	| "send"
-	| "setRequestHeader"
-	| "addEventListener"
-	| "removeEventListener"
-	| "dispatchEvent",
-	ProxyXHRFunc
->;
-
-interface SetGetFn<T = any> {
-	getter?: (this: ProxyConfig, xhr: ProxyConfig, value: T) => T | boolean;
-	setter?: (this: ProxyConfig, xhr: ProxyConfig, value: T) => T | boolean;
-}
-
-interface ProxyAttr {
-	readyState?: SetGetFn<number>;
-	response?: SetGetFn<any>;
-	responseText?: SetGetFn<string>;
-	responseType?: SetGetFn<XMLHttpRequestResponseType>;
-	responseURL?: SetGetFn<string>;
-	responseXML?: SetGetFn<Document | null>;
-	status?: SetGetFn<number>;
-	statusText?: SetGetFn<string>;
-	timeout?: SetGetFn<number>;
-	withCredentials?: SetGetFn<boolean>;
-	upload?: SetGetFn<XMLHttpRequestUpload>;
-	UNSENT?: SetGetFn<number>;
-	OPENED?: SetGetFn<number>;
-	HEADERS_RECEIVED?: SetGetFn<number>;
-	LOADING?: SetGetFn<number>;
-	DONE?: SetGetFn<number>;
-}
-
-export type ProxyOptions = Partial<ProxyRequestEvent & ProxyAttr & ProxyXHR>;
-
-type ProxyWin = Window & typeof globalThis & { ["_xhr"]?: typeof XMLHttpRequest };
-
-const realXHR = "_xhr";
+const REAL_XHR = "_xhr";
 
 function setValue<K extends keyof XMLHttpRequest>(arg: XMLHttpRequest, key: K, value: any): void {
 	arg[key] = value;
 }
 
-export function proxy(proxy: ProxyOptions, win: ProxyWin = window): void {
-	win[realXHR] = win[realXHR] || win.XMLHttpRequest;
+function setConfig(receiver: ProxyConfig, p: keyof XMLHttpRequest, args: any) {
+	if (p === "open") {
+		receiver.method = args[0];
+		receiver.url = args[1];
+		receiver.async = args[2];
+		receiver.user = args[3];
+		receiver.password = args[4];
+	}
+	if (p === "send") {
+		receiver.body = args[0];
+	}
+	if (p === "setRequestHeader") {
+		receiver.headers = {};
+		receiver.headers[args[0].toLowerCase()] = args[1];
+	}
+}
 
-  const instance = new win[realXHR]();
+export function proxy(proxy: ProxyOptions, win: ProxyWin = unsafeWindow): void {
+  // 保存真实 XMLHttpRequest
+	win[REAL_XHR] = win[REAL_XHR] || win.XMLHttpRequest;
+
+	const instance = new win[REAL_XHR]();
 
 	win.XMLHttpRequest = new Proxy(win.XMLHttpRequest, {
 		construct(Target) {
@@ -85,23 +40,6 @@ export function proxy(proxy: ProxyOptions, win: ProxyWin = window): void {
 			return xhrProxy;
 		},
 	});
-
-	function setConfig(receiver: ProxyConfig, p: keyof XMLHttpRequest, args: any) {
-		if (p === "open") {
-			receiver.method = args[0];
-			receiver.url = args[1];
-			receiver.async = args[2];
-			receiver.user = args[3];
-			receiver.password = args[4];
-		}
-		if (p === "send") {
-			receiver.body = args[0];
-		}
-		if (p === "setRequestHeader") {
-			receiver.headers = {};
-			receiver.headers[args[0].toLowerCase()] = args[1];
-		}
-	}
 
 	const getterFactory: ProxyHandler<XMLHttpRequest>["get"] = (
 		target: ProxyConfig,
@@ -120,11 +58,11 @@ export function proxy(proxy: ProxyOptions, win: ProxyWin = window): void {
 
 				return (hook as ProxyXHRFunc)?.call(receiver, target, args) || next();
 			};
-		} else {
-			const v = target?.cache?.[`_${p}`] || value;
-			const attrGetterProxy = (hook as SetGetFn)?.["getter"]?.call(receiver, target, value);
-			return attrGetterProxy || v;
 		}
+
+		const v = target?.cache?.[`_${p}`] || value;
+		const attrGetterProxy = (hook as SetGetFn)?.["getter"]?.call(receiver, target, value);
+		return attrGetterProxy || v;
 	};
 
 	const setterFactory: ProxyHandler<XMLHttpRequest>["set"] = (
@@ -161,8 +99,8 @@ export function proxy(proxy: ProxyOptions, win: ProxyWin = window): void {
 	};
 }
 
-export function unProxy(win: ProxyWin): void {
+export function unProxy(win: ProxyWin = unsafeWindow): void {
 	win = win || window;
-	if (win[realXHR]) win.XMLHttpRequest = win[realXHR];
-	win[realXHR] = undefined;
+	if (win[REAL_XHR]) win.XMLHttpRequest = win[REAL_XHR];
+	win[REAL_XHR] = undefined;
 }
