@@ -16,16 +16,16 @@ export const printMessage = (message: string): void => {
 	if (process.env.NODE_ENV === "development") console.log(`Tampermonkey: ${message}`);
 };
 
-export function cookiesReady() {
+export function cookiesReady(): boolean {
 	const { userCookie, vipCookie } = getStoreCookies();
-	return userCookie && vipCookie;
+	return !!userCookie && !!vipCookie;
 }
 
-export function changeUser (type: "vip" | "user") {
+export async function changeUser (type: "vip" | "user") {
   if (!cookiesReady()) return;
   const { userCookie, vipCookie } = getStoreCookies();
 
   const cookie = type === "vip" ? vipCookie : userCookie
 
-  setCookies(cookie);
+  await setCookies(cookie);
 }

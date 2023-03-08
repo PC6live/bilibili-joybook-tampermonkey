@@ -80,7 +80,7 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 	});
 }
 
-export async function listenerAjax(): Promise<void> {
+export function listenerAjax(): void{
 	const ready = cookiesReady();
 
 	const config: ProxyOptions = {

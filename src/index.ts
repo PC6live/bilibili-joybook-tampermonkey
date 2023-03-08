@@ -1,9 +1,9 @@
 import { initialize, listenerAjax, createAvatar, unlockVideo, highQuality } from "src/components";
-import { changeUser, cookiesReady, printMessage } from "./utils/helper";
+import { cookiesReady, printMessage } from "./utils/helper";
 import("src/styles/global.scss");
 
-(async () => {
-  const ready = cookiesReady();
+(() => {
+	const ready = cookiesReady();
 
 	if (ready) {
 		printMessage("白嫖");
@@ -27,6 +27,4 @@ import("src/styles/global.scss");
 
 	// 创建头像
 	createAvatar();
-
-	changeUser("user");
 })();

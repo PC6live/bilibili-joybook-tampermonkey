@@ -35,10 +35,10 @@ export async function highQuality(): Promise<void> {
 		},
 	});
 
-	// 处理 bangumi 画质
+	// FIXME: 处理 bangumi 画质
 	if (window.location.pathname.includes("bangumi")) {
 		const search = new URLSearchParams(window.location.search);
-		const url = `https://api.bilibili.com/pgc/player/web/playurl?fnval=4048&ep_id=${search.get("videoId")?.slice(2)}`;
+		const url = `https://api.bilibili.com/pgc/player/web/playurl?fnver=0&fnval=4048&ep_id=${search.get("videoId")?.slice(2)}`;
 		const resp = await (await fetch(url)).json();
     const quality = resp.result.accept_quality[0]
     setQuality(quality)

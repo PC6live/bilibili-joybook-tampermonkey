@@ -71,9 +71,9 @@
     function removeCookies() {
         return __awaiter(this, void 0, void 0, function* () {
             const cookies = yield getCookies();
-            cookies.forEach((cookie) => {
-                GM_cookie.delete({ name: cookie.name });
-            });
+            let promises = [];
+            cookies.forEach((cookie) => promises.push(new Promise((resolve) => GM_cookie.delete({ name: cookie.name }, () => resolve()))));
+            yield Promise.all(promises);
         });
     }
     function storeCookies(storeName, keys) {
@@ -84,8 +84,12 @@
         });
     }
     function setCookies(cookies) {
-        cookies.forEach((cookie) => {
-            GM_cookie.set(cookie);
+        return __awaiter(this, void 0, void 0, function* () {
+            const promises = [];
+            cookies.forEach((cookie) => {
+                promises.push(new Promise(resolve => GM_cookie.set(cookie, () => resolve())));
+            });
+            yield Promise.all(promises);
         });
     }
     function cookieToString(cookies) {
@@ -101,14 +105,7 @@
     const deleteAllValue = () => GM_listValues().forEach((v) => GM_deleteValue(v));
     function cookiesReady() {
         const { userCookie, vipCookie } = getStoreCookies();
-        return userCookie && vipCookie;
-    }
-    function changeUser(type) {
-        if (!cookiesReady())
-            return;
-        const { userCookie, vipCookie } = getStoreCookies();
-        const cookie = type === "vip" ? vipCookie : userCookie;
-        setCookies(cookie);
+        return !!userCookie && !!vipCookie;
     }
 
     const USER_INFO_URL = "https://api.bilibili.com/x/web-interface/nav";
@@ -120,29 +117,25 @@
     });
     function handleLogin(key) {
         return __awaiter(this, void 0, void 0, function* () {
-            const storeKey = ["SESSDATA", "DedeUserID", "bili_jct"];
+            const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5", "bili_jct"];
             yield storeCookies(key, storeKey);
             const { userCookie } = getStoreCookies();
-            removeCookies();
+            yield removeCookies();
             if (cookiesReady())
-                setCookies(userCookie);
+                yield setCookies(userCookie);
             window.location.reload();
         });
     }
-    const initialize = () => __awaiter(void 0, void 0, void 0, function* () {
-        // 获取登录状态
-        const { isLogin, vipStatus } = yield getUserType();
-        if (!isLogin || cookiesReady())
-            return;
-        if (vipStatus) {
-            // vip用户
-            handleLogin("vipCookie");
-        }
-        else {
-            // 普通用户
-            handleLogin("userCookie");
-        }
-    });
+    function initialize() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // 获取登录状态
+            const { isLogin, vipStatus } = yield getUserType();
+            if (!isLogin || cookiesReady())
+                return;
+            const user = vipStatus ? "vipCookie" : "userCookie";
+            yield handleLogin(user);
+        });
+    }
 
     const REAL_XHR = "_xhr";
     function setValue(arg, key, value) {
@@ -292,33 +285,31 @@
         });
     }
     function listenerAjax() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const ready = cookiesReady();
-            const config = {
-                open(xhr) {
-                    reloadByLogin(xhr.url);
-                    listenLogout(xhr.url);
-                    if (handleUrl(xhr.url) && ready) {
-                        changeResponse.call(this, xhr);
-                        return true;
-                    }
-                    return false;
-                },
-                send(xhr) {
-                    if (handleUrl(xhr.url) && ready) {
-                        return true;
-                    }
-                    return false;
-                },
-                setRequestHeader(xhr) {
-                    if (handleUrl(xhr.url) && ready) {
-                        return true;
-                    }
-                    return false;
-                },
-            };
-            proxy(config, unsafeWindow);
-        });
+        const ready = cookiesReady();
+        const config = {
+            open(xhr) {
+                reloadByLogin(xhr.url);
+                listenLogout(xhr.url);
+                if (handleUrl(xhr.url) && ready) {
+                    changeResponse.call(this, xhr);
+                    return true;
+                }
+                return false;
+            },
+            send(xhr) {
+                if (handleUrl(xhr.url) && ready) {
+                    return true;
+                }
+                return false;
+            },
+            setRequestHeader(xhr) {
+                if (handleUrl(xhr.url) && ready) {
+                    return true;
+                }
+                return false;
+            },
+        };
+        proxy(config, unsafeWindow);
     }
 
     // 解除非会员点击切换画质限制
@@ -449,10 +440,10 @@
                     return {};
                 },
             });
-            // 处理 bangumi 画质
+            // FIXME: 处理 bangumi 画质
             if (window.location.pathname.includes("bangumi")) {
                 const search = new URLSearchParams(window.location.search);
-                const url = `https://api.bilibili.com/pgc/player/web/playurl?fnval=4048&ep_id=${(_a = search.get("videoId")) === null || _a === void 0 ? void 0 : _a.slice(2)}`;
+                const url = `https://api.bilibili.com/pgc/player/web/playurl?fnver=0&fnval=4048&ep_id=${(_a = search.get("videoId")) === null || _a === void 0 ? void 0 : _a.slice(2)}`;
                 const resp = yield (yield fetch(url)).json();
                 const quality = resp.result.accept_quality[0];
                 setQuality(quality);
@@ -461,7 +452,7 @@
     }
 
     Promise.resolve().then(function () { return global; });
-    (() => __awaiter(void 0, void 0, void 0, function* () {
+    (() => {
         cookiesReady();
         // 解锁会员限制
         unlockVideo();
@@ -473,8 +464,7 @@
         listenerAjax();
         // 创建头像
         createAvatar();
-        changeUser("user");
-    }))();
+    })();
 
     function styleInject(css, ref) {
       if ( ref === void 0 ) ref = {};

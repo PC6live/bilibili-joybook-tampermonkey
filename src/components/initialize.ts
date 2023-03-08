@@ -3,7 +3,7 @@ import { cookiesReady } from "src/utils/helper";
 import { USER_INFO_URL } from "src/utils/url";
 
 export interface UserInfo {
-  face: string;
+	face: string;
 	isLogin: boolean;
 	vipStatus: number;
 }
@@ -16,30 +16,26 @@ const getUserType = async (): Promise<UserInfo> => {
 };
 
 async function handleLogin(key: "vipCookie" | "userCookie"): Promise<void> {
-	const storeKey = ["SESSDATA", "DedeUserID", "bili_jct"];
+	const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5", "bili_jct"];
 
 	await storeCookies(key, storeKey);
 
 	const { userCookie } = getStoreCookies();
 
-  removeCookies();
+	await removeCookies();
 
-  if (cookiesReady()) setCookies(userCookie)
+	if (cookiesReady()) await setCookies(userCookie);
 
 	window.location.reload();
 }
 
-export const initialize = async (): Promise<void> => {
+export async function initialize(): Promise<void> {
 	// 获取登录状态
 	const { isLogin, vipStatus } = await getUserType();
 
 	if (!isLogin || cookiesReady()) return;
 
-	if (vipStatus) {
-		// vip用户
-		handleLogin("vipCookie");
-	} else {
-		// 普通用户
-		handleLogin("userCookie");
-	}
-};
+  const user = vipStatus ? "vipCookie": "userCookie";
+
+  await handleLogin(user);
+}
