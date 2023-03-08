@@ -13,7 +13,7 @@ export const isVideo = (): boolean => /(bangumi\/play\/*)|(video\/*)/gi.test(win
 export const deleteAllValue = (): void => GM_listValues().forEach((v) => GM_deleteValue(v));
 
 export const printMessage = (message: string): void => {
-	if (process.env.NODE_ENV === "development") console.log(`Tampermonkey: ${message}`);
+	console.log(`Tampermonkey: ${message}`);
 };
 
 export function cookiesReady(): boolean {
@@ -21,11 +21,11 @@ export function cookiesReady(): boolean {
 	return !!userCookie && !!vipCookie;
 }
 
-export async function changeUser (type: "vip" | "user") {
-  if (!cookiesReady()) return;
-  const { userCookie, vipCookie } = getStoreCookies();
+export async function changeUser(type: "vip" | "user") {
+	if (!cookiesReady()) return;
+	const { userCookie, vipCookie } = getStoreCookies();
 
-  const cookie = type === "vip" ? vipCookie : userCookie
+	const cookie = type === "vip" ? vipCookie : userCookie;
 
-  await setCookies(cookie);
+	await setCookies(cookie);
 }

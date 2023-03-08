@@ -63,33 +63,41 @@
     };
 
     const getStoreCookies = () => ({ userCookie: get("userCookie"), vipCookie: get("vipCookie") });
-    function getCookies(detail = { domain: ".bilibili.com" }) {
-        return new Promise((resolve) => {
-            GM_cookie.list(detail, (cookies) => resolve(cookies));
+    function cookieList(detail = { domain: ".bilibili.com" }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => GM_cookie.list(detail, (cookies) => resolve(cookies)));
+        });
+    }
+    function cookieDelete(detail) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => GM_cookie.delete(detail, () => resolve()));
+        });
+    }
+    function cookieSet(detail) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => GM_cookie.set(detail, () => resolve()));
         });
     }
     function removeCookies() {
         return __awaiter(this, void 0, void 0, function* () {
-            const cookies = yield getCookies();
-            let promises = [];
-            cookies.forEach((cookie) => promises.push(new Promise((resolve) => GM_cookie.delete({ name: cookie.name }, () => resolve()))));
-            yield Promise.all(promises);
+            const cookies = yield cookieList();
+            for (const cookie of cookies) {
+                yield cookieDelete({ name: cookie.name });
+            }
         });
     }
     function storeCookies(storeName, keys) {
         return __awaiter(this, void 0, void 0, function* () {
             del(storeName);
-            const cookies = (yield getCookies()).filter((cookie) => keys.includes(cookie.name));
+            const cookies = (yield cookieList()).filter((cookie) => keys.includes(cookie.name));
             set(storeName, cookies);
         });
     }
     function setCookies(cookies) {
         return __awaiter(this, void 0, void 0, function* () {
-            const promises = [];
-            cookies.forEach((cookie) => {
-                promises.push(new Promise(resolve => GM_cookie.set(cookie, () => resolve())));
-            });
-            yield Promise.all(promises);
+            for (const cookie of cookies) {
+                yield cookieSet(cookie);
+            }
         });
     }
     function cookieToString(cookies) {
@@ -103,6 +111,9 @@
         return el.firstElementChild;
     };
     const deleteAllValue = () => GM_listValues().forEach((v) => GM_deleteValue(v));
+    const printMessage = (message) => {
+        console.log(`Tampermonkey: ${message}`);
+    };
     function cookiesReady() {
         const { userCookie, vipCookie } = getStoreCookies();
         return !!userCookie && !!vipCookie;
@@ -226,6 +237,7 @@
     // // 监听登录&reload
     const reloadByLogin = (url) => {
         if (url.includes("/passport-login/web/login")) {
+            printMessage("login reload");
             sleep(1).then(() => window.location.reload());
         }
     };
@@ -233,6 +245,7 @@
     const listenLogout = (url) => {
         if (url.includes("/login/exit/")) {
             del("userCookie");
+            printMessage("logout reload");
             removeCookies().then(() => window.location.reload());
         }
     };
@@ -404,7 +417,7 @@
 
     function setQuality(quality) {
         return __awaiter(this, void 0, void 0, function* () {
-            let qualityCookie = (yield getCookies({ name: "CURRENT_QUALITY" }))[0];
+            let qualityCookie = (yield cookieList({ name: "CURRENT_QUALITY" }))[0];
             if (!qualityCookie) {
                 qualityCookie = {
                     domain: ".bilibili.com",
@@ -453,7 +466,13 @@
 
     Promise.resolve().then(function () { return global; });
     (() => {
-        cookiesReady();
+        const ready = cookiesReady();
+        if (ready) {
+            printMessage("白嫖");
+        }
+        else {
+            printMessage("请按照操作说明 https://github.com/PC6live/bilibili-joybook-tampermonkey#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9 登录账号");
+        }
         // 解锁会员限制
         unlockVideo();
         // 自动设置最高画质

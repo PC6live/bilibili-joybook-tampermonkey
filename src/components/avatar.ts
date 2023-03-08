@@ -1,4 +1,3 @@
-// import { unProxyAjax } from "src/lib/ajax-proxy";
 import { unProxy } from "src/lib/ajaxProxy";
 import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
 import { createElement, deleteAllValue } from "src/utils/helper";

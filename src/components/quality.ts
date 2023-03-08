@@ -1,7 +1,7 @@
-import { getCookies } from "src/utils/cookie";
+import { cookieList } from "src/utils/cookie";
 
 export async function setQuality(quality: string) {
-	let qualityCookie = (await getCookies({ name: "CURRENT_QUALITY" }))[0];
+	let qualityCookie = (await cookieList({ name: "CURRENT_QUALITY" }))[0];
 
 	if (!qualityCookie) {
 		qualityCookie = {

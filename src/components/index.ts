@@ -2,5 +2,5 @@ export * from "./initialize";
 export * from "./listenerAjax";
 export * from "./unlockVideo";
 export * from "./avatar"
-export * from "./quaility"
+export * from "./quality"
 
