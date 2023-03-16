@@ -1,7 +1,7 @@
 # Joybook Tampermonkey
 
 ## 安装
-1. 第一步 [Tampermonkey BETA](https://chrome.google.com/webstore/detail/tampermonkey-beta/gcalenpjmijncebpfijmoaglllgpjagf) [必须]
+1. 第一步 [Tampermonkey BETA](https://chrome.google.com/webstore/detail/tampermonkey-beta/gcalenpjmijncebpfijmoaglllgpjagf)
 2. 第二步 [测试版](https://github.com/PC6live/joybook-tampermonkey/raw/master/dist/joybook.user.js)
 
 ## 使用说明
