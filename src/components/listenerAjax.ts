@@ -25,6 +25,7 @@ const listenLogout = (url: string): void => {
 const handleUrl = (url: string): boolean => {
 	const includes = [
 		// bangumi
+    "/pgc/player/web/v2/playurl",
 		"/pgc/player/web/playurl",
 		"/pgc/view/web/season",
 		// video

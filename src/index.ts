@@ -1,5 +1,6 @@
 import { initialize, listenerAjax, createAvatar, unlockVideo, highQuality } from "src/components";
 import { cookiesReady, printMessage } from "./utils/helper";
+import { removeTips } from "./components/removeTips";
 import("src/styles/global.scss");
 
 (() => {
@@ -27,4 +28,7 @@ import("src/styles/global.scss");
 
 	// 创建头像
 	createAvatar();
+
+	// 移除提示
+	removeTips();
 })();
