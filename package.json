@@ -24,7 +24,7 @@
 		"cross-env": "^7.0.3",
 		"eslint": "^8.40.0",
 		"eslint-config-prettier": "^8.8.0",
-		"postcss": "^8.4.23",
+		"postcss": "^8.4.31",
 		"rollup": "^3.21.7",
 		"rollup-plugin-postcss": "^4.0.2",
 		"rollup-plugin-scss": "^4.0.0",
