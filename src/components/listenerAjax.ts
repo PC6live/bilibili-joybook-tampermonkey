@@ -28,10 +28,14 @@ const handleUrl = (url: string): boolean => {
     "/pgc/player/web/v2/playurl",
 		"/pgc/player/web/playurl",
 		"/pgc/view/web/season",
+
 		// video
 		"/player/playurl",
 		"/player/v2",
+
+    // video wbi
 		"/player/wbi/playurl",
+    "/player/wbi/v2"
 	];
 	const excludes = ["data.bilibili.com"];
 

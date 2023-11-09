@@ -1,9 +1,15 @@
 // 解除非会员点击切换画质限制
 export function unlockVideo() {
 	document.addEventListener("readystatechange", () => {
-		const iterator = document.evaluate("//script[contains(., 'vip_info')]", document, null, XPathResult.ANY_TYPE, null);
+		const vip_info_iterator = document.evaluate(
+			"//script[contains(., 'vip_info')]",
+			document,
+			null,
+			XPathResult.ANY_TYPE,
+			null
+		);
 		try {
-			let node = iterator.iterateNext();
+			let node = vip_info_iterator.iterateNext();
 
 			while (node) {
 				if (node && node.textContent) {
@@ -20,7 +26,7 @@ export function unlockVideo() {
 					node.textContent = node.textContent.replace(vipInfoReg, vipInfo);
 				}
 
-				node = iterator.iterateNext();
+				node = vip_info_iterator.iterateNext();
 			}
 		} catch (e) {
 			console.log("Error: Document tree modified during iteration " + e);

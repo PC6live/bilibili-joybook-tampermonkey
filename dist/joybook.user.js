@@ -1,6 +1,5 @@
 // ==UserScript==
 // @name          bilibili-joybook
-// @version       0.0.11
 // @description   共享大会员
 // @author        PC6live
 // @namespace     https://github.com/PC6live/bilibili-joybook-tampermonkey
@@ -23,6 +22,7 @@
 // @run-at        document-start
 // @noframes      true
 // @connect       bilibili.com
+// @version       0.0.12
 // ==/UserScript==
 (function () {
     'use strict';
@@ -261,7 +261,9 @@
             // video
             "/player/playurl",
             "/player/v2",
+            // video wbi
             "/player/wbi/playurl",
+            "/player/wbi/v2"
         ];
         const excludes = ["data.bilibili.com"];
         if (excludes.findIndex((v) => url.includes(v)) > -1) {
@@ -331,9 +333,9 @@
     // 解除非会员点击切换画质限制
     function unlockVideo() {
         document.addEventListener("readystatechange", () => {
-            const iterator = document.evaluate("//script[contains(., 'vip_info')]", document, null, XPathResult.ANY_TYPE, null);
+            const vip_info_iterator = document.evaluate("//script[contains(., 'vip_info')]", document, null, XPathResult.ANY_TYPE, null);
             try {
-                let node = iterator.iterateNext();
+                let node = vip_info_iterator.iterateNext();
                 while (node) {
                     if (node && node.textContent) {
                         const vipStatusReg = new RegExp(/"vip_status.*?,/g);
@@ -346,7 +348,7 @@
                         node.textContent = node.textContent.replace(vipTypeReg, vipType);
                         node.textContent = node.textContent.replace(vipInfoReg, vipInfo);
                     }
-                    node = iterator.iterateNext();
+                    node = vip_info_iterator.iterateNext();
                 }
             }
             catch (e) {

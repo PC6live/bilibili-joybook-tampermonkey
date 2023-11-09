@@ -1,5 +1,5 @@
 import path from "path";
-import pkg from "../package.json" assert { type: 'json' };
+import pkg from "../package.json" assert { type: "json" };
 
 type Field = string | string[] | boolean | undefined;
 
@@ -12,7 +12,7 @@ interface HeaderObject {
 
 	author?: string;
 
-  license?: string;
+	license?: string;
 
 	description?: string;
 
@@ -64,38 +64,9 @@ interface HeaderObject {
 
 const joybookName = "bilibili-joybook";
 
-const config: HeaderObject = {
-	name: joybookName,
-	version: "0.0.11",
-	description: "共享大会员",
-	author: "PC6live",
-  namespace: "https://github.com/PC6live/bilibili-joybook-tampermonkey",
-	match: "*://*.bilibili.com/*",
-	exclude: "*://passport.bilibili.com/*",
-	homepage: "https://github.com/PC6live/bilibili-joybook-tampermonkey",
-	supportURL: "https://github.com/PC6live/bilibili-joybook-tampermonkey/issues",
-  license: "MIT",
-	grant: [
-		"GM_cookie",
-		"GM_setValue",
-		"GM_getValue",
-		"GM_addStyle",
-		"GM_deleteValue",
-		"GM_getTab",
-		"GM_getTabs",
-		"GM_listValues",
-		"GM_saveTab",
-    "GM_xmlhttpRequest",
-		"unsafeWindow",
-	],
-	"run-at": "document-start",
-	noframes: true,
-  connect: "bilibili.com"
-};
-
-const convertToComment = (header: HeaderObject): string => {
+export const convertToString = (header: HeaderObject): string => {
 	// 开始
-	let comment = "// ==UserScript==\n";
+	let text = "// ==UserScript==\n";
 
 	const append = (key: string, value: Field): string => {
 		let text = "";
@@ -110,28 +81,52 @@ const convertToComment = (header: HeaderObject): string => {
 
 		if (headerValue instanceof Array) {
 			headerValue.forEach((headerItem) => {
-				comment += append(headerKey, headerItem);
+				text += append(headerKey, headerItem);
 			});
 		} else {
-			comment += append(headerKey, header[headerKey]);
+			text += append(headerKey, header[headerKey]);
 		}
 	});
 
-  if (process.env.NODE_ENV === "development") {
-    // dev测试文件路径
-    const filePath = path.resolve(__dirname, pkg.main)
-    comment += append("require", `file:${filePath}`);
+	if (process.env.NODE_ENV === "development") {
+		// dev测试文件路径
+		const filePath = path.resolve(__dirname, pkg.main);
+		text += append("require", `file:${filePath}`);
 
-    // dev测试文件名称
-    comment = comment.replace(joybookName, `${joybookName}-dev`)
-  }
-
+		// dev测试文件名称
+		text = text.replace(joybookName, `${joybookName}-dev`);
+	}
 
 	// 结束
-	comment += "// ==/UserScript==";
+	text += "// ==/UserScript==";
 
-	return comment;
+	return text;
 };
 
-export const banner = convertToComment(config);
-
+export const header: HeaderObject = {
+	name: joybookName,
+	description: "共享大会员",
+	author: "PC6live",
+	namespace: "https://github.com/PC6live/bilibili-joybook-tampermonkey",
+	match: "*://*.bilibili.com/*",
+	exclude: "*://passport.bilibili.com/*",
+	homepage: "https://github.com/PC6live/bilibili-joybook-tampermonkey",
+	supportURL: "https://github.com/PC6live/bilibili-joybook-tampermonkey/issues",
+	license: "MIT",
+	grant: [
+		"GM_cookie",
+		"GM_setValue",
+		"GM_getValue",
+		"GM_addStyle",
+		"GM_deleteValue",
+		"GM_getTab",
+		"GM_getTabs",
+		"GM_listValues",
+		"GM_saveTab",
+		"GM_xmlhttpRequest",
+		"unsafeWindow",
+	],
+	"run-at": "document-start",
+	noframes: true,
+	connect: "bilibili.com",
+};
