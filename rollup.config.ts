@@ -3,31 +3,30 @@ import { header, convertToString } from "./src/banner";
 import alias from "@rollup/plugin-alias";
 import typescript from "@rollup/plugin-typescript";
 import json from "@rollup/plugin-json";
-import scss from "rollup-plugin-scss";
 import postcss from "rollup-plugin-postcss";
+import del from "rollup-plugin-delete";
 import pkg from "./package.json" assert { type: "json" };
+import path from "path";
 
-header.version = pkg.version
+header.version = pkg.version;
 
 const config = defineConfig({
-	input: "src/index.ts",
+	input: path.resolve(__dirname, "./src/index.ts"),
 	output: {
 		banner: convertToString(header),
-		file: pkg.main,
+		file: path.resolve(__dirname, pkg.main),
 		format: "iife",
 		sourcemap: true,
 		inlineDynamicImports: true,
 	},
 	plugins: [
-		alias({
-			entries: [{ find: "src", replacement: "src" }],
-		}),
-
+    del({ targets: "dist/*" }),
 		postcss(),
-		scss(),
-
 		json(),
 		typescript(),
+		alias({
+			entries: [{ find: "src", replacement: path.resolve(__dirname, "./src") }],
+		}),
 	],
 });
 

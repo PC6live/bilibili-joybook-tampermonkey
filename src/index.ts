@@ -1,7 +1,7 @@
-import { initialize, listenerAjax, createAvatar, unlockVideo, highQuality } from "src/components";
+import { initialize, listenerAjax, createAvatar, highQuality } from "src/components";
 import { cookiesReady, printMessage } from "./utils/helper";
 import { removeTips } from "./components/removeTips";
-import("src/styles/global.scss");
+import "src/styles/global.scss"
 
 (() => {
 	const ready = cookiesReady();
@@ -15,7 +15,7 @@ import("src/styles/global.scss");
 	}
 
 	// 解锁会员限制
-	unlockVideo();
+	// unlockVideo();
 
 	// 自动设置最高画质
 	highQuality();
@@ -29,6 +29,6 @@ import("src/styles/global.scss");
 	// 创建头像
 	createAvatar();
 
-	// 移除提示
+	// 移除广告拦截提示
 	removeTips();
 })();

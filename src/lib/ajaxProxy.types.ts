@@ -11,14 +11,14 @@ export type ProxyConfig = Writable<XMLHttpRequest> & {
 	cache: Partial<Record<`_${keyof XMLHttpRequest}`, string>>;
 };
 
-export type ProxyRequestEventFunc = (this: ProxyConfig, xhr: ProxyConfig, ev: ProgressEvent) => boolean | undefined;
+export type ProxyRequestEventFunc = (xhr: ProxyConfig, ev: ProgressEvent, receiver: ProxyConfig) => boolean | undefined;
 
 export type ProxyRequestEvent = Record<
 	"onreadystatechange" | "onabort" | "onerror" | "onload" | "onloadend" | "onloadstart" | "onprogress" | "ontimeout",
 	ProxyRequestEventFunc
 >;
 
-export type ProxyXHRFunc = (this: ProxyConfig, xhr: ProxyConfig, args: any[]) => boolean | undefined;
+export type ProxyXHRFunc = (xhr: ProxyConfig, args: any[], receiver: ProxyConfig) => boolean | undefined;
 
 export type ProxyXHR = Record<
 	| "open"
@@ -35,8 +35,8 @@ export type ProxyXHR = Record<
 >;
 
 export interface SetGetFn<T = any> {
-	getter?: (this: ProxyConfig, xhr: ProxyConfig, value: T) => T | boolean;
-	setter?: (this: ProxyConfig, xhr: ProxyConfig, value: T) => T | boolean;
+	getter?: (xhr: ProxyConfig, value: T, receiver: ProxyConfig) => T | boolean;
+	setter?: (xhr: ProxyConfig, value: T, receiver: ProxyConfig) => T | boolean;
 }
 
 export interface ProxyAttr {

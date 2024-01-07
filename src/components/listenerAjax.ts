@@ -21,53 +21,35 @@ const listenLogout = (url: string): void => {
 	}
 };
 
-// // 判断主要链接
+const proxyUrls: string[] = [
+	// 视频信息
+	"api.bilibili.com/x/player/wbi/playurl",
+
+	// 用户信息
+	"api.bilibili.com/x/player/wbi/v2",
+
+	// bangumi 信息
+	"api.bilibili.com/pgc/player/web/v2/playurl",
+];
+
+// 需要代理的链接
 const handleUrl = (url: string): boolean => {
-	const includes = [
-		// bangumi
-		"/pgc/player/web/v2/playurl",
-		"/pgc/player/web/playurl",
-		"/pgc/view/web/season",
+	if (!cookiesReady()) return false;
 
-		// video
-		"/player/playurl",
-		"/player/v2",
-
-		// video wbi
-		"/player/wbi/playurl",
-		"/player/wbi/v2",
-	];
-
-	const excludes = ["data.bilibili.com", "x/player/wbi/v2"];
-
-	if (excludes.findIndex((v) => url.includes(v)) > -1) {
-		return false;
-	}
-	if (includes.findIndex((v) => url.includes(v)) > -1) {
-		return true;
-	}
+	if (proxyUrls.findIndex((v) => url.includes(v)) > -1) return true;
 
 	return false;
 };
 
-function requestHandle(xhr: ProxyConfig) {
-	xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
-
-	for (const key in xhr.headers) {
-		xhr.setRequestHeader(key, xhr.headers[key]);
-	}
-
-	xhr.send(xhr.body);
-}
-
-function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
+async function handleResponse(xhr: ProxyConfig, receiver: ProxyConfig) {
 	const { vipCookie } = getStoreCookies();
 
 	const url = new URL(xhr.url, window.location.href);
 
 	xhr.url = url.href;
 
-	GM_xmlhttpRequest({
+	// 使用vip账号获取数据
+	const request = await GM.xmlHttpRequest({
 		method: xhr.method,
 		url: xhr.url,
 		anonymous: true,
@@ -75,42 +57,60 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 		headers: {
 			referer: window.location.href,
 		},
-		onreadystatechange: (resp) => {
-			if (resp.readyState === 4) {
-				requestHandle(xhr);
+	}).catch((e) => console.error(e));
 
-				this.response = resp.response;
-				this.responseText = resp.responseText;
+	if (request && request.readyState === 4) {
+		// 重新打开链接
+		xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
+		for (const key in xhr.headers) {
+			xhr.setRequestHeader(key, xhr.headers[key]);
+		}
+		// 替换必要的数据
+		// TODO: catch 数据结构变化
+		xhr.onreadystatechange = () => {
+			if (xhr.readyState === 4) {
+				const originResponse = JSON.parse(xhr.response);
+				const proxyResponse = JSON.parse(request.response);
+				if (xhr.url.includes(proxyUrls[0])) {
+					originResponse.data.dash = proxyResponse.data.dash;
+				}
+				// response 中包含上次播放时间
+				if (xhr.url.includes(proxyUrls[1])) {
+					originResponse.data.vip = proxyResponse.data.vip;
+				}
+				if (xhr.url.includes(proxyUrls[2])) {
+					originResponse.result = proxyResponse.result;
+				}
+
+				receiver.responseText = JSON.stringify(originResponse);
 			}
-		},
-	});
+		};
+		// 发送链接
+		xhr.send(xhr.body);
+	}
 }
 
 export function listenerAjax(): void {
-	const ready = cookiesReady();
-
 	const config: ProxyOptions = {
-		open(xhr) {
+		open(xhr, _, receiver) {
 			reloadByLogin(xhr.url);
 			listenLogout(xhr.url);
 
-			if (handleUrl(xhr.url) && ready) {
-				changeResponse.call(this, xhr);
+			if (handleUrl(xhr.url)) {
+				handleResponse(xhr, receiver);
 				return true;
 			}
 
 			return false;
 		},
 		send(xhr) {
-			if (handleUrl(xhr.url) && ready) {
-				return true;
-			}
+			if (handleUrl(xhr.url)) return true;
+
 			return false;
 		},
 		setRequestHeader(xhr) {
-			if (handleUrl(xhr.url) && ready) {
-				return true;
-			}
+			if (handleUrl(xhr.url)) return true;
+
 			return false;
 		},
 	};

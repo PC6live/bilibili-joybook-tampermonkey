@@ -24,7 +24,7 @@ function setConfig(receiver: ProxyConfig, p: keyof XMLHttpRequest, args: any) {
 }
 
 export function proxy(proxy: ProxyOptions, win: ProxyWin = unsafeWindow): void {
-  // 保存真实 XMLHttpRequest
+	// 保存真实 XMLHttpRequest
 	win[REAL_XHR] = win[REAL_XHR] || win.XMLHttpRequest;
 
 	const instance = new win[REAL_XHR]();
@@ -56,12 +56,12 @@ export function proxy(proxy: ProxyOptions, win: ProxyWin = unsafeWindow): void {
 
 				setConfig(receiver, p, args);
 
-				return (hook as ProxyXHRFunc)?.call(receiver, target, args) || next();
+				return (hook as ProxyXHRFunc)?.(target, value, receiver) || next();
 			};
 		}
 
 		const v = target?.cache?.[`_${p}`] || value;
-		const attrGetterProxy = (hook as SetGetFn)?.["getter"]?.call(receiver, target, value);
+		const attrGetterProxy = (hook as SetGetFn)?.["getter"]?.(target, value, receiver);
 		return attrGetterProxy || v;
 	};
 
@@ -80,10 +80,12 @@ export function proxy(proxy: ProxyOptions, win: ProxyWin = unsafeWindow): void {
 				const event = { ...e };
 				event.target = event.currentTarget = receiver;
 
-				(hook as ProxyRequestEventFunc).call(receiver, target, event) || value.call(receiver, event);
+        console.log(value);
+
+				(hook as ProxyRequestEventFunc)(target, value, receiver) || value.call(receiver, event);
 			});
 		} else {
-			const attrSetterProxy = (hook as SetGetFn)?.["setter"]?.call(receiver, target, value);
+			const attrSetterProxy = (hook as SetGetFn)?.["setter"]?.(target, value, receiver);
 			const attrValue = typeof value === "function" ? value.bind(receiver) : value;
 
 			try {

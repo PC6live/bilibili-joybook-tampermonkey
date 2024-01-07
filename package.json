@@ -14,20 +14,21 @@
 		"lint": "eslint . --ext .ts,.tsx"
 	},
 	"devDependencies": {
-		"@rollup/plugin-alias": "^5.0.1",
-		"@rollup/plugin-json": "^6.0.1",
+		"@rollup/plugin-alias": "^5.1.0",
+		"@rollup/plugin-json": "^6.1.0",
 		"@rollup/plugin-typescript": "^11.1.5",
 		"@types/tampermonkey": "^5.0.2",
-		"@typescript-eslint/eslint-plugin": "^6.10.0",
-		"@typescript-eslint/parser": "^6.10.0",
-		"eslint": "^8.53.0",
-		"eslint-config-prettier": "^9.0.0",
-		"postcss": "^8.4.31",
-		"rollup": "^4.3.0",
+		"@typescript-eslint/eslint-plugin": "^6.18.0",
+		"@typescript-eslint/parser": "^6.18.0",
+		"eslint": "^8.56.0",
+		"eslint-config-prettier": "^9.1.0",
+		"postcss": "^8.4.33",
+		"rollup": "^4.9.4",
+		"rollup-plugin-delete": "^2.0.0",
 		"rollup-plugin-postcss": "^4.0.2",
 		"rollup-plugin-scss": "^4.0.0",
-		"sass": "^1.69.5",
-		"type-fest": "^4.7.1",
-		"typescript": "^5.2.2"
+		"sass": "^1.69.7",
+		"type-fest": "^4.9.0",
+		"typescript": "^5.3.3"
 	}
 }
