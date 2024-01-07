@@ -25,7 +25,7 @@ const listenLogout = (url: string): void => {
 const handleUrl = (url: string): boolean => {
 	const includes = [
 		// bangumi
-    "/pgc/player/web/v2/playurl",
+		"/pgc/player/web/v2/playurl",
 		"/pgc/player/web/playurl",
 		"/pgc/view/web/season",
 
@@ -33,11 +33,12 @@ const handleUrl = (url: string): boolean => {
 		"/player/playurl",
 		"/player/v2",
 
-    // video wbi
+		// video wbi
 		"/player/wbi/playurl",
-    "/player/wbi/v2"
+		"/player/wbi/v2",
 	];
-	const excludes = ["data.bilibili.com"];
+
+	const excludes = ["data.bilibili.com", "x/player/wbi/v2"];
 
 	if (excludes.findIndex((v) => url.includes(v)) > -1) {
 		return false;
@@ -85,7 +86,7 @@ function changeResponse(this: ProxyConfig, xhr: ProxyConfig) {
 	});
 }
 
-export function listenerAjax(): void{
+export function listenerAjax(): void {
 	const ready = cookiesReady();
 
 	const config: ProxyOptions = {

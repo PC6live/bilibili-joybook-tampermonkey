@@ -22,7 +22,7 @@
 // @run-at        document-start
 // @noframes      true
 // @connect       bilibili.com
-// @version       0.0.12
+// @version       0.0.13
 // ==/UserScript==
 (function () {
     'use strict';
@@ -265,7 +265,7 @@
             "/player/wbi/playurl",
             "/player/wbi/v2"
         ];
-        const excludes = ["data.bilibili.com"];
+        const excludes = ["data.bilibili.com", "x/player/wbi/v2"];
         if (excludes.findIndex((v) => url.includes(v)) > -1) {
             return false;
         }
