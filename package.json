@@ -1,6 +1,6 @@
 {
 	"name": "bili-joybook",
-	"version": "0.0.13",
+	"version": "0.0.14",
 	"description": "白嫖大会员",
 	"main": "dist/joybook.user.js",
 	"keywords": [
@@ -16,6 +16,7 @@
 	"devDependencies": {
 		"@rollup/plugin-alias": "^5.1.0",
 		"@rollup/plugin-json": "^6.1.0",
+		"@rollup/plugin-replace": "^5.0.5",
 		"@rollup/plugin-typescript": "^11.1.5",
 		"@types/tampermonkey": "^5.0.2",
 		"@typescript-eslint/eslint-plugin": "^6.18.0",

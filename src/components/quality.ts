@@ -23,6 +23,18 @@ export async function setQuality(quality: string) {
 }
 
 export async function highQuality(): Promise<void> {
-  // 直接设置4K画质，这样就可以默认最高画质了
-  setQuality("120")
+	// 直接设置4K画质，这样就可以默认最高画质了
+	setQuality("120");
+
+	// 处理 video 画质
+	Object.defineProperty(unsafeWindow, "__playinfo__", {
+		configurable: true,
+		set() {
+			// const quality = (value.result || value.data)?.accept_quality[0] as string;
+			// if (quality) setQuality(quality);
+		},
+		get() {
+			// return "120";
+		},
+	});
 }

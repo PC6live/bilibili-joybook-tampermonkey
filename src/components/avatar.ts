@@ -3,6 +3,7 @@ import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie
 import { createElement, deleteAllValue } from "src/utils/helper";
 import { USER_INFO_URL } from "src/utils/url";
 import { UserInfo } from "./initialize";
+import { ProxyWin } from "src/lib/ajaxProxy.types";
 
 // TODO: 添加快速切换会员账户，用于脚本失效场景。
 /** 头像容器 */
@@ -50,7 +51,7 @@ function handleEvent() {
 		const result = window.confirm("确定要删除脚本数据吗？");
 		if (!result) return;
 
-		unProxy(unsafeWindow);
+		unProxy(unsafeWindow as ProxyWin);
 		deleteAllValue();
 		await removeCookies();
 

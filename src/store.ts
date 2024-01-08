@@ -27,6 +27,6 @@ export const getAll = (): Store => {
 
 
 export type StoreCookies = {
-	vipCookie: Cookie[];
-	userCookie: Cookie[];
+	vipCookie: Tampermonkey.Cookie[];
+	userCookie: Tampermonkey.Cookie[];
 };

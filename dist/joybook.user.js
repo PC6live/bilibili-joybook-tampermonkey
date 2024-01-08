@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name          bilibili-joybook-dev
+// @name          bilibili-joybook
 // @description   共享大会员
 // @author        PC6live
 // @namespace     https://github.com/PC6live/bilibili-joybook-tampermonkey
@@ -22,8 +22,7 @@
 // @run-at        document-start
 // @noframes      true
 // @connect       bilibili.com
-// @version       0.0.13
-// @require       file:E:\Code\Tampermonkey\bilibili-joybook-tampermonkey\dist\joybook.user.js
+// @version       0.0.14
 // ==/UserScript==
 (function () {
     'use strict';
@@ -85,7 +84,11 @@
         return __awaiter(this, void 0, void 0, function* () {
             const cookies = yield cookieList();
             for (const cookie of cookies) {
-                yield cookieDelete({ name: cookie.name });
+                yield cookieDelete({
+                    name: cookie.name,
+                    url: "",
+                    firstPartyDomain: "",
+                });
             }
         });
     }
@@ -152,29 +155,25 @@
     }
 
     const REAL_XHR = "_xhr";
-    function setValue(arg, key, value) {
-        arg[key] = value;
-    }
-    function setConfig(receiver, p, args) {
+    function setConfig(target, p, args) {
         if (p === "open") {
-            receiver.method = args[0];
-            receiver.url = args[1];
-            receiver.async = args[2];
-            receiver.user = args[3];
-            receiver.password = args[4];
+            target.method = args[0];
+            target.url = args[1];
+            target.async = args[2];
+            target.user = args[3];
+            target.password = args[4];
         }
         if (p === "send") {
-            receiver.body = args[0];
+            target.body = args[0];
         }
         if (p === "setRequestHeader") {
-            receiver.headers = {};
-            receiver.headers[args[0].toLowerCase()] = args[1];
+            target.headers = {};
+            target.headers[args[0].toLowerCase()] = args[1];
         }
     }
-    function proxy(proxy, win = unsafeWindow) {
+    function proxy(options, win) {
         // 保存真实 XMLHttpRequest
         win[REAL_XHR] = win[REAL_XHR] || win.XMLHttpRequest;
-        const instance = new win[REAL_XHR]();
         win.XMLHttpRequest = new Proxy(win.XMLHttpRequest, {
             construct(Target) {
                 // 代理 new 操作符
@@ -187,51 +186,41 @@
             },
         });
         const getterFactory = (target, p, receiver) => {
-            var _a, _b;
-            const value = target[p];
-            const hook = proxy[p];
-            const type = typeof instance[p];
-            if (type === "function") {
-                return (...args) => {
-                    const next = () => value.call(target, ...args);
-                    setConfig(receiver, p, args);
-                    return (hook === null || hook === void 0 ? void 0 : hook(target, value, receiver)) || next();
-                };
+            const value = Reflect.get(target, p);
+            const hook = Reflect.get(options, p);
+            if (hook) {
+                // 拦截函数
+                if (typeof hook === "function") {
+                    return (...args) => {
+                        setConfig(target, p.toString(), args);
+                        return hook(target, value, receiver) || value.call(target, ...args);
+                    };
+                }
+                // getter
+                // return hook.getter(target, value, receiver);
             }
-            const v = ((_a = target === null || target === void 0 ? void 0 : target.cache) === null || _a === void 0 ? void 0 : _a[`_${p}`]) || value;
-            const attrGetterProxy = (_b = hook === null || hook === void 0 ? void 0 : hook["getter"]) === null || _b === void 0 ? void 0 : _b.call(hook, target, value, receiver);
-            return attrGetterProxy || v;
-        };
-        const setterFactory = (target, p, value, receiver) => {
-            var _a;
-            const hook = proxy[p];
-            if (typeof instance[p] === "function")
-                return true;
-            if (typeof hook === "function") {
-                setValue(target, p, (e) => {
-                    const event = Object.assign({}, e);
-                    event.target = event.currentTarget = receiver;
-                    console.log(value);
-                    hook(target, value, receiver) || value.call(receiver, event);
-                });
+            if (typeof value === "function") {
+                return value.bind(target);
             }
             else {
-                const attrSetterProxy = (_a = hook === null || hook === void 0 ? void 0 : hook["setter"]) === null || _a === void 0 ? void 0 : _a.call(hook, target, value, receiver);
-                const attrValue = typeof value === "function" ? value.bind(receiver) : value;
-                try {
-                    setValue(target, p, attrSetterProxy || attrValue);
-                }
-                catch (_b) {
-                    // 缓存只读属性
-                    if (!target.cache)
-                        target.cache = {};
-                    target.cache[`_${p}`] = value;
-                }
+                // 使用缓存值
+                return Reflect.get(target, `_${p.toString()}`) || value;
             }
-            return true;
+        };
+        const setterFactory = (target, p, value, receiver) => {
+            const hook = Reflect.get(options, p);
+            if (hook) {
+                if (typeof hook === "function") {
+                    return Reflect.set(target, p, () => {
+                        hook(target, value, receiver) || value(target);
+                    });
+                }
+                // return Reflect.set(target, p, hook.setter(target, value) || value);
+            }
+            return Reflect.set(target, p, typeof value === "function" ? value.bind(target) : value);
         };
     }
-    function unProxy(win = unsafeWindow) {
+    function unProxy(win) {
         win = win || window;
         if (win[REAL_XHR])
             win.XMLHttpRequest = win[REAL_XHR];
@@ -269,7 +258,7 @@
             return true;
         return false;
     };
-    function handleResponse(xhr, receiver) {
+    function handleResponse(xhr) {
         return __awaiter(this, void 0, void 0, function* () {
             const { vipCookie } = getStoreCookies();
             const url = new URL(xhr.url, window.location.href);
@@ -284,43 +273,45 @@
                     referer: window.location.href,
                 },
             }).catch((e) => console.error(e));
-            if (request && request.readyState === 4) {
-                // 重新打开链接
-                xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
-                for (const key in xhr.headers) {
-                    xhr.setRequestHeader(key, xhr.headers[key]);
-                }
-                // 替换必要的数据
-                // TODO: catch 数据结构变化
-                xhr.onreadystatechange = () => {
-                    if (xhr.readyState === 4) {
-                        const originResponse = JSON.parse(xhr.response);
-                        const proxyResponse = JSON.parse(request.response);
-                        if (xhr.url.includes(proxyUrls[0])) {
-                            originResponse.data.dash = proxyResponse.data.dash;
-                        }
-                        // response 中包含上次播放时间
-                        if (xhr.url.includes(proxyUrls[1])) {
-                            originResponse.data.vip = proxyResponse.data.vip;
-                        }
-                        if (xhr.url.includes(proxyUrls[2])) {
-                            originResponse.result = proxyResponse.result;
-                        }
-                        receiver.responseText = JSON.stringify(originResponse);
-                    }
-                };
-                // 发送链接
-                xhr.send(xhr.body);
+            if (!request)
+                return;
+            // 重新打开链接
+            xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
+            for (const key in xhr.headers) {
+                xhr.setRequestHeader(key, xhr.headers[key]);
             }
+            // 替换必要的数据
+            // TODO: catch 数据结构变化输出错误
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    const originResponse = JSON.parse(xhr.response);
+                    const proxyResponse = JSON.parse(request.response);
+                    // video
+                    if (xhr.url.includes(proxyUrls[0])) {
+                        originResponse.data = proxyResponse.data;
+                    }
+                    // response 中包含上次播放时间
+                    if (xhr.url.includes(proxyUrls[1])) {
+                        originResponse.data.vip = proxyResponse.data.vip;
+                    }
+                    // bangumi
+                    if (xhr.url.includes(proxyUrls[2])) {
+                        originResponse.result = proxyResponse.result;
+                    }
+                    xhr._responseText = JSON.stringify(originResponse);
+                }
+            };
+            // 发送链接
+            xhr.send(xhr.body);
         });
     }
     function listenerAjax() {
         const config = {
-            open(xhr, _, receiver) {
+            open(xhr) {
                 reloadByLogin(xhr.url);
                 listenLogout(xhr.url);
                 if (handleUrl(xhr.url)) {
-                    handleResponse(xhr, receiver);
+                    handleResponse(xhr);
                     return true;
                 }
                 return false;
@@ -428,6 +419,17 @@
         return __awaiter(this, void 0, void 0, function* () {
             // 直接设置4K画质，这样就可以默认最高画质了
             setQuality("120");
+            // 处理 video 画质
+            Object.defineProperty(unsafeWindow, "__playinfo__", {
+                configurable: true,
+                set() {
+                    // const quality = (value.result || value.data)?.accept_quality[0] as string;
+                    // if (quality) setQuality(quality);
+                },
+                get() {
+                    // return "120";
+                },
+            });
         });
     }
 
@@ -477,8 +479,6 @@
         else {
             printMessage("请按照操作说明 https://github.com/PC6live/bilibili-joybook-tampermonkey#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9 登录账号");
         }
-        // 解锁会员限制
-        // unlockVideo();
         // 自动设置最高画质
         highQuality();
         // 初始化用户数据&储存cookies

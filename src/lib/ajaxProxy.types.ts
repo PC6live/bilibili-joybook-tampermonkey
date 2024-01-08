@@ -1,6 +1,6 @@
-import { Writable } from "type-fest";
+type CacheXMLHttpRequest = Record<`_${keyof XMLHttpRequest}`, string>;
 
-export type ProxyConfig = Writable<XMLHttpRequest> & {
+export type ProxyConfig = {
 	method: "GET" | "HEAD" | "POST";
 	url: string;
 	async: boolean;
@@ -8,56 +8,58 @@ export type ProxyConfig = Writable<XMLHttpRequest> & {
 	password: string;
 	body: string;
 	headers: Record<string, string>;
-	cache: Partial<Record<`_${keyof XMLHttpRequest}`, string>>;
-};
+	withCredentials: boolean;
+} & CacheXMLHttpRequest & XMLHttpRequest;
 
-export type ProxyRequestEventFunc = (xhr: ProxyConfig, ev: ProgressEvent, receiver: ProxyConfig) => boolean | undefined;
-
-export type ProxyRequestEvent = Record<
-	"onreadystatechange" | "onabort" | "onerror" | "onload" | "onloadend" | "onloadstart" | "onprogress" | "ontimeout",
-	ProxyRequestEventFunc
->;
+export type ProxyXHREventFunc = (xhr: ProxyConfig, ev: ProgressEvent, receiver: ProxyConfig) => boolean | undefined;
 
 export type ProxyXHRFunc = (xhr: ProxyConfig, args: any[], receiver: ProxyConfig) => boolean | undefined;
-
-export type ProxyXHR = Record<
-	| "open"
-	| "abort"
-	| "getAllResponseHeaders"
-	| "getResponseHeader"
-	| "overrideMimeType"
-	| "send"
-	| "setRequestHeader"
-	| "addEventListener"
-	| "removeEventListener"
-	| "dispatchEvent",
-	ProxyXHRFunc
->;
 
 export interface SetGetFn<T = any> {
 	getter?: (xhr: ProxyConfig, value: T, receiver: ProxyConfig) => T | boolean;
 	setter?: (xhr: ProxyConfig, value: T, receiver: ProxyConfig) => T | boolean;
 }
 
-export interface ProxyAttr {
-	readyState?: SetGetFn<number>;
-	response?: SetGetFn<any>;
+export type ProxyOptions = {
+	// 事件属性
+	onreadystatechange?: ProxyXHREventFunc;
+	onabort?: ProxyXHREventFunc;
+	onerror?: ProxyXHREventFunc;
+	onload?: ProxyXHREventFunc;
+	onloadend?: ProxyXHREventFunc;
+	onloadstart?: ProxyXHREventFunc;
+	onprogress?: ProxyXHREventFunc;
+	ontimeout?: ProxyXHREventFunc;
+
+	// 方法
+	abort?: ProxyXHRFunc;
+	getAllResponseHeaders?: ProxyXHRFunc;
+	getResponseHeader?: ProxyXHRFunc;
+	open?: ProxyXHRFunc;
+	overrideMimeType?: ProxyXHRFunc;
+	send?: ProxyXHRFunc;
+	setRequestHeader?: ProxyXHRFunc;
+	addEventListener?: ProxyXHRFunc;
+	removeEventListener?: ProxyXHRFunc;
+	dispatchEvent?: ProxyXHRFunc;
+
+	// 只读属性
+	response?: SetGetFn;
 	responseText?: SetGetFn<string>;
+	readyState?: SetGetFn<number>;
 	responseType?: SetGetFn<XMLHttpRequestResponseType>;
 	responseURL?: SetGetFn<string>;
 	responseXML?: SetGetFn<Document | null>;
 	status?: SetGetFn<number>;
 	statusText?: SetGetFn<string>;
 	timeout?: SetGetFn<number>;
-	withCredentials?: SetGetFn<boolean>;
 	upload?: SetGetFn<XMLHttpRequestUpload>;
+	withCredentials?: SetGetFn<boolean>;
 	UNSENT?: SetGetFn<number>;
 	OPENED?: SetGetFn<number>;
 	HEADERS_RECEIVED?: SetGetFn<number>;
 	LOADING?: SetGetFn<number>;
 	DONE?: SetGetFn<number>;
-}
+};
 
-export type ProxyOptions = Partial<ProxyRequestEvent & ProxyAttr & ProxyXHR>;
-
-export type ProxyWin = Window & typeof unsafeWindow & { ["_xhr"]?: typeof XMLHttpRequest };
+export type ProxyWin = Window & typeof globalThis & { ["_xhr"]?: typeof XMLHttpRequest };

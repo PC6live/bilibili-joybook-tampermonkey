@@ -2,7 +2,7 @@ import { sleep, cookiesReady, printMessage } from "src/utils/helper";
 import { proxy } from "src/lib/ajaxProxy";
 import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
 import { del } from "src/store";
-import { ProxyConfig, ProxyOptions } from "src/lib/ajaxProxy.types";
+import { ProxyConfig, ProxyOptions, ProxyWin } from "src/lib/ajaxProxy.types";
 
 // // 监听登录&reload
 const reloadByLogin = (url: string): void => {
@@ -41,7 +41,7 @@ const handleUrl = (url: string): boolean => {
 	return false;
 };
 
-async function handleResponse(xhr: ProxyConfig, receiver: ProxyConfig) {
+async function handleResponse(xhr: ProxyConfig) {
 	const { vipCookie } = getStoreCookies();
 
 	const url = new URL(xhr.url, window.location.href);
@@ -59,45 +59,53 @@ async function handleResponse(xhr: ProxyConfig, receiver: ProxyConfig) {
 		},
 	}).catch((e) => console.error(e));
 
-	if (request && request.readyState === 4) {
-		// 重新打开链接
-		xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
-		for (const key in xhr.headers) {
-			xhr.setRequestHeader(key, xhr.headers[key]);
-		}
-		// 替换必要的数据
-		// TODO: catch 数据结构变化
-		xhr.onreadystatechange = () => {
-			if (xhr.readyState === 4) {
-				const originResponse = JSON.parse(xhr.response);
-				const proxyResponse = JSON.parse(request.response);
-				if (xhr.url.includes(proxyUrls[0])) {
-					originResponse.data.dash = proxyResponse.data.dash;
-				}
-				// response 中包含上次播放时间
-				if (xhr.url.includes(proxyUrls[1])) {
-					originResponse.data.vip = proxyResponse.data.vip;
-				}
-				if (xhr.url.includes(proxyUrls[2])) {
-					originResponse.result = proxyResponse.result;
-				}
+	if (!request) return;
 
-				receiver.responseText = JSON.stringify(originResponse);
-			}
-		};
-		// 发送链接
-		xhr.send(xhr.body);
+	// 重新打开链接
+	xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
+
+	for (const key in xhr.headers) {
+		xhr.setRequestHeader(key, xhr.headers[key]);
 	}
+
+	// 替换必要的数据
+	// TODO: catch 数据结构变化输出错误
+	xhr.onreadystatechange = () => {
+		if (xhr.readyState === 4) {
+			const originResponse = JSON.parse(xhr.response);
+			const proxyResponse = JSON.parse(request.response);
+
+      // video
+			if (xhr.url.includes(proxyUrls[0])) {
+				originResponse.data = proxyResponse.data;
+			}
+
+			// response 中包含上次播放时间
+			if (xhr.url.includes(proxyUrls[1])) {
+				originResponse.data.vip = proxyResponse.data.vip;
+			}
+
+      // bangumi
+			if (xhr.url.includes(proxyUrls[2])) {
+				originResponse.result = proxyResponse.result;
+			}
+
+			xhr._responseText = JSON.stringify(originResponse);
+		}
+	};
+
+	// 发送链接
+	xhr.send(xhr.body);
 }
 
 export function listenerAjax(): void {
 	const config: ProxyOptions = {
-		open(xhr, _, receiver) {
+		open(xhr) {
 			reloadByLogin(xhr.url);
 			listenLogout(xhr.url);
 
 			if (handleUrl(xhr.url)) {
-				handleResponse(xhr, receiver);
+				handleResponse(xhr);
 				return true;
 			}
 
@@ -115,5 +123,5 @@ export function listenerAjax(): void {
 		},
 	};
 
-	proxy(config, unsafeWindow);
+	proxy(config, unsafeWindow as ProxyWin);
 }

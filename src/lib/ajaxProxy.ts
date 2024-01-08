@@ -1,33 +1,27 @@
-import { ProxyConfig, ProxyOptions, ProxyWin, ProxyRequestEventFunc, SetGetFn, ProxyXHRFunc } from "./ajaxProxy.types";
+import { ProxyConfig, ProxyOptions, ProxyWin, ProxyXHREventFunc, ProxyXHRFunc } from "./ajaxProxy.types";
 
 const REAL_XHR = "_xhr";
 
-function setValue<K extends keyof XMLHttpRequest>(arg: XMLHttpRequest, key: K, value: any): void {
-	arg[key] = value;
-}
-
-function setConfig(receiver: ProxyConfig, p: keyof XMLHttpRequest, args: any) {
+function setConfig(target: ProxyConfig, p: keyof XMLHttpRequest, args: any) {
 	if (p === "open") {
-		receiver.method = args[0];
-		receiver.url = args[1];
-		receiver.async = args[2];
-		receiver.user = args[3];
-		receiver.password = args[4];
+		target.method = args[0];
+		target.url = args[1];
+		target.async = args[2];
+		target.user = args[3];
+		target.password = args[4];
 	}
 	if (p === "send") {
-		receiver.body = args[0];
+		target.body = args[0];
 	}
 	if (p === "setRequestHeader") {
-		receiver.headers = {};
-		receiver.headers[args[0].toLowerCase()] = args[1];
+		target.headers = {};
+		target.headers[args[0].toLowerCase()] = args[1];
 	}
 }
 
-export function proxy(proxy: ProxyOptions, win: ProxyWin = unsafeWindow): void {
+export function proxy(options: ProxyOptions, win: ProxyWin): void {
 	// 保存真实 XMLHttpRequest
 	win[REAL_XHR] = win[REAL_XHR] || win.XMLHttpRequest;
-
-	const instance = new win[REAL_XHR]();
 
 	win.XMLHttpRequest = new Proxy(win.XMLHttpRequest, {
 		construct(Target) {
@@ -41,67 +35,50 @@ export function proxy(proxy: ProxyOptions, win: ProxyWin = unsafeWindow): void {
 		},
 	});
 
-	const getterFactory: ProxyHandler<XMLHttpRequest>["get"] = (
-		target: ProxyConfig,
-		p: keyof XMLHttpRequest,
-		receiver: ProxyConfig
-	): any => {
-		const value = target[p];
-		const hook = proxy[p];
-		const type = typeof instance[p];
+	const getterFactory: ProxyHandler<XMLHttpRequest>["get"] = (target: ProxyConfig, p, receiver) => {
+		const value = Reflect.get(target, p);
+		const hook = Reflect.get(options, p);
 
-		if (type === "function") {
-			return (...args: any[]) => {
-				const next = () => value.call(target, ...args);
+		if (hook) {
+			// 拦截函数
+			if (typeof hook === "function") {
+				return (...args: any[]) => {
+					setConfig(target, p.toString() as keyof XMLHttpRequest, args);
 
-				setConfig(receiver, p, args);
+					return (hook as ProxyXHRFunc)(target, value, receiver) || value.call(target, ...args);
+				};
+			}
 
-				return (hook as ProxyXHRFunc)?.(target, value, receiver) || next();
-			};
+			// getter
+			// return hook.getter(target, value, receiver);
 		}
 
-		const v = target?.cache?.[`_${p}`] || value;
-		const attrGetterProxy = (hook as SetGetFn)?.["getter"]?.(target, value, receiver);
-		return attrGetterProxy || v;
+		if (typeof value === "function") {
+			return value.bind(target);
+		} else {
+			// 使用缓存值
+			return Reflect.get(target, `_${p.toString()}`) || value;
+		}
 	};
 
-	const setterFactory: ProxyHandler<XMLHttpRequest>["set"] = (
-		target: ProxyConfig,
-		p: keyof XMLHttpRequest,
-		value: any,
-		receiver: ProxyConfig
-	) => {
-		const hook = proxy[p];
+	const setterFactory: ProxyHandler<XMLHttpRequest>["set"] = (target: ProxyConfig, p, value, receiver) => {
+		const hook = Reflect.get(options, p);
 
-		if (typeof instance[p] === "function") return true;
-
-		if (typeof hook === "function") {
-			setValue(target, p, (e: ProgressEvent<EventTarget>) => {
-				const event = { ...e };
-				event.target = event.currentTarget = receiver;
-
-        console.log(value);
-
-				(hook as ProxyRequestEventFunc)(target, value, receiver) || value.call(receiver, event);
-			});
-		} else {
-			const attrSetterProxy = (hook as SetGetFn)?.["setter"]?.(target, value, receiver);
-			const attrValue = typeof value === "function" ? value.bind(receiver) : value;
-
-			try {
-				setValue(target, p, attrSetterProxy || attrValue);
-			} catch {
-				// 缓存只读属性
-				if (!target.cache) target.cache = {};
-				target.cache[`_${p}`] = value;
+		if (hook) {
+			if (typeof hook === "function") {
+				return Reflect.set(target, p, () => {
+					(hook as ProxyXHREventFunc)(target, value, receiver) || value(target);
+				});
 			}
+
+			// return Reflect.set(target, p, hook.setter(target, value) || value);
 		}
 
-		return true;
+		return Reflect.set(target, p, typeof value === "function" ? value.bind(target) : value);
 	};
 }
 
-export function unProxy(win: ProxyWin = unsafeWindow): void {
+export function unProxy(win: ProxyWin): void {
 	win = win || window;
 	if (win[REAL_XHR]) win.XMLHttpRequest = win[REAL_XHR];
 	win[REAL_XHR] = undefined;
