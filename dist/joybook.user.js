@@ -27,7 +27,7 @@
 (function () {
     'use strict';
 
-    /*! *****************************************************************************
+    /******************************************************************************
     Copyright (c) Microsoft Corporation.
 
     Permission to use, copy, modify, and/or distribute this software for any
@@ -41,7 +41,7 @@
     OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
-    /* global Reflect, Promise */
+    /* global Reflect, Promise, SuppressedError, Symbol */
 
 
     function __awaiter(thisArg, _arguments, P, generator) {
@@ -53,6 +53,11 @@
             step((generator = generator.apply(thisArg, _arguments || [])).next());
         });
     }
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
 
     const set = (key, value) => {
         GM_setValue(key, value);
@@ -330,6 +335,33 @@
         proxy(config, unsafeWindow);
     }
 
+    // 解除非会员点击切换画质限制
+    function unlockVideo() {
+        document.addEventListener("readystatechange", () => {
+            const vip_info_iterator = document.evaluate("//script[contains(., 'vip_info')]", document, null, XPathResult.ANY_TYPE, null);
+            try {
+                let node = vip_info_iterator.iterateNext();
+                while (node) {
+                    if (node && node.textContent) {
+                        const vipStatusReg = new RegExp(/"vip_status.*?,/g);
+                        const vipTypeReg = new RegExp(/"vip_type.*?,/g);
+                        const vipInfoReg = new RegExp(/"vip_info.*?\}/g);
+                        const vipInfo = `"vip_info":{"is_vip":true,"due_date":0,"status":1,"type":2}`;
+                        const vipStatus = `"vip_status":1,`;
+                        const vipType = `"vip_type":2,`;
+                        node.textContent = node.textContent.replace(vipStatusReg, vipStatus);
+                        node.textContent = node.textContent.replace(vipTypeReg, vipType);
+                        node.textContent = node.textContent.replace(vipInfoReg, vipInfo);
+                    }
+                    node = vip_info_iterator.iterateNext();
+                }
+            }
+            catch (e) {
+                console.log("Error: Document tree modified during iteration " + e);
+            }
+        });
+    }
+
     // TODO: 添加快速切换会员账户，用于脚本失效场景。
     /** 头像容器 */
     const container = document.createElement("div");
@@ -489,6 +521,7 @@
         createAvatar();
         // 移除广告拦截提示
         removeTips();
+        unlockVideo();
     })();
 
 })();

@@ -1,4 +1,4 @@
-import { initialize, listenerAjax, createAvatar, highQuality } from "src/components";
+import { initialize, listenerAjax, createAvatar, highQuality, unlockVideo } from "src/components";
 import { cookiesReady, printMessage } from "./utils/helper";
 import { removeTips } from "./components/removeTips";
 import "src/styles/global.scss";
@@ -28,4 +28,6 @@ import "src/styles/global.scss";
 
 	// 移除广告拦截提示
 	removeTips();
+
+	unlockVideo();
 })();
