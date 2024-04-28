@@ -1,6 +1,7 @@
+// FIXME: 类型不应为 string
 type CacheXMLHttpRequest = Record<`_${keyof XMLHttpRequest}`, string>;
 
-export type ProxyConfig = {
+export type ProxyXHR = {
 	method: "GET" | "HEAD" | "POST";
 	url: string;
 	async: boolean;
@@ -11,13 +12,13 @@ export type ProxyConfig = {
 	withCredentials: boolean;
 } & CacheXMLHttpRequest & XMLHttpRequest;
 
-export type ProxyXHREventFunc = (xhr: ProxyConfig, ev: ProgressEvent, receiver: ProxyConfig) => boolean | undefined;
+type ProxyXHREventFunc = (xhr: ProxyXHR, ev: ProgressEvent, receiver: ProxyXHR) => boolean | undefined;
 
-export type ProxyXHRFunc = (xhr: ProxyConfig, args: any[], receiver: ProxyConfig) => boolean | undefined;
+type ProxyXHRFunc = (xhr: ProxyXHR, args: any[], receiver: ProxyXHR) => boolean | undefined;
 
-export interface SetGetFn<T = any> {
-	getter?: (xhr: ProxyConfig, value: T, receiver: ProxyConfig) => T | boolean;
-	setter?: (xhr: ProxyConfig, value: T, receiver: ProxyConfig) => T | boolean;
+interface SetGetFn<T = any> {
+	getter?: (xhr: ProxyXHR, value: T, receiver: ProxyXHR) => T | boolean;
+	setter?: (xhr: ProxyXHR, value: T, receiver: ProxyXHR) => T | boolean;
 }
 
 export type ProxyOptions = {

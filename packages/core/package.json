@@ -1,0 +1,37 @@
+{
+	"name": "core",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "rollup -c -w --environment NODE_ENV:development --configPlugin typescript --bundleConfigAsCjs",
+		"build": "rollup -c --environment NODE_ENV:production --configPlugin typescript --bundleConfigAsCjs",
+		"lint": "eslint . --ext .ts,.tsx"
+	},
+	"devDependencies": {
+		"@rollup/plugin-alias": "^5.1.0",
+		"@rollup/plugin-json": "^6.1.0",
+		"@rollup/plugin-node-resolve": "^15.2.3",
+		"@rollup/plugin-replace": "^5.0.5",
+		"@rollup/plugin-typescript": "^11.1.5",
+		"@types/tampermonkey": "^5.0.2",
+		"@typescript-eslint/eslint-plugin": "^6.18.0",
+		"@typescript-eslint/parser": "^6.18.0",
+		"eslint": "^8.56.0",
+		"eslint-config-prettier": "^9.1.0",
+		"postcss": "^8.4.33",
+		"rollup": "^4.9.4",
+		"rollup-plugin-delete": "^2.0.0",
+		"rollup-plugin-postcss": "^4.0.2",
+		"rollup-plugin-scss": "^4.0.0",
+		"sass": "^1.69.7",
+		"tslib": "^2.6.2",
+		"type-fest": "^4.9.0",
+		"typescript": "^5.3.3"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"ajax-proxy": "file:../ajax-proxy"
+	}
+}

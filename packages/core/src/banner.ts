@@ -1,5 +1,5 @@
 import path from "path";
-import pkg from "../package.json" assert { type: "json" };
+import pkg from "../../../package.json" assert { type: "json" };
 
 type Field = string | string[] | boolean | undefined;
 

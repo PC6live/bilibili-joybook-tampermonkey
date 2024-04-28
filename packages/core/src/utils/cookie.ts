@@ -1,4 +1,4 @@
-import { StoreCookies, get, set, del } from "src/store";
+import { StoreCookies, get, set, del } from "store";
 
 export const getStoreCookies = (): StoreCookies => ({ userCookie: get("userCookie"), vipCookie: get("vipCookie") });
 

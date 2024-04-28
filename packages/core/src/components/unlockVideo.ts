@@ -12,6 +12,7 @@ export function unlockVideo() {
 			let node = vip_info_iterator.iterateNext();
 
 			while (node) {
+				console.log(node);
 				if (node && node.textContent) {
 					const vipStatusReg = new RegExp(/"vip_status.*?,/g);
 					const vipTypeReg = new RegExp(/"vip_type.*?,/g);

@@ -1,6 +1,6 @@
-import { getStoreCookies, removeCookies, setCookies, storeCookies } from "src/utils/cookie";
-import { cookiesReady } from "src/utils/helper";
-import { USER_INFO_URL } from "src/utils/url";
+import { getStoreCookies, removeCookies, setCookies, storeCookies } from "utils/cookie";
+import { cookiesReady } from "utils/helper";
+import { USER_INFO_URL } from "utils/url";
 
 export interface UserInfo {
 	face: string;

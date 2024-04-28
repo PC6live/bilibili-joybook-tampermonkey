@@ -8,9 +8,9 @@
 	"parser": "@typescript-eslint/parser",
 	"plugins": ["@typescript-eslint"],
 	"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
-	"parserOptions": {
-		"project": "./tsconfig.json"
-	},
+	// "parserOptions": {
+	// 	"project": "./tsconfig.json"
+	// },
 	"rules": {
 		"no-undef": 0,
 		"no-unused-vars": "off",

@@ -1,9 +1,9 @@
-import { unProxy } from "src/lib/ajaxProxy";
-import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
-import { createElement, deleteAllValue } from "src/utils/helper";
-import { USER_INFO_URL } from "src/utils/url";
+import { unProxy } from "ajax-proxy";
+import { cookieToString, getStoreCookies, removeCookies } from "utils/cookie";
+import { createElement, deleteAllValue } from "utils/helper";
+import { USER_INFO_URL } from "utils/url";
 import { UserInfo } from "./initialize";
-import { ProxyWin } from "src/lib/ajaxProxy.types";
+import { ProxyWin } from "ajax-proxy";
 
 // TODO: 添加快速切换会员账户，用于脚本失效场景。
 /** 头像容器 */

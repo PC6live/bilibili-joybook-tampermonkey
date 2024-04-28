@@ -1,0 +1,16 @@
+{
+  "name": "ajax-proxy",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "description": "ajax-proxy",
+  "devDependencies": {},
+  "scripts": {
+    "build": "rollup -c --environment NODE_ENV:production --configPlugin typescript --bundleConfigAsCjs"
+  },
+  "author": "PClive",
+  "license": "ISC"
+}

@@ -1,10 +1,11 @@
-import { sleep, cookiesReady, printMessage } from "src/utils/helper";
-import { proxy } from "src/lib/ajaxProxy";
-import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
-import { del } from "src/store";
-import { ProxyConfig, ProxyOptions, ProxyWin } from "src/lib/ajaxProxy.types";
+import { sleep, cookiesReady, printMessage } from "utils/helper";
+import { cookieToString, getStoreCookies, removeCookies } from "utils/cookie";
+import { del } from "store";
+import { proxy, type ProxyWin, type ProxyOptions, type ProxyXHR } from "ajax-proxy";
 
-// // 监听登录&reload
+// 监听登录&reload
+// TODO: 验证登录是否成功
+// FIXME: 似乎影响了chrome密码自动填充
 const reloadByLogin = (url: string): void => {
 	if (url.includes("/passport-login/web/login")) {
 		printMessage("login reload");
@@ -12,7 +13,7 @@ const reloadByLogin = (url: string): void => {
 	}
 };
 
-// // 监听登出&reload
+// 监听登出&reload
 const listenLogout = (url: string): void => {
 	if (url.includes("/login/exit/")) {
 		del("userCookie");
@@ -41,7 +42,7 @@ const handleUrl = (url: string): boolean => {
 	return false;
 };
 
-async function handleResponse(xhr: ProxyConfig) {
+async function handleResponse(xhr: ProxyXHR) {
 	const { vipCookie } = getStoreCookies();
 
 	const url = new URL(xhr.url, window.location.href);
@@ -75,7 +76,10 @@ async function handleResponse(xhr: ProxyConfig) {
 			const originResponse = JSON.parse(xhr.response);
 			const proxyResponse = JSON.parse(request.response);
 
-      // video
+			// TODO: 包装log输出
+			console.log(xhr.url);
+
+			// video
 			if (xhr.url.includes(proxyUrls[0])) {
 				originResponse.data = proxyResponse.data;
 			}
@@ -85,9 +89,11 @@ async function handleResponse(xhr: ProxyConfig) {
 				originResponse.data.vip = proxyResponse.data.vip;
 			}
 
-      // bangumi
+			// bangumi
 			if (xhr.url.includes(proxyUrls[2])) {
-				originResponse.result = proxyResponse.result;
+				// originResponse.result = proxyResponse.result;
+				originResponse.result.video_info = proxyResponse.result.video_info;
+				originResponse.result.view_info = proxyResponse.result.view_info;
 			}
 
 			xhr._responseText = JSON.stringify(originResponse);

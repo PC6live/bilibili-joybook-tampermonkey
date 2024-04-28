@@ -1,8 +1,8 @@
-import { ProxyConfig, ProxyOptions, ProxyWin, ProxyXHREventFunc, ProxyXHRFunc } from "./ajaxProxy.types";
+import type { ProxyXHR, ProxyOptions, ProxyWin } from "./index.types";
 
 const REAL_XHR = "_xhr";
 
-function setConfig(target: ProxyConfig, p: keyof XMLHttpRequest, args: any) {
+function extendXHR(target: ProxyXHR, p: keyof XMLHttpRequest, args: any): void {
 	if (p === "open") {
 		target.method = args[0];
 		target.url = args[1];
@@ -19,6 +19,7 @@ function setConfig(target: ProxyConfig, p: keyof XMLHttpRequest, args: any) {
 	}
 }
 
+// TODO: 设计只读属性写入
 export function proxy(options: ProxyOptions, win: ProxyWin): void {
 	// 保存真实 XMLHttpRequest
 	win[REAL_XHR] = win[REAL_XHR] || win.XMLHttpRequest;
@@ -35,17 +36,18 @@ export function proxy(options: ProxyOptions, win: ProxyWin): void {
 		},
 	});
 
-	const getterFactory: ProxyHandler<XMLHttpRequest>["get"] = (target: ProxyConfig, p, receiver) => {
-		const value = Reflect.get(target, p);
-		const hook = Reflect.get(options, p);
+	const getterFactory: ProxyHandler<XMLHttpRequest>["get"] = (target: ProxyXHR, p, receiver) => {
+		const key = p.toString()
+		const value = Reflect.get(target, `_${key}`) || Reflect.get(target, key);
+		const hook = Reflect.get(options, key);
 
 		if (hook) {
 			// 拦截函数
 			if (typeof hook === "function") {
 				return (...args: any[]) => {
-					setConfig(target, p.toString() as keyof XMLHttpRequest, args);
+					extendXHR(target, key as keyof XMLHttpRequest, args);
 
-					return (hook as ProxyXHRFunc)(target, value, receiver) || value.call(target, ...args);
+					return hook(target, value, receiver) || value.call(target, ...args);
 				};
 			}
 
@@ -56,25 +58,26 @@ export function proxy(options: ProxyOptions, win: ProxyWin): void {
 		if (typeof value === "function") {
 			return value.bind(target);
 		} else {
-			// 使用缓存值
-			return Reflect.get(target, `_${p.toString()}`) || value;
+			return value;
 		}
 	};
 
-	const setterFactory: ProxyHandler<XMLHttpRequest>["set"] = (target: ProxyConfig, p, value, receiver) => {
-		const hook = Reflect.get(options, p);
+	const setterFactory: ProxyHandler<XMLHttpRequest>["set"] = (target: ProxyXHR, p, value, receiver) => {
+		const key = p.toString()
+		const hook = Reflect.get(options, key);
 
 		if (hook) {
 			if (typeof hook === "function") {
-				return Reflect.set(target, p, () => {
-					(hook as ProxyXHREventFunc)(target, value, receiver) || value(target);
+				return Reflect.set(target, key, () => {
+					// 这里没有绑定 event 不知道有没有问题
+					hook(target, value, receiver) || value(target);
 				});
 			}
 
 			// return Reflect.set(target, p, hook.setter(target, value) || value);
 		}
 
-		return Reflect.set(target, p, typeof value === "function" ? value.bind(target) : value);
+		return Reflect.set(target, key, typeof value === "function" ? value.bind(target) : value);
 	};
 }
 
@@ -83,3 +86,5 @@ export function unProxy(win: ProxyWin): void {
 	if (win[REAL_XHR]) win.XMLHttpRequest = win[REAL_XHR];
 	win[REAL_XHR] = undefined;
 }
+
+export * from "./index.types"
