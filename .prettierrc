@@ -1,6 +1,6 @@
 {
 	"useTabs": true,
-	"printWidth": 120,
+	"printWidth": 80,
 	"arrowParens": "always",
 	"semi": true,
 	"trailingComma": "es5",

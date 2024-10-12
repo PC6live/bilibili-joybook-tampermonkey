@@ -3,33 +3,30 @@
 	"version": "0.0.14",
 	"description": "白嫖大会员",
 	"main": "dist/joybook.user.js",
+	"type": "module",
 	"keywords": [
 		"bilibili"
 	],
 	"author": "PClive",
 	"license": "MIT",
 	"scripts": {
-		"start": "rollup -c -w --environment NODE_ENV:development --configPlugin typescript --bundleConfigAsCjs",
-		"build": "rollup -c --environment NODE_ENV:production --configPlugin typescript --bundleConfigAsCjs",
-		"lint": "eslint . --ext .ts,.tsx"
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"preview": "vite preview"
 	},
 	"devDependencies": {
-		"@rollup/plugin-alias": "^5.1.0",
-		"@rollup/plugin-json": "^6.1.0",
-		"@rollup/plugin-replace": "^5.0.5",
-		"@rollup/plugin-typescript": "^11.1.5",
-		"@types/tampermonkey": "^5.0.2",
-		"@typescript-eslint/eslint-plugin": "^6.18.0",
-		"@typescript-eslint/parser": "^6.18.0",
-		"eslint": "^8.56.0",
-		"eslint-config-prettier": "^9.1.0",
-		"postcss": "^8.4.33",
-		"rollup": "^4.9.4",
-		"rollup-plugin-delete": "^2.0.0",
-		"rollup-plugin-postcss": "^4.0.2",
-		"rollup-plugin-scss": "^4.0.0",
-		"sass": "^1.69.7",
-		"type-fest": "^4.9.0",
-		"typescript": "^5.3.3"
+		"@eslint/js": "^9.11.0",
+		"@types/eslint__js": "^8.42.3",
+		"eslint": "^9.11.0",
+		"prettier": "^3.3.3",
+		"sass": "^1.79.3",
+		"type-fest": "^4.26.1",
+		"typescript": "^5.6.2",
+		"typescript-eslint": "^8.6.0",
+		"vite": "^5.4.7",
+		"vite-plugin-monkey": "^4.0.6"
+	},
+	"dependencies": {
+		"ajax-hook": "^3.0.3"
 	}
 }

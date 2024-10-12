@@ -1,18 +1,20 @@
 {
-    "commentTranslate.source": "Bing",
-    "cSpell.words": [
-        "bangumi",
-        "bili",
-        "bilibili",
-        "Dede",
-        "defaulticon",
-        "iife",
-        "joybook",
-        "nocompat",
-        "playinfo",
-        "playurl",
-        "SESSDATA",
-        "Tampermonkey",
-        "xmlhttp"
-    ]
+	"cSpell.words": [
+		"bangumi",
+		"bili",
+		"bilibili",
+		"Dede",
+		"defaulticon",
+		"iife",
+		"joybook",
+		"nocompat",
+		"playinfo",
+		"playurl",
+		"SESSDATA",
+		"Tampermonkey",
+		"tseslint",
+		"userscript",
+		"xmlhttp"
+	],
+	"typescript.tsdk": "node_modules\\typescript\\lib"
 }

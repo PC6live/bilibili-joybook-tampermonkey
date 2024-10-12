@@ -1,32 +1,36 @@
-const store = {
-  // init: false,
+import { GM_deleteValue, GM_getValue, GM_listValues, GM_setValue } from "$";
+import { CbCookie } from "./utils/cookie";
+
+type Store = {
+	vipCookie?: CbCookie[];
+	userCookie?: CbCookie[];
 };
 
-export type Store = typeof store & StoreCookies;
-
-export const set = <K extends keyof Store>(key: K, value: Store[K]) => {
-	GM_setValue(key, value);
-};
-
-export const get = <K extends keyof Store>(key: K, defaultValue?: Store[K]): Store[K] => {
+const get = <K extends keyof Store>(
+	key: K,
+	defaultValue?: Store[K]
+): Store[K] => {
 	return GM_getValue(key, defaultValue);
 };
 
-export const del = (key: keyof Store) => {
+const set = <K extends keyof Store>(key: K, value: Store[K]) => {
+	GM_setValue(key, value);
+};
+
+const del = (key: keyof Store) => {
 	GM_deleteValue(key);
 };
 
-export const getAll = (): Store => {
-  const result = {} as Store;
-  Object.keys(store).forEach(v => {
-    const key = v as keyof Store;
-    (result[key] as any) = get(key);
-  })
-  return result;
-}
-
-
-export type StoreCookies = {
-	vipCookie: Tampermonkey.Cookie[];
-	userCookie: Tampermonkey.Cookie[];
+export const store = {
+	get,
+	set,
+	del,
+	getAll: () => {
+		const key = GM_listValues();
+		const obj = {} as Store;
+		key.forEach((v) => {
+			obj[v as keyof Store] = GM_getValue(v);
+		});
+		return obj;
+	},
 };

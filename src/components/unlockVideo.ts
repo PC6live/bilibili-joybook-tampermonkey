@@ -1,35 +1,26 @@
+import { GM_getTab, GM_saveTab } from "$";
+import { store } from "src/store";
+import { cookie } from "src/utils/cookie";
+
 // 解除非会员点击切换画质限制
-export function unlockVideo() {
-	document.addEventListener("readystatechange", () => {
-		const vip_info_iterator = document.evaluate(
-			"//script[contains(., 'vip_info')]",
-			document,
-			null,
-			XPathResult.ANY_TYPE,
-			null
-		);
-		try {
-			let node = vip_info_iterator.iterateNext();
+export default () => {
+	const { vipCookie, userCookie } = store.getAll();
 
-			while (node) {
-				if (node && node.textContent) {
-					const vipStatusReg = new RegExp(/"vip_status.*?,/g);
-					const vipTypeReg = new RegExp(/"vip_type.*?,/g);
-					const vipInfoReg = new RegExp(/"vip_info.*?\}/g);
+	if (!vipCookie || !userCookie) return;
 
-					const vipInfo = `"vip_info":{"is_vip":true,"due_date":0,"status":1,"type":2}`;
-					const vipStatus = `"vip_status":1,`;
-					const vipType = `"vip_type":2,`;
-
-					node.textContent = node.textContent.replace(vipStatusReg, vipStatus);
-					node.textContent = node.textContent.replace(vipTypeReg, vipType);
-					node.textContent = node.textContent.replace(vipInfoReg, vipInfo);
-				}
-
-				node = vip_info_iterator.iterateNext();
+	// FIXME: 不行，ssr 中包含播放时间等信息
+	if (window.location.pathname.includes("bangumi")) {
+		GM_getTab((tab) => {
+			if (tab.dirty) {
+				cookie.set(userCookie);
+				tab.dirty = false;
+				GM_saveTab(tab);
+			} else {
+				cookie.set(vipCookie);
+				tab.dirty = true;
+				GM_saveTab(tab);
+				window.location.reload();
 			}
-		} catch (e) {
-			console.log("Error: Document tree modified during iteration " + e);
-		}
-	});
-}
+		});
+	}
+};

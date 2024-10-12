@@ -1,7 +1,10 @@
-import { cookieList } from "src/utils/cookie";
+import { GM_cookie, unsafeWindow } from "$";
+import { cookie } from "src/utils/cookie";
 
-export async function setQuality(quality: string) {
-	let qualityCookie = (await cookieList({ name: "CURRENT_QUALITY" }))[0];
+export default async () => {
+	// 直接设置4K画质，这样就可以默认最高画质了
+
+	let qualityCookie = (await cookie.get({ name: "CURRENT_QUALITY" }))[0];
 
 	if (!qualityCookie) {
 		qualityCookie = {
@@ -13,18 +16,13 @@ export async function setQuality(quality: string) {
 			sameSite: "unspecified",
 			secure: false,
 			session: false,
-			value: quality,
+			value: "120",
 		};
 	} else {
-		qualityCookie.value = quality;
+		qualityCookie.value = "120";
 	}
 
 	GM_cookie.set(qualityCookie);
-}
-
-export async function highQuality(): Promise<void> {
-	// 直接设置4K画质，这样就可以默认最高画质了
-	setQuality("120");
 
 	// 处理 video 画质
 	Object.defineProperty(unsafeWindow, "__playinfo__", {
@@ -37,4 +35,4 @@ export async function highQuality(): Promise<void> {
 			// return "120";
 		},
 	});
-}
+};

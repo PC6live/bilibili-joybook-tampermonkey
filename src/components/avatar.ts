@@ -1,17 +1,22 @@
-import { unProxy } from "src/lib/ajaxProxy";
-import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
-import { createElement, deleteAllValue } from "src/utils/helper";
-import { USER_INFO_URL } from "src/utils/url";
+import { GM_xmlhttpRequest } from "$";
+import { USER_INFO_URL } from "src/constant";
+import { store } from "src/store";
+import { cookie } from "src/utils/cookie";
+import {
+	cookieToString,
+	createElement,
+	deleteAllValue,
+} from "src/utils/helper";
 import { UserInfo } from "./initialize";
-import { ProxyWin } from "src/lib/ajaxProxy.types";
 
-// TODO: 添加快速切换会员账户，用于脚本失效场景。
 /** 头像容器 */
 const container: HTMLDivElement = document.createElement("div");
 
 function avatar() {
-	const { userCookie, vipCookie } = getStoreCookies();
+	const { userCookie, vipCookie } = store.getAll();
+
 	const cookie = vipCookie || userCookie;
+
 	GM_xmlhttpRequest({
 		url: USER_INFO_URL,
 		cookie: cookie && cookieToString(cookie),
@@ -51,9 +56,9 @@ function handleEvent() {
 		const result = window.confirm("确定要删除脚本数据吗？");
 		if (!result) return;
 
-		unProxy(unsafeWindow as ProxyWin);
 		deleteAllValue();
-		await removeCookies();
+
+		await cookie.deleteAll();
 
 		window.location.reload();
 	};
@@ -63,7 +68,8 @@ function handleEvent() {
 	container.addEventListener("click", onDeleteClick);
 }
 
-export function createAvatar(): void {
+// 生成左下角用户头像
+export default () => {
 	window.addEventListener("load", () => {
 		// 渲染设定
 		container.id = "joybook-container";
@@ -72,4 +78,4 @@ export function createAvatar(): void {
 		avatar();
 		handleEvent();
 	});
-}
+};

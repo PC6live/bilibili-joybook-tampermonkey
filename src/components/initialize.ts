@@ -1,6 +1,7 @@
-import { getStoreCookies, removeCookies, setCookies, storeCookies } from "src/utils/cookie";
+import { USER_INFO_URL } from "src/constant";
+import { store } from "src/store";
+import { cookie } from "src/utils/cookie";
 import { cookiesReady } from "src/utils/helper";
-import { USER_INFO_URL } from "src/utils/url";
 
 export interface UserInfo {
 	face: string;
@@ -9,7 +10,10 @@ export interface UserInfo {
 }
 
 const getUserType = async (): Promise<UserInfo> => {
-	const resp = await fetch(USER_INFO_URL, { method: "get", credentials: "include" });
+	const resp = await fetch(USER_INFO_URL, {
+		method: "get",
+		credentials: "include",
+	});
 	const result = await resp.json();
 
 	return result.data;
@@ -18,24 +22,34 @@ const getUserType = async (): Promise<UserInfo> => {
 async function handleLogin(key: "vipCookie" | "userCookie"): Promise<void> {
 	const storeKey = ["SESSDATA", "DedeUserID", "DedeUserID__ckMd5", "bili_jct"];
 
-	await storeCookies(key, storeKey);
+	const cookies = await cookie.get({ domain: ".bilibili.com" });
 
-	const { userCookie } = getStoreCookies();
+	// 储存用户 cookies
+	store.set(
+		key,
+		cookies.filter((v) => storeKey.includes(v.name))
+	);
 
-	await removeCookies();
+	// 因为需要再次进行登录，所以删除浏览器 cookies
+	await cookie.deleteAll();
 
-	if (cookiesReady()) await setCookies(userCookie);
+	// 如果已完成初始化，则设置为 user cookies
+	const { userCookie, vipCookie } = store.getAll();
+	if (userCookie && vipCookie) {
+		await cookie.set(userCookie);
+	}
 
 	window.location.reload();
 }
 
-export async function initialize(): Promise<void> {
+// 处理用户登录
+export default async () => {
 	// 获取登录状态
 	const { isLogin, vipStatus } = await getUserType();
 
 	if (!isLogin || cookiesReady()) return;
 
-  const user = vipStatus ? "vipCookie": "userCookie";
+	const user = vipStatus ? "vipCookie" : "userCookie";
 
-  await handleLogin(user);
-}
+	await handleLogin(user);
+};

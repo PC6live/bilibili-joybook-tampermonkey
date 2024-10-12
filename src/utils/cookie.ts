@@ -1,44 +1,37 @@
-import { StoreCookies, get, set, del } from "src/store";
+import { GM_cookie } from "$";
+import type { Merge } from "type-fest";
 
-export const getStoreCookies = (): StoreCookies => ({ userCookie: get("userCookie"), vipCookie: get("vipCookie") });
-
-export async function cookieList(
-	detail: Tampermonkey.ListCookiesDetails = { domain: ".bilibili.com" }
-): Promise<Tampermonkey.Cookie[]> {
-	return new Promise((resolve) => GM_cookie.list(detail, (cookies) => resolve(cookies)));
-}
-
-export async function cookieDelete(detail: Tampermonkey.DeleteCookiesDetails): Promise<void> {
-	return new Promise((resolve) => GM_cookie.delete(detail, () => resolve()));
-}
-
-export async function cookieSet(detail: Tampermonkey.SetCookiesDetails): Promise<void> {
-	return new Promise((resolve) => GM_cookie.set(detail, () => resolve()));
-}
-
-export async function removeCookies(): Promise<void> {
-	const cookies = await cookieList();
-	for (const cookie of cookies) {
-		await cookieDelete({
-			name: cookie.name,
-			url: "",
-			firstPartyDomain: "",
-		});
+export type ChromeCookie = Parameters<typeof GM_cookie.set>[0];
+export type CbCookie = Merge<
+	Awaited<ReturnType<typeof GM_cookie.list>>[number],
+	{
+		sameSite: ChromeCookie["sameSite"];
 	}
-}
+>;
 
-export async function storeCookies(storeName: keyof StoreCookies, keys: string[]): Promise<void> {
-	del(storeName);
-	const cookies = (await cookieList()).filter((cookie) => keys.includes(cookie.name));
-	set(storeName, cookies);
-}
+export const cookie = {
+	get: (details: Parameters<typeof GM_cookie.list>[0] = {}) =>
+		new Promise<CbCookie[]>((resolve) =>
+			GM_cookie.list(details, (cookies) => resolve(cookies as CbCookie[]))
+		),
 
-export async function setCookies(cookies: Tampermonkey.Cookie[]) {
-	for (const cookie of cookies) {
-		await cookieSet(cookie);
-	}
-}
+	set: async (cookies: ChromeCookie[]) =>
+		Promise.all(
+			cookies.map(
+				(v) =>
+					new Promise((resolve) => GM_cookie.set(v, (error) => resolve(error)))
+			)
+		),
 
-export function cookieToString(cookies: Tampermonkey.Cookie[]) {
-	return cookies.map((v) => `${v.name}=${v.value}`).join("; ");
-}
+	delete: async (cookies: Parameters<typeof GM_cookie.delete>[0][]) =>
+		Promise.all(
+			cookies.map(
+				(v) =>
+					new Promise((resolve) =>
+						GM_cookie.delete(v, (error) => resolve(error))
+					)
+			)
+		),
+
+	deleteAll: async () => cookie.delete(await cookie.get()),
+};

@@ -1,6 +1,6 @@
-export function removeTips() {
-  window.addEventListener("DOMContentLoaded",() => {
-    const tips = document.querySelector(".adblock-tips");
-    tips?.parentElement?.removeChild(tips);
-  })
-}
+export default () => {
+	window.addEventListener("DOMContentLoaded", () => {
+		const tips = document.querySelector(".adblock-tips");
+		tips?.parentElement?.removeChild(tips);
+	});
+};

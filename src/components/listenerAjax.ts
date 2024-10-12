@@ -1,127 +1,135 @@
-import { sleep, cookiesReady, printMessage } from "src/utils/helper";
-import { proxy } from "src/lib/ajaxProxy";
-import { cookieToString, getStoreCookies, removeCookies } from "src/utils/cookie";
-import { del } from "src/store";
-import { ProxyConfig, ProxyOptions, ProxyWin } from "src/lib/ajaxProxy.types";
+import { GM_xmlhttpRequest, unsafeWindow } from "$";
+import { proxy, XhrRequestConfig } from "ajax-hook";
+import { store } from "src/store";
+import { cookie } from "src/utils/cookie";
+import { cookieToString, message, sleep } from "src/utils/helper";
 
-// // 监听登录&reload
+/**
+ * 监听登录，帮助初始化函数储存 cookies
+ */
 const reloadByLogin = (url: string): void => {
 	if (url.includes("/passport-login/web/login")) {
-		printMessage("login reload");
+		message("login reload");
 		sleep(1).then(() => window.location.reload());
 	}
 };
 
-// // 监听登出&reload
-const listenLogout = (url: string): void => {
-	if (url.includes("/login/exit/")) {
-		del("userCookie");
-		printMessage("logout reload");
-		removeCookies().then(() => window.location.reload());
+/**
+ * 监听登出，并删除用户 cookies
+ */
+const listenLogout = async (url: string) => {
+	if (url.includes("/login/exit")) {
+		store.del("userCookie");
+
+		await cookie.deleteAll();
+
+		window.location.reload();
 	}
 };
 
-const proxyUrls: string[] = [
-	// 视频信息
-	"api.bilibili.com/x/player/wbi/playurl",
+const request = (config: XhrRequestConfig) => {
+	return new Promise<Record<string, any> | void>((resolve) => {
+		const { vipCookie } = store.getAll();
+		if (!vipCookie) return;
 
-	// 用户信息
-	"api.bilibili.com/x/player/wbi/v2",
+		const url = new URL(config.url, window.location.href);
 
-	// bangumi 信息
-	"api.bilibili.com/pgc/player/web/v2/playurl",
+		GM_xmlhttpRequest<unknown, "json">({
+			method: config.method,
+			url: url.href,
+			anonymous: true,
+			cookie: cookieToString(vipCookie),
+			headers: {
+				referer: window.location.href,
+			},
+			responseType: "json",
+			onload(event) {
+				return resolve(event.response);
+			},
+			onabort() {
+				return resolve();
+			},
+			onerror() {
+				return resolve();
+			},
+		});
+	});
+};
+
+const handlers: {
+	url: string;
+	on: (userResponse: any, vipResponse: any) => any;
+}[] = [
+	{
+		// 视频信息
+		url: "api.bilibili.com/x/player/wbi/playurl",
+		on: (userResponse, vipResponse) => {
+			// 移除播放时间信息
+			delete vipResponse.data.last_play_cid;
+			delete vipResponse.data.last_play_time;
+
+			userResponse.data = {
+				...userResponse.data,
+				...vipResponse.data,
+			};
+			return userResponse;
+		},
+	},
+	{
+		// 用户信息
+		url: "api.bilibili.com/x/player/wbi/v2",
+		on: (userResponse, vipResponse) => {
+			userResponse.data.vip = vipResponse.data.vip;
+			return userResponse;
+		},
+	},
+	{
+		// bangumi 信息
+		url: "api.bilibili.com/pgc/player/web/v2/playurl",
+		on: (userResponse, vipResponse) => {
+			userResponse.result = vipResponse.result;
+			return userResponse;
+		},
+	},
 ];
 
-// 需要代理的链接
-const handleUrl = (url: string): boolean => {
-	if (!cookiesReady()) return false;
+export default () => {
+	proxy(
+		{
+			//请求发起前进入
+			onRequest: (config, handler) => {
+				reloadByLogin(config.url);
+				listenLogout(config.url);
 
-	if (proxyUrls.findIndex((v) => url.includes(v)) > -1) return true;
+				handler.next(config);
+			},
+			//请求发生错误时进入，比如超时；注意，不包括http状态码错误，如404仍然会认为请求成功
+			onError: (err, handler) => {
+				handler.next(err);
+			},
+			//请求成功后进入
+			onResponse: async (response, handler) => {
+				const requestUrl = response.config.url;
 
-	return false;
+				for (const { url, on } of handlers) {
+					if (requestUrl.includes(url)) {
+						const vipResponse = await request(response.config);
+						// 必然是 json，如果不是那就是接口变了
+						const userResponse = JSON.parse(response.response);
+						if (vipResponse) {
+							response.response = on(
+								structuredClone(userResponse),
+								structuredClone(vipResponse)
+							);
+
+							return handler.resolve(response);
+						}
+					}
+				}
+
+				handler.next(response);
+			},
+		},
+		unsafeWindow
+	);
 };
-
-async function handleResponse(xhr: ProxyConfig) {
-	const { vipCookie } = getStoreCookies();
-
-	const url = new URL(xhr.url, window.location.href);
-
-	xhr.url = url.href;
-
-	// 使用vip账号获取数据
-	const request = await GM.xmlHttpRequest({
-		method: xhr.method,
-		url: xhr.url,
-		anonymous: true,
-		cookie: cookieToString(vipCookie),
-		headers: {
-			referer: window.location.href,
-		},
-	}).catch((e) => console.error(e));
-
-	if (!request) return;
-
-	// 重新打开链接
-	xhr.open(xhr.method, xhr.url, xhr.async !== false, xhr.user, xhr.password);
-
-	for (const key in xhr.headers) {
-		xhr.setRequestHeader(key, xhr.headers[key]);
-	}
-
-	// 替换必要的数据
-	// TODO: catch 数据结构变化输出错误
-	xhr.onreadystatechange = () => {
-		if (xhr.readyState === 4) {
-			const originResponse = JSON.parse(xhr.response);
-			const proxyResponse = JSON.parse(request.response);
-
-      // video
-			if (xhr.url.includes(proxyUrls[0])) {
-				originResponse.data = proxyResponse.data;
-			}
-
-			// response 中包含上次播放时间
-			if (xhr.url.includes(proxyUrls[1])) {
-				originResponse.data.vip = proxyResponse.data.vip;
-			}
-
-      // bangumi
-			if (xhr.url.includes(proxyUrls[2])) {
-				originResponse.result = proxyResponse.result;
-			}
-
-			xhr._responseText = JSON.stringify(originResponse);
-		}
-	};
-
-	// 发送链接
-	xhr.send(xhr.body);
-}
-
-export function listenerAjax(): void {
-	const config: ProxyOptions = {
-		open(xhr) {
-			reloadByLogin(xhr.url);
-			listenLogout(xhr.url);
-
-			if (handleUrl(xhr.url)) {
-				handleResponse(xhr);
-				return true;
-			}
-
-			return false;
-		},
-		send(xhr) {
-			if (handleUrl(xhr.url)) return true;
-
-			return false;
-		},
-		setRequestHeader(xhr) {
-			if (handleUrl(xhr.url)) return true;
-
-			return false;
-		},
-	};
-
-	proxy(config, unsafeWindow as ProxyWin);
-}
