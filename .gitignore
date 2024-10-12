@@ -1,7 +1,5 @@
 .cache/
 coverage/
-dist/*
-!dist/joybook.user.js
 src/styles/*.css
 node_modules/
 *.log

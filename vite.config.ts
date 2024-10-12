@@ -12,6 +12,9 @@ export default defineConfig({
 	plugins: [
 		monkey({
 			entry: "src/main.ts",
+			build: {
+				fileName: "joybook.user.js",
+			},
 			userscript: {
 				version: pkg.version,
 				name: "bilibili-joybook",
