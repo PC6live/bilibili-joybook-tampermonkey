@@ -2,7 +2,7 @@
 
 ## 安装
 1. 在 chrome 应用商店安装 [Tampermonkey BETA](https://chrome.google.com/webstore/detail/tampermonkey-beta/gcalenpjmijncebpfijmoaglllgpjagf)
-2. 点击[脚本](https://github.com/PC6live/joybook-tampermonkey/raw/master/dist/joybook.user.js)进行安装
+2. 点击[脚本](https://github.com/PC6live/joybook-tampermonkey/raw/master/dist/joybook.user.js)或者[Greasy Fork](https://greasyfork.org/zh-CN/scripts/449163-bilibili-joybook)进行安装
 
 ## 脚本说明
 
