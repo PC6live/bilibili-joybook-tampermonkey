@@ -10,13 +10,13 @@ export default () => {
 
 	// FIXME: 不行，ssr 中包含播放时间等信息
 	if (window.location.pathname.includes("bangumi")) {
-		GM_getTab((tab) => {
+		GM_getTab(async (tab) => {
 			if (tab.dirty) {
-				cookie.set(userCookie);
+				await cookie.set(userCookie);
 				tab.dirty = false;
 				GM_saveTab(tab);
 			} else {
-				cookie.set(vipCookie);
+				await cookie.set(vipCookie);
 				tab.dirty = true;
 				GM_saveTab(tab);
 				window.location.reload();

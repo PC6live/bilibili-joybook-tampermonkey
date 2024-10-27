@@ -634,13 +634,13 @@
     const { vipCookie, userCookie } = store.getAll();
     if (!vipCookie || !userCookie) return;
     if (window.location.pathname.includes("bangumi")) {
-      _GM_getTab((tab) => {
+      _GM_getTab(async (tab) => {
         if (tab.dirty) {
-          cookie.set(userCookie);
+          await cookie.set(userCookie);
           tab.dirty = false;
           _GM_saveTab(tab);
         } else {
-          cookie.set(vipCookie);
+          await cookie.set(vipCookie);
           tab.dirty = true;
           _GM_saveTab(tab);
           window.location.reload();
